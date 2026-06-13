@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:petani_maju/data/models/chat_message.dart';
 import 'package:petani_maju/features/chatbot/widgets/streaming_text.dart';
 
+String _cleanMarkdown(String text) {
+  return text
+      .replaceAll('**', '')
+      .replaceAll(RegExp(r'^\* ', multiLine: true), '• ')
+      .replaceAll('*', '')
+      .replaceAll(RegExp(r'^#{1,6}\s*', multiLine: true), '');
+}
+
 class ChatBubble extends StatelessWidget {
   final ChatMessage message;
 
@@ -48,7 +56,7 @@ class ChatBubble extends StatelessWidget {
               child: message.content.isEmpty && message.isStreaming
                   ? _buildTypingIndicator()
                   : StreamingText(
-                      content: message.content,
+                      content: isUser ? message.content : _cleanMarkdown(message.content),
                       isStreaming: message.isStreaming,
                       style: TextStyle(
                         color: isUser ? Colors.white : Colors.black87,

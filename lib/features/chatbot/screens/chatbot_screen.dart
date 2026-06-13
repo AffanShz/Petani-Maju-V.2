@@ -39,6 +39,29 @@ class _ChatbotViewState extends State<_ChatbotView> {
     super.dispose();
   }
 
+  String _friendlyError(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('api key') ||
+        lower.contains('apikey') ||
+        lower.contains('invalid') ||
+        lower.contains('403') ||
+        lower.contains('401') ||
+        lower.contains('permission')) {
+      return 'API key tidak valid. Periksa GEMINI_API_KEY di .env.';
+    }
+    if (lower.contains('socket') ||
+        lower.contains('network') ||
+        lower.contains('connection') ||
+        lower.contains('host') ||
+        lower.contains('connect')) {
+      return 'Tidak ada koneksi internet.';
+    }
+    if (lower.contains('quota') || lower.contains('rate limit') || lower.contains('429')) {
+      return 'Terlalu banyak permintaan, coba lagi nanti.';
+    }
+    return 'Error: $raw';
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -77,13 +100,9 @@ class _ChatbotViewState extends State<_ChatbotView> {
             builder: (context, state) {
               final hasMessages =
                   state is ChatbotLoaded && state.messages.isNotEmpty;
-              return IconButton(
-                onPressed: hasMessages
-                    ? () => context.read<ChatbotBloc>().add(const ResetChat())
-                    : null,
-                icon: const Icon(Icons.refresh_outlined),
-                tooltip: 'Reset chat',
-                color: hasMessages ? Colors.green : Colors.grey,
+              return _AnimatedRefreshButton(
+                enabled: hasMessages,
+                onTap: () => context.read<ChatbotBloc>().add(const ResetChat()),
               );
             },
           ),
@@ -96,10 +115,10 @@ class _ChatbotViewState extends State<_ChatbotView> {
               listener: (context, state) {
                 _scrollToBottom();
                 if (state is ChatbotError) {
+                  final errorMsg = _friendlyError(state.error);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text(
-                          'Gagal mendapat respons. Periksa koneksi internet.'),
+                      content: Text(errorMsg),
                       backgroundColor: Colors.red.shade700,
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -218,5 +237,56 @@ class _ChatbotViewState extends State<_ChatbotView> {
         ),
       );
     });
+  }
+}
+
+class _AnimatedRefreshButton extends StatefulWidget {
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _AnimatedRefreshButton({required this.enabled, required this.onTap});
+
+  @override
+  State<_AnimatedRefreshButton> createState() => _AnimatedRefreshButtonState();
+}
+
+class _AnimatedRefreshButtonState extends State<_AnimatedRefreshButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    if (!widget.enabled) return;
+    _controller.forward(from: 0);
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: widget.enabled ? _handleTap : null,
+      tooltip: 'Reset chat',
+      icon: RotationTransition(
+        turns: _controller,
+        child: Icon(
+          Icons.refresh_outlined,
+          color: widget.enabled ? Colors.green : Colors.grey,
+        ),
+      ),
+    );
   }
 }

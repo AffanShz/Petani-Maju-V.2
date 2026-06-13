@@ -1,23 +1,30 @@
-import 'package:google_generative_ai/google_generative_ai.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ChatbotService {
   final String apiKey;
-  late final GenerativeModel _model;
-  ChatSession? _chatSession;
+  final List<Map<String, dynamic>> _history = [];
 
-  ChatbotService({required this.apiKey}) {
-    _model = GenerativeModel(
-      model: 'gemini-1.5-flash',
-      apiKey: apiKey,
-    );
-  }
+  static const String _model = 'gemini-2.5-flash';
+  static const String _apiBase = 'https://generativelanguage.googleapis.com/v1';
+
+  ChatbotService({required this.apiKey});
 
   void initSession({required String systemPrompt}) {
-    _chatSession = _model.startChat(
-      history: [
-        Content.model([TextPart(systemPrompt)]),
-      ],
-    );
+    _history.clear();
+    _history.add({
+      'role': 'user',
+      'parts': [
+        {'text': systemPrompt}
+      ]
+    });
+    _history.add({
+      'role': 'model',
+      'parts': [
+        {'text': 'Mengerti. Saya Asisten Tani, siap membantu pertanyaan seputar pertanian.'}
+      ]
+    });
   }
 
   void resetSession({required String systemPrompt}) {
@@ -25,21 +32,67 @@ class ChatbotService {
   }
 
   Stream<String> sendMessageStream(String prompt) async* {
-    if (_chatSession == null) {
-      throw StateError('ChatSession belum diinisialisasi. Panggil initSession() dulu.');
-    }
+    _history.add({
+      'role': 'user',
+      'parts': [
+        {'text': prompt}
+      ]
+    });
 
-    final responseStream = _chatSession!.sendMessageStream(
-      Content.text(prompt),
+    final url = Uri.parse(
+      '$_apiBase/models/$_model:streamGenerateContent?alt=sse&key=$apiKey',
     );
 
-    await for (final chunk in responseStream) {
-      final text = chunk.text;
-      if (text != null && text.isNotEmpty) {
-        yield text;
+    final request = http.Request('POST', url)
+      ..headers['Content-Type'] = 'application/json'
+      ..body = json.encode({'contents': _history});
+
+    final client = http.Client();
+    String accumulatedText = '';
+
+    try {
+      final response = await client.send(request);
+
+      if (response.statusCode != 200) {
+        final body = await response.stream.bytesToString();
+        throw Exception('Gemini API error ${response.statusCode}: $body');
       }
+
+      await for (final line in response.stream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        if (!line.startsWith('data: ')) continue;
+        final data = line.substring(6).trim();
+        if (data.isEmpty || data == '[DONE]') continue;
+
+        try {
+          final parsed = json.decode(data) as Map<String, dynamic>;
+          final candidates = parsed['candidates'] as List?;
+          if (candidates != null && candidates.isNotEmpty) {
+            final parts = candidates[0]['content']?['parts'] as List?;
+            if (parts != null && parts.isNotEmpty) {
+              final text = parts[0]['text'] as String?;
+              if (text != null && text.isNotEmpty) {
+                accumulatedText += text;
+                yield text;
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (accumulatedText.isNotEmpty) {
+        _history.add({
+          'role': 'model',
+          'parts': [
+            {'text': accumulatedText}
+          ]
+        });
+      }
+    } finally {
+      client.close();
     }
   }
 
-  bool get isReady => _chatSession != null;
+  bool get isReady => _history.isNotEmpty;
 }
