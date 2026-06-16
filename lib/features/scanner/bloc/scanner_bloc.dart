@@ -35,7 +35,6 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     
     try {
       // 1. Upload gambar ke Supabase Storage (Bucket: images/history)
-      // Langkah ini wajib dilakukan pertama karena API Flask membutuhkan URL publik
       String cloudImageUrl;
       try {
         cloudImageUrl = await _pestService.uploadImage(event.imagePath);
@@ -47,28 +46,56 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       // 2. Jalankan prediksi AI menggunakan URL cloud
       final result = await _scannerService.predict(cloudImageUrl);
       
-      final label = result['label'] ?? 'Tidak Terdeteksi';
+      final rawLabel = result['label'] ?? 'Tidak Terdeteksi';
       final confidence = result['confidence'] ?? 0.0;
 
-      // 3. Simpan histori ke Supabase (Tabel: prediction_history)
+      // Map raw label to DB searchable name (Matches penyakit_tomat table)
+      String searchName = _mapLabelToSearchName(rawLabel);
+      
+      // 3. Ambil data detail dari Supabase (Tabel: penyakit_tomat)
+      Map<String, dynamic>? pestData;
+      if (searchName != 'Sehat' && searchName != 'Tidak Terdeteksi') {
+        pestData = await _pestService.fetchTomatoDiseaseByName(searchName);
+      }
+
+      // 4. Simpan histori ke Supabase (Tabel: prediction_history)
       await _pestService.savePredictionHistory({
-        'user_id': null, // Update jika sistem login sudah siap
+        'user_id': null, 
         'image_url': cloudImageUrl,
         'plant_type': 'Tomato',
-        'disease': label,
+        'disease': pestData != null ? pestData['nama_penyakit'] : searchName,
         'confidence': confidence,
         'severity': 'Pending',
         'status': 'Success',
       });
       
       emit(ScannerSuccess(
-        imagePath: event.imagePath, // Tetap gunakan path lokal untuk display instan di UI
-        label: label,
+        imagePath: event.imagePath,
+        label: pestData != null ? pestData['nama_penyakit'] : searchName,
         confidence: confidence,
+        pestData: pestData,
       ));
     } catch (e) {
       emit(ScannerError('Terjadi kesalahan saat analisis: ${e.toString()}'));
     }
+  }
+
+  String _mapLabelToSearchName(String label) {
+    // Mapping labels to match "penyakit_tomat" table exactly
+    final Map<String, String> mapping = {
+      'Tomato_Bacterial_spot': 'Bacterial Spot (Bercak Bakteri)',
+      'Tomato_Early_blight': 'Early Blight (Hawar Awal / Alternaria)',
+      'Tomato_Late_blight': 'Late Blight (Hawar Lambat / Phytophthora)',
+      'Tomato_Leaf_Mold': 'Leaf Mold (Jamur Daun)',
+      'Tomato_Septoria_leaf_spot': 'Septoria Leaf Spot (Bercak Daun Septoria)',
+      'Tomato_Spider_mites_Two_spotted_spider_mite': 'Spider Mites (Tungau Laba-laba)',
+      'Tomato_Target_Spot': 'Target Spot (Bercak Target)',
+      'Tomato_Yellow_Leaf_Curl_Virus': 'Tomato Yellow Leaf Curl Virus (Virus Kuning Keriting)',
+      'Tomato_Mosaic_virus': 'Tomato Mosaic Virus (Virus Mosaik)',
+      'healthy': 'Sehat',
+    };
+
+    return mapping[label] ?? label.replaceAll('Tomato_', '').replaceAll('_', ' ');
   }
 
   void _onResetScanner(ResetScanner event, Emitter<ScannerState> emit) {

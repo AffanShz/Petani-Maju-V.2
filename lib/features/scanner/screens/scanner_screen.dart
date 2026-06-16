@@ -25,7 +25,7 @@ class ScannerView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Deteksi Penyakit Tanaman'),
+        title: const Text('Deteksi Penyakit Tomat'),
         centerTitle: true,
       ),
       body: BlocConsumer<ScannerBloc, ScannerState>(
@@ -59,7 +59,6 @@ class ScannerView extends StatelessWidget {
           }
 
           if (state is ScannerImagePicked || state is ScannerLoading) {
-             // Loading or picked state (usually inference starts automatically)
              return const Center(child: CircularProgressIndicator());
           }
 
@@ -77,7 +76,7 @@ class ScannerView extends StatelessWidget {
           Icon(Icons.camera_enhance_outlined, size: 100, color: Colors.grey.shade300),
           const SizedBox(height: 24),
           const Text(
-            'Ambil foto daun tanaman untuk\ndeteksi penyakit otomatis',
+            'Ambil foto daun tomat untuk\ndeteksi penyakit otomatis',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
@@ -106,22 +105,28 @@ class ScannerView extends StatelessWidget {
   }
 
   Widget _buildResultView(BuildContext context, ScannerSuccess state) {
+    final disease = state.pestData;
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.file(
               File(state.imagePath),
-              height: 300,
+              height: 250,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: 24),
+          
+          // Header Hasil
           Container(
             padding: const EdgeInsets.all(20),
+            width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -135,6 +140,7 @@ class ScannerView extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   state.label,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
                 ),
                 const SizedBox(height: 8),
@@ -145,7 +151,78 @@ class ScannerView extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          
+          const SizedBox(height: 24),
+
+          if (disease != null) ...[
+            // Deskripsi Penyakit
+            if (disease['deskripsi_penyakit'] != null) ...[
+              _buildInfoSection('Deskripsi Penyakit', disease['deskripsi_penyakit']),
+              const SizedBox(height: 16),
+            ],
+            
+            // Penanganan
+            if (disease['penanganan'] != null) ...[
+              _buildInfoSection('Langkah Penanganan', disease['penanganan']),
+              const SizedBox(height: 16),
+            ],
+
+            // Obat (Highlight Section)
+            if (disease['obat'] != null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.green.shade100),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.medication_liquid, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text(
+                          'Rekomendasi Obat',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      disease['obat'],
+                      style: TextStyle(color: Colors.green.shade900, height: 1.5),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ] else if (state.label != 'Sehat' && state.label != 'Tidak Terdeteksi') ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Detail untuk penyakit ini belum tersedia di database penyakit_tomat.',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -158,8 +235,26 @@ class ScannerView extends StatelessWidget {
               child: const Text('Foto Ulang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ),
+          const SizedBox(height: 40),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoSection(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          content,
+          style: TextStyle(color: Colors.grey[700], height: 1.5),
+        ),
+      ],
     );
   }
 }

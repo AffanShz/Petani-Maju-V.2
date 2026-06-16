@@ -28,15 +28,17 @@ class ScannerSuccess extends ScannerState {
   final String imagePath;
   final String label;
   final double confidence;
+  final Map<String, dynamic>? pestData;
 
   ScannerSuccess({
     required this.imagePath,
     required this.label,
     required this.confidence,
+    this.pestData,
   });
 
   @override
-  List<Object?> get props => [imagePath, label, confidence];
+  List<Object?> get props => [imagePath, label, confidence, pestData];
 }
 
 class ScannerError extends ScannerState {
