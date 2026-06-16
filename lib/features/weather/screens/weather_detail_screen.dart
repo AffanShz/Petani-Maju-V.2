@@ -102,9 +102,8 @@ class _WeatherDetailScreenState extends State<WeatherDetailScreen> {
           if (permission == LocationPermission.whileInUse ||
               permission == LocationPermission.always) {
             Position position = await Geolocator.getCurrentPosition(
-                locationSettings: const LocationSettings(
-                    accuracy: LocationAccuracy.low,
-                    timeLimit: Duration(seconds: 10)));
+                desiredAccuracy: LocationAccuracy.low,
+                timeLimit: const Duration(seconds: 10));
             lat = position.latitude;
             lon = position.longitude;
           }

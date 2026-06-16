@@ -255,7 +255,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 },
                 calendarStyle: CalendarStyle(
                   todayDecoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.2),
+                    color: Colors.green.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
                   todayTextStyle: const TextStyle(
@@ -323,7 +323,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          border: Border.all(color: Colors.grey.withOpacity(0.1)),
         ),
         child: Column(
           children: [
@@ -360,7 +360,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: Colors.black.withOpacity(0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -477,7 +477,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
+                color: const Color(0xFF2E7D32).withOpacity(0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -491,7 +491,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.spa, color: Colors.white, size: 24),
@@ -534,7 +534,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           child: Text(
             text,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacity(0.9),
               fontSize: 14,
               height: 1.5,
             ),

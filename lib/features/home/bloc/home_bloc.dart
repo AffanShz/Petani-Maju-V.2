@@ -161,11 +161,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       // Gunakan akurasi Low agar lebih cepat mengunci lokasi
       Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.low,
-          timeLimit: Duration(
-              seconds: 10), // Increased from 5 to 10 for better lock chance
-        ),
+        desiredAccuracy: LocationAccuracy.low,
+        timeLimit: const Duration(seconds: 10),
       );
 
       await _fetchData(
