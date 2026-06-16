@@ -83,4 +83,54 @@ class PestService {
       debugPrint('PestService Error saving history: $e');
     }
   }
+
+  /// Fetch all prediction history ordered by newest first
+  Future<List<Map<String, dynamic>>> fetchPredictionHistory() async {
+    try {
+      debugPrint('PestService: Fetching prediction history from Supabase...');
+      final response = await _supabase
+          .from('prediction_history')
+          .select()
+          .order('created_at', ascending: false)
+          .timeout(_timeout);
+      debugPrint('PestService: Fetched ${response.length} history items');
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      debugPrint('PestService Error fetching history: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a single prediction history item by its ID
+  Future<void> deletePredictionHistory(String id) async {
+    try {
+      debugPrint('PestService: Deleting history item $id...');
+      await _supabase
+          .from('prediction_history')
+          .delete()
+          .eq('id', id)
+          .timeout(_timeout);
+      debugPrint('PestService: Successfully deleted history item $id');
+    } catch (e) {
+      debugPrint('PestService Error deleting history: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete all prediction history records
+  Future<void> deleteAllPredictionHistory() async {
+    try {
+      debugPrint('PestService: Deleting all history...');
+      // Using neq with a non-existing value effectively deletes all rows
+      await _supabase
+          .from('prediction_history')
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000')
+          .timeout(_timeout);
+      debugPrint('PestService: Successfully deleted all history');
+    } catch (e) {
+      debugPrint('PestService Error deleting all history: $e');
+      rethrow;
+    }
+  }
 }

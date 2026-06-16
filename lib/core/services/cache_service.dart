@@ -321,4 +321,17 @@ class CacheService {
   Future<void> clearNotificationHistory() async {
     await _notificationHistoryBox.clear();
   }
+
+  // ==================== RAW DATA (generic key-value) ====================
+
+  /// Save arbitrary raw string data by key (used for generic caching like history)
+  Future<void> saveRawData(String key, String value) async {
+    await _settingsBox.put(key, value);
+  }
+
+  /// Get arbitrary raw string data by key
+  String? getRawData(String key) {
+    final v = _settingsBox.get(key);
+    return v?.toString();
+  }
 }

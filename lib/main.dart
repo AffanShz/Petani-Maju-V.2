@@ -25,6 +25,7 @@ import 'package:petani_maju/data/repositories/weather_repository.dart';
 import 'package:petani_maju/data/repositories/pest_repository.dart';
 import 'package:petani_maju/data/repositories/tips_repository.dart';
 import 'package:petani_maju/data/repositories/calendar_repository.dart';
+import 'package:petani_maju/data/repositories/history_repository.dart';
 
 // Global BLoC
 import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
@@ -115,6 +116,12 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<CalendarRepository>(
           create: (_) => CalendarRepository(
             scheduleService: scheduleService,
+          ),
+        ),
+        RepositoryProvider<HistoryRepository>(
+          create: (_) => HistoryRepository(
+            pestService: pestService,
+            cacheService: cacheService,
           ),
         ),
       ],
