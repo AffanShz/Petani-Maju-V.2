@@ -19,6 +19,9 @@ import 'package:petani_maju/data/datasources/location_service.dart';
 import 'package:petani_maju/data/datasources/pest_services.dart';
 import 'package:petani_maju/data/datasources/tips_services.dart';
 import 'package:petani_maju/data/datasources/planting_schedule_service.dart';
+import 'package:petani_maju/data/datasources/chatbot_service.dart';
+import 'package:petani_maju/data/repositories/chatbot_repository.dart';
+import 'package:petani_maju/core/constants/env_config.dart';
 
 // Repositories
 import 'package:petani_maju/data/repositories/weather_repository.dart';
@@ -115,6 +118,14 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<CalendarRepository>(
           create: (_) => CalendarRepository(
             scheduleService: scheduleService,
+          ),
+        ),
+        RepositoryProvider<ChatbotRepository>(
+          create: (_) => ChatbotRepository(
+            chatbotService: ChatbotService(
+              apiKey: EnvConfig.geminiApiKey,
+            ),
+            cacheService: cacheService,
           ),
         ),
       ],

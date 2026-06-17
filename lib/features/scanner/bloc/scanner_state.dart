@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/prediction_history.dart';
 
 abstract class ScannerState extends Equatable {
   @override
