@@ -142,14 +142,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     radius: 60,
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage: imageProvider,
-                    child: imageProvider == null
-                        ? const Icon(Icons.person, size: 60, color: Colors.grey)
-                        : null,
                     // Use onBackgroundImageError to handle missing files gracefully
                     onBackgroundImageError: imageProvider != null
                         ? (exception, stackTrace) {
                             if (kDebugMode) print("Profile Image Error: $exception");
                           }
+                        : null,
+                    child: imageProvider == null
+                        ? const Icon(Icons.person, size: 60, color: Colors.grey)
                         : null,
                   ),
                   Positioned(

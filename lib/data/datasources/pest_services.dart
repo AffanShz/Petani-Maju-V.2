@@ -54,6 +54,40 @@ class PestService {
     }
   }
 
+  /// Fetch a single pest by name
+  Future<Map<String, dynamic>?> fetchPestByName(String name) async {
+    try {
+      final response = await _supabase
+          .from('hama')
+          .select()
+          .ilike('nama', name)
+          .maybeSingle()
+          .timeout(_timeout);
+
+      return response;
+    } catch (e) {
+      debugPrint('PestService Error fetching pest by name: $e');
+      return null;
+    }
+  }
+
+  /// Fetch tomato disease detail from penyakit_tomat table
+  Future<Map<String, dynamic>?> fetchTomatoDiseaseByName(String name) async {
+    try {
+      final response = await _supabase
+          .from('penyakit_tomat')
+          .select()
+          .ilike('nama_penyakit', name)
+          .maybeSingle()
+          .timeout(_timeout);
+
+      return response;
+    } catch (e) {
+      debugPrint('PestService Error fetching tomato disease: $e');
+      return null;
+    }
+  }
+
   /// Upload image to Supabase Storage
   Future<String> uploadImage(String filePath) async {
     try {
