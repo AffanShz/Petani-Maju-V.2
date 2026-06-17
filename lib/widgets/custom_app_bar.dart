@@ -93,13 +93,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     radius: 24,
                     backgroundColor: AppColors.primaryGreen,
                     backgroundImage: imageProvider,
-                    child: imageProvider == null
-                        ? const Icon(Icons.person, color: Colors.white, size: 28)
-                        : null,
                     onBackgroundImageError: imageProvider != null
                         ? (exception, stackTrace) {
                             if (kDebugMode) print("AppBar Profile Image Error: $exception");
                           }
+                        : null,
+                    child: imageProvider == null
+                        ? const Icon(Icons.person, color: Colors.white, size: 28)
                         : null,
                   ),
                   const SizedBox(width: 12),
