@@ -224,13 +224,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           radius: 30,
           backgroundColor: AppColors.primaryGreen,
           backgroundImage: imageProvider,
-          child: imageProvider == null
-              ? const Icon(Icons.person, color: Colors.white, size: 32)
-              : null,
           onBackgroundImageError: imageProvider != null
               ? (exception, stackTrace) {
                   if (kDebugMode) print("Settings Profile Image Error: $exception");
                 }
+              : null,
+          child: imageProvider == null
+              ? const Icon(Icons.person, color: Colors.white, size: 32)
               : null,
         ),
         const SizedBox(width: 16),

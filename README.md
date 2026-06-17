@@ -1,6 +1,6 @@
 # 🌾 Petani Maju
 
-Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca real-time, tips pertanian, kalender tanam, dan sistem peringatan dini berbasis cuaca.
+Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca real-time, tips pertanian, kalender tanam, dan sistem peringatan berbasis cuaca.
 
 ## 📚 Dokumentasi Utama
 

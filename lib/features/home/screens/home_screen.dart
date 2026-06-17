@@ -11,6 +11,7 @@ import 'package:petani_maju/widgets/section_header.dart';
 import 'package:petani_maju/features/weather/screens/weather_detail_screen.dart';
 import 'package:petani_maju/core/services/notification_service.dart';
 import 'package:petani_maju/features/home/widgets/home_skeleton.dart';
+import 'package:petani_maju/features/chatbot/screens/chatbot_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,9 +37,31 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _openChatbot(BuildContext context, HomeLoaded state) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatbotScreen(
+          currentWeather: state.currentWeather,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          if (state is! HomeLoaded) return const SizedBox.shrink();
+          return FloatingActionButton(
+            onPressed: () => _openChatbot(context, state),
+            backgroundColor: Colors.green,
+            tooltip: 'Asisten Tani',
+            child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+          );
+        },
+      ),
       body: SafeArea(
         child: BlocConsumer<HomeBloc, HomeState>(
           listener: (context, state) {
