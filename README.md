@@ -192,4 +192,4 @@ Update UI
 
 ---
 
-_Dibuat dengan ❤️ untuk kemajuan pertanian Indonesia._
+_Dibuat dengan ❤️ untuk kemajuan pertanian Indonesia._ :))
