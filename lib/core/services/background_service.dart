@@ -25,9 +25,7 @@ void callbackDispatcher() {
 
         // Get current position directly
         final position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-          ),
+          desiredAccuracy: LocationAccuracy.high,
         );
 
         final weatherService = WeatherService();
@@ -72,7 +70,7 @@ class BackgroundService {
       constraints: Constraints(
         networkType: NetworkType.connected, // Only run when connected
       ),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+      existingWorkPolicy: ExistingWorkPolicy.keep,
     );
 
     if (kDebugMode) print("✅ Background Service Initialized");

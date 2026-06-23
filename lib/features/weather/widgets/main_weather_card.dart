@@ -37,7 +37,7 @@ class MainWeatherCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: gradientColors[0].withValues(alpha: 0.4),
+            color: gradientColors[0].withOpacity(0.4),
             blurRadius: 15,
             offset: const Offset(0, 10),
           ),

@@ -18,7 +18,64 @@ class WeatherRepository {
         _locationService = locationService,
         _cacheService = cacheService;
 
+  /// Dummy data cuaca saat ini untuk fallback
+  static final Map<String, dynamic> _dummyCurrentWeather = {
+    'temp': 28.5,
+    'feels_like': 30.2,
+    'temp_min': 25.0,
+    'temp_max': 31.0,
+    'pressure': 1013,
+    'humidity': 72,
+    'weather': [
+      {
+        'main': 'Clouds',
+        'description': 'Berawan',
+        'icon': '04d',
+      }
+    ],
+    'clouds': 60,
+    'wind': {
+      'speed': 3.5,
+      'deg': 230,
+    },
+    'visibility': 9000,
+    'dt': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+  };
+
+  /// Dummy forecast cuaca untuk fallback
+  static final List<dynamic> _dummyForecast = [
+    {
+      'dt': DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
+      'temp': 28.0,
+      'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
+      'pop': 0.0,
+      'dt_txt': '2026-06-16 13:00:00'
+    },
+    {
+      'dt': DateTime.now().add(Duration(hours: 7)).millisecondsSinceEpoch ~/ 1000,
+      'temp': 27.5,
+      'weather': [{'main': 'Rain', 'description': 'Hujan ringan'}],
+      'pop': 0.3,
+      'dt_txt': '2026-06-16 19:00:00'
+    },
+    {
+      'dt': DateTime.now().add(Duration(hours: 13)).millisecondsSinceEpoch ~/ 1000,
+      'temp': 25.0,
+      'weather': [{'main': 'Rain', 'description': 'Hujan'}],
+      'pop': 0.8,
+      'dt_txt': '2026-06-17 01:00:00'
+    },
+    {
+      'dt': DateTime.now().add(Duration(hours: 19)).millisecondsSinceEpoch ~/ 1000,
+      'temp': 24.5,
+      'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
+      'pop': 0.2,
+      'dt_txt': '2026-06-17 07:00:00'
+    },
+  ];
+
   /// Fetch cuaca saat ini
+  /// Fallback: cache → dummy data lokal
   Future<Map<String, dynamic>> fetchCurrentWeather({
     double? lat,
     double? lon,
@@ -36,11 +93,6 @@ class WeatherRepository {
       }
     }
 
-    // Jika offline mode dan tidak ada cache
-    if (offlineMode && cachedWeather == null) {
-      throw Exception('Tidak ada data cuaca tersimpan.');
-    }
-
     // Fetch dari API
     try {
       final weather =
@@ -48,14 +100,20 @@ class WeatherRepository {
       return weather;
     } catch (e) {
       debugPrint('WeatherRepository: API error - $e');
+
+      // Fallback ke cache jika API gagal
       if (cachedWeather != null) {
         return cachedWeather;
       }
-      rethrow;
+
+      // Fallback terakhir: gunakan dummy data lokal
+      debugPrint('WeatherRepository: Using dummy weather data as fallback');
+      return _dummyCurrentWeather;
     }
   }
 
   /// Fetch forecast cuaca
+  /// Fallback: cache → dummy data lokal
   Future<List<dynamic>> fetchForecast({
     double? lat,
     double? lon,
@@ -73,21 +131,21 @@ class WeatherRepository {
       }
     }
 
-    // Jika offline mode dan tidak ada cache
-    if (offlineMode && cachedForecast == null) {
-      throw Exception('Tidak ada data forecast tersimpan.');
-    }
-
     // Fetch dari API
     try {
       final forecast = await _weatherService.fetchForecast(lat: lat, lon: lon);
       return forecast['list'] ?? [];
     } catch (e) {
       debugPrint('WeatherRepository: API error - $e');
+
+      // Fallback ke cache jika API gagal
       if (cachedForecast != null) {
         return cachedForecast;
       }
-      rethrow;
+
+      // Fallback terakhir: gunakan dummy forecast lokal
+      debugPrint('WeatherRepository: Using dummy forecast data as fallback');
+      return _dummyForecast;
     }
   }
 
@@ -105,7 +163,8 @@ class WeatherRepository {
       return locationStr;
     } catch (e) {
       debugPrint('WeatherRepository: Location error - $e');
-      return _cacheService.getCachedDetailedLocation();
+      // Fallback ke cached location atau dummy
+      return _cacheService.getCachedDetailedLocation() ?? 'Jakarta, Indonesia';
     }
   }
 

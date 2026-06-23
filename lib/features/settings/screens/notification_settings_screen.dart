@@ -302,8 +302,8 @@ class _NotificationSettingsScreenState
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: value
-                  ? AppColors.primaryGreen.withValues(alpha: 0.1)
-                  : Colors.grey.withValues(alpha: 0.1),
+                  ? AppColors.primaryGreen.withOpacity(0.1)
+                  : Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -338,7 +338,7 @@ class _NotificationSettingsScreenState
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: Colors.white,
+            activeColor: Colors.white,
             activeTrackColor: AppColors.primaryGreen,
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: Colors.grey[300],
@@ -364,7 +364,7 @@ class _NotificationSettingsScreenState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
+                  color: AppColors.primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -459,7 +459,7 @@ class _NotificationSettingsScreenState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
+                  color: Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(

@@ -26,6 +26,101 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
 OPENWEATHER_API_KEY=your-openweather-api-key
 ```
 
+### ⚙️ Setup Guide - Langkah Demi Langkah
+
+#### **Langkah 1: Buat File `.env`**
+
+1. Buka root folder project (sejajar dengan `pubspec.yaml`)
+2. Buat file baru bernama `.env` (tanpa nama lain)
+3. Copy isi dari `.env.example` sebagai template
+
+**Struktur folder:**
+```
+petani_maju/
+├── .env              ← Buat file ini (baru)
+├── .env.example      ← Template reference
+├── pubspec.yaml
+├── lib/
+└── ...
+```
+
+#### **Langkah 2: Setup Supabase**
+
+**A. Daftar di Supabase**
+- Kunjungi [supabase.com](https://supabase.com)
+- Click "Start your project"
+- Sign up dengan GitHub atau email
+- Pilih region terdekat (Asia/Singapore)
+
+**B. Buat Project Baru**
+- Klik "New project"
+- Isi nama project (contoh: `petani-maju-dev`)
+- Buat password database kuat
+- Tunggu hingga project selesai dibuat (~2 menit)
+
+**C. Copy Credential**
+- Masuk ke project dashboard
+- Klik **Settings** (gear icon) di sidebar kiri
+- Pilih tab **API**
+- Scroll ke **Project URL** → Copy URL ini
+- Scroll ke **Project API keys** → Copy `anon public` key
+
+**D. Isi ke `.env`**
+```env
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**✅ Verifikasi:**
+- URL format: `https://xxxxx.supabase.co` (dengan `.co` di akhir)
+- Anon Key: panjang ~200+ karakter, dimulai dengan `eyJ`
+
+#### **Langkah 3: Setup OpenWeather API**
+
+**A. Daftar di OpenWeatherMap**
+- Kunjungi [openweathermap.org](https://openweathermap.org)
+- Click "Sign Up" di top right
+- Isi email dan password
+- Verify email Anda (cek inbox)
+
+**B. Dapatkan API Key**
+- Login ke dashboard OpenWeatherMap
+- Di sidebar kiri, klik **API Keys**
+- Copy API key default (atau buat baru)
+- Paste ke `.env`
+
+**D. Isi ke `.env`**
+```env
+OPENWEATHER_API_KEY=abc123def456ghi789jkl012mno34567pqr
+```
+
+**✅ Verifikasi:**
+- API Key panjang: 32 karakter
+- Format: kombinasi huruf dan angka
+
+#### **Langkah 4: Jalankan Aplikasi**
+
+```bash
+# Clean & refresh dependencies
+flutter clean
+flutter pub get
+
+# Run dengan .env
+flutter run --dart-define-from-file=.env
+```
+
+---
+
+## 🔐 Environment Variables Security Checklist
+
+| ✅ Harus | ❌ Jangan | Alasan |
+|---------|---------|--------|
+| Simpan di `.env` | Hardcode di kode | Lebih aman, bisa di-rotate |
+| `.env` di `.gitignore` | Commit `.env` | Jangan expose credentials |
+| Gunakan credential dev | Gunakan credential prod | Hindari kerusakan data produksi |
+| Update berkala | Reuse credential lama | Security best practice |
+| Catat di password manager | Catat di sticky notes | Hindari kehilangan |
+
 ---
 
 ## 🌤️ OpenWeatherMap API

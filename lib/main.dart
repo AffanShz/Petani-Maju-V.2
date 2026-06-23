@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -49,8 +51,10 @@ Future<void> main() async {
   await CacheService.init();
   await NotificationService().init();
 
-  // Inisialisasi Background Service
-  await BackgroundService().init();
+  // Inisialisasi Background Service (hanya untuk mobile platforms)
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    await BackgroundService().init();
+  }
   // ConnectivityService di-init secara async agar tidak blocking startup
   ConnectivityService().init();
 
