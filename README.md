@@ -152,13 +152,43 @@ lib/
    ```
 
 2. **Setup Environment Variable**
-   Buat file `.env` di root folder dan isi kredensial:
+
+   Buat file `.env` di root folder (sejajar dengan `pubspec.yaml`) dan isi dengan kredensial berikut:
 
    ```env
    SUPABASE_URL=your_supabase_url
    SUPABASE_ANON_KEY=your_supabase_anon_key
    OPENWEATHER_API_KEY=your_openweather_api_key
    ```
+
+   **📋 Cara mendapatkan credential:**
+
+   **A. Supabase URL & Anon Key**
+   - Buka [supabase.com](https://supabase.com) → Login
+   - Pilih project Anda → Settings → API
+   - Copy `Project URL` → paste ke `SUPABASE_URL`
+   - Copy `anon public` key → paste ke `SUPABASE_ANON_KEY`
+   
+   **Contoh:**
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   ```
+
+   **B. OpenWeather API Key**
+   - Buka [openweathermap.org](https://openweathermap.org) → Sign Up
+   - Pilih menu **API Keys** di dashboard
+   - Copy API key default (atau buat baru) → paste ke `OPENWEATHER_API_KEY`
+   
+   **Contoh:**
+   ```env
+   OPENWEATHER_API_KEY=abc123def456ghi789jkl012mno34567pqr
+   ```
+
+   ⚠️ **Penting:**
+   - File `.env` sudah ada di `.gitignore` (tidak akan ter-push ke GitHub)
+   - Jangan commit credential ke repository
+   - Buat kredensial test untuk development (bukan production)
 
 3. **Install Dependencies**
 
@@ -189,6 +219,59 @@ Simpan ke  Tampilkan Data
    │
 Update UI
 ```
+
+## 🐛 Troubleshooting
+
+### ❌ Error: "Gagal memuat data. Periksa koneksi internet..."
+
+Pesan ini muncul ketika aplikasi **tidak bisa mengakses Supabase atau OpenWeatherMap API**.
+
+**Penyebab & Solusi:**
+
+| Error | Penyebab | Solusi |
+|-------|---------|--------|
+| `Supabase URL is null` | `.env` tidak ditemukan atau tidak diload | ✅ Pastikan file `.env` ada di root folder (sejajar `pubspec.yaml`) |
+| `Invalid SUPABASE_ANON_KEY` | Credential salah atau format salah | ✅ Copy ulang dari Supabase dashboard → paste di `.env` |
+| `OPENWEATHER_API_KEY is empty` | API key tidak dikonfigurasi | ✅ Buat API key di openweathermap.org → paste ke `.env` |
+| `Network timeout` | Internet lambat atau endpoint down | ✅ Cek koneksi internet, tunggu beberapa detik, coba lagi |
+| `Database table not found` | Tabel di Supabase belum dibuat | ✅ Buat tabel: `tips`, `pests`, `weather_alerts` di Supabase |
+
+**Langkah Debug:**
+
+1. **Verifikasi `.env` sudah ada:**
+   ```bash
+   ls -la .env  # Linux/Mac
+   dir .env     # Windows
+   ```
+
+2. **Periksa format `.env`:**
+   ```env
+   # ✅ BENAR
+   SUPABASE_URL=https://your-project.supabase.co
+   OPENWEATHER_API_KEY=abc123...
+
+   # ❌ SALAH (ada spasi)
+   SUPABASE_URL = https://your-project.supabase.co
+   ```
+
+3. **Restart Flutter:**
+   ```bash
+   flutter clean
+   flutter pub get
+   flutter run
+   ```
+
+4. **Cek log terminal** untuk error detail:
+   - Lihat pesan error di terminal Flutter
+   - Gunakan `flutter run -v` untuk verbose logging
+
+### ✅ Jika masih gagal:
+
+1. Buka [supabase.com](https://supabase.com) → Dashboard
+2. Verifikasi project **aktif** dan **online**
+3. Cek **Tables** → pastikan tabel `tips`, `pests`, dll. ada data
+4. Settings → **API** → copy URL dan key **yang benar**
+5. Restart app dan coba lagi
 
 ---
 
