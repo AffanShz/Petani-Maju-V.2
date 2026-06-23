@@ -2,13 +2,19 @@ import 'package:equatable/equatable.dart';
 import '../../../data/models/prediction_history.dart';
 
 abstract class HistoryState extends Equatable {
+  const HistoryState();
+
   @override
   List<Object?> get props => [];
 }
 
-class HistoryInitial extends HistoryState {}
+class HistoryInitial extends HistoryState {
+  const HistoryInitial();
+}
 
-class HistoryLoading extends HistoryState {}
+class HistoryLoading extends HistoryState {
+  const HistoryLoading();
+}
 
 class HistoryLoaded extends HistoryState {
   final List<PredictionHistory> items;

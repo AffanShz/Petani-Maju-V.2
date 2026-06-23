@@ -1,13 +1,15 @@
 import 'package:equatable/equatable.dart';
 
 abstract class ScannerState extends Equatable {
+  const ScannerState();
+  
   @override
   List<Object?> get props => [];
 }
 
 class ScannerInitial extends ScannerState {
   final String selectedPlantType;
-  ScannerInitial({this.selectedPlantType = 'Tomat'});
+  const ScannerInitial({this.selectedPlantType = 'Tomat'});
 
   @override
   List<Object?> get props => [selectedPlantType];
@@ -15,7 +17,7 @@ class ScannerInitial extends ScannerState {
 
 class ScannerLoading extends ScannerState {
   final String message;
-  ScannerLoading({this.message = 'Memproses...'});
+  const ScannerLoading({this.message = 'Memproses...'});
 
   @override
   List<Object?> get props => [message];
@@ -23,7 +25,7 @@ class ScannerLoading extends ScannerState {
 
 class ScannerImagePicked extends ScannerState {
   final String imagePath;
-  ScannerImagePicked(this.imagePath);
+  const ScannerImagePicked(this.imagePath);
 
   @override
   List<Object?> get props => [imagePath];
@@ -37,26 +39,29 @@ class ScannerSuccess extends ScannerState {
   final String plantType;
   final Map<String, dynamic>? pestData;
 
-  ScannerSuccess({
+  const ScannerSuccess({
     required this.imagePath,
     required this.cloudImageUrl,
     required this.label,
     required this.confidence,
     required this.plantType,
-  });
-
-  @override
-  List<Object?> get props => [imagePath, cloudImageUrl, label, confidence, plantType];
     this.pestData,
   });
 
   @override
-  List<Object?> get props => [imagePath, label, confidence, pestData];
+  List<Object?> get props => [
+        imagePath,
+        cloudImageUrl,
+        label,
+        confidence,
+        plantType,
+        pestData,
+      ];
 }
 
 class ScannerError extends ScannerState {
   final String message;
-  ScannerError(this.message);
+  const ScannerError(this.message);
 
   @override
   List<Object?> get props => [message];

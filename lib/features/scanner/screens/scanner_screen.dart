@@ -64,7 +64,6 @@ class ScannerView extends StatelessWidget {
           'Deteksi Penyakit Tanaman',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        title: const Text('Deteksi Penyakit Tomat'),
         centerTitle: true,
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -98,14 +97,12 @@ class ScannerView extends StatelessWidget {
             return _buildLoadingView(state.message);
           }
 
-          if (state is ScannerSuccess) {
-            return _buildResultView(context, state);
-          }
-
           if (state is ScannerImagePicked) {
             return _buildLoadingView('Menyiapkan gambar...');
-          if (state is ScannerImagePicked || state is ScannerLoading) {
-             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is ScannerSuccess) {
+            return _buildResultView(context, state);
           }
 
           return _buildInitialView(context, 'Tomat');
@@ -126,14 +123,8 @@ class ScannerView extends StatelessWidget {
               strokeWidth: 4,
               color: Color(0xFF2E7D32),
             ),
-          Icon(Icons.camera_enhance_outlined, size: 100, color: Colors.grey.shade300),
-          const SizedBox(height: 24),
-          const Text(
-            'Ambil foto daun tomat untuk\ndeteksi penyakit otomatis',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Text(
             message,
             style: const TextStyle(
@@ -266,11 +257,12 @@ class ScannerView extends StatelessWidget {
   Widget _buildResultView(BuildContext context, ScannerSuccess state) {
     final isHealthy = state.label.toLowerCase().contains('sehat') ||
         state.label.toLowerCase().contains('healthy');
-    final statusColor = isHealthy ? const Color(0xFF2E7D32) : const Color(0xFFB71C1C);
+    final statusColor =
+        isHealthy ? const Color(0xFF2E7D32) : const Color(0xFFB71C1C);
     final statusBgColor = statusColor.withOpacity(0.08);
 
     final disease = state.pestData;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -291,23 +283,10 @@ class ScannerView extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Result card
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.file(
-              File(state.imagePath),
-              height: 250,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(height: 24),
-          
           // Header Hasil
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
-            width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -330,7 +309,9 @@ class ScannerView extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isHealthy ? Icons.check_circle_outline : Icons.warning_amber_outlined,
+                    isHealthy
+                        ? Icons.check_circle_outline
+                        : Icons.warning_amber_outlined,
                     color: statusColor,
                     size: 30,
                   ),
@@ -347,7 +328,6 @@ class ScannerView extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: statusColor,
                   ),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green),
                 ),
                 const SizedBox(height: 12),
                 // Confidence bar
@@ -411,32 +391,14 @@ class ScannerView extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _openHistory(context),
-                  icon: const Icon(Icons.history, size: 18),
-                  label: const Text('Lihat Riwayat'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF2E7D32),
-                    side: const BorderSide(color: Color(0xFF2E7D32)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-          
-          const SizedBox(height: 24),
-
           if (disease != null) ...[
             // Deskripsi Penyakit
             if (disease['deskripsi_penyakit'] != null) ...[
-              _buildInfoSection('Deskripsi Penyakit', disease['deskripsi_penyakit']),
+              _buildInfoSection(
+                  'Deskripsi Penyakit', disease['deskripsi_penyakit']),
               const SizedBox(height: 16),
             ],
-            
+
             // Penanganan
             if (disease['penanganan'] != null) ...[
               _buildInfoSection('Langkah Penanganan', disease['penanganan']),
@@ -462,21 +424,26 @@ class ScannerView extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Rekomendasi Obat',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Text(
                       disease['obat'],
-                      style: TextStyle(color: Colors.green.shade900, height: 1.5),
+                      style:
+                          TextStyle(color: Colors.green.shade900, height: 1.5),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
             ],
-          ] else if (state.label != 'Sehat' && state.label != 'Tidak Terdeteksi') ...[
+          ] else if (state.label != 'Sehat' &&
+              state.label != 'Tidak Terdeteksi') ...[
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -489,7 +456,7 @@ class ScannerView extends StatelessWidget {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Detail untuk penyakit ini belum tersedia di database penyakit_tomat.',
+                      'Detail untuk penyakit ini belum tersedia di database.',
                       style: TextStyle(color: Colors.orange),
                     ),
                   ),
@@ -499,14 +466,22 @@ class ScannerView extends StatelessWidget {
             const SizedBox(height: 24),
           ],
 
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => context.read<ScannerBloc>().add(ResetScanner()),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _openHistory(context),
+                  icon: const Icon(Icons.history, size: 18),
+                  label: const Text('Lihat Riwayat'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF2E7D32),
+                    side: const BorderSide(color: Color(0xFF2E7D32)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -526,8 +501,26 @@ class ScannerView extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 40),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoSection(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          content,
+          style: TextStyle(color: Colors.grey[700], height: 1.5),
+        ),
+      ],
     );
   }
 }
@@ -586,7 +579,8 @@ class _PlantTypeSelector extends StatelessWidget {
                 onTap: () => onChanged(type),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFF2E7D32)
@@ -603,33 +597,16 @@ class _PlantTypeSelector extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF2E7D32),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF2E7D32),
                     ),
                   ),
                 ),
               );
             }).toList(),
           ),
-          const SizedBox(height: 40),
         ],
       ),
-    );
-  }
-
-  Widget _buildInfoSection(String title, String content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          content,
-          style: TextStyle(color: Colors.grey[700], height: 1.5),
-        ),
-      ],
     );
   }
 }
