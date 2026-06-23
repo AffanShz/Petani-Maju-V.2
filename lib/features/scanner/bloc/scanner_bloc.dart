@@ -47,7 +47,8 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       String cloudImageUrl;
       try {
         cloudImageUrl = await _pestService.uploadImage(event.imagePath);
-        debugPrint('PestScanner: Image uploaded successfully to $cloudImageUrl');
+        debugPrint(
+            'PestScanner: Image uploaded successfully to $cloudImageUrl');
       } catch (e) {
         throw Exception('Gagal mengunggah gambar ke cloud storage: $e');
       }
@@ -55,32 +56,28 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       // 2. Jalankan prediksi AI menggunakan URL cloud
       final result = await _scannerService.predict(cloudImageUrl);
 
-      final label = result['label'] ?? 'Tidak Terdeteksi';
+      final rawLabel = result['label'] ?? 'Tidak Terdeteksi';
       final confidence = (result['confidence'] ?? 0.0) as double;
       final plantType = event.plantType;
-      
-      final rawLabel = result['label'] ?? 'Tidak Terdeteksi';
-      final confidence = result['confidence'] ?? 0.0;
 
       // Map raw label to DB searchable name (Matches penyakit_tomat table)
       String searchName = _mapLabelToSearchName(rawLabel);
-      
+
       // 3. Ambil data detail dari Supabase (Tabel: penyakit_tomat)
       Map<String, dynamic>? pestData;
       if (searchName != 'Sehat' && searchName != 'Tidak Terdeteksi') {
         pestData = await _pestService.fetchTomatoDiseaseByName(searchName);
       }
 
+      final finalLabel =
+          pestData != null ? pestData['nama_penyakit'] : searchName;
+
       // 4. Simpan histori ke Supabase (Tabel: prediction_history)
       await _pestService.savePredictionHistory({
         'user_id': null,
         'image_url': cloudImageUrl,
         'plant_type': plantType,
-        'disease': label,
-        'user_id': null, 
-        'image_url': cloudImageUrl,
-        'plant_type': 'Tomato',
-        'disease': pestData != null ? pestData['nama_penyakit'] : searchName,
+        'disease': finalLabel,
         'confidence': confidence,
         'severity': 'Pending',
         'status': 'Success',
@@ -89,11 +86,9 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       emit(ScannerSuccess(
         imagePath: event.imagePath,
         cloudImageUrl: cloudImageUrl,
-        label: label,
+        label: finalLabel,
         confidence: confidence,
         plantType: plantType,
-        label: pestData != null ? pestData['nama_penyakit'] : searchName,
-        confidence: confidence,
         pestData: pestData,
       ));
     } catch (e) {

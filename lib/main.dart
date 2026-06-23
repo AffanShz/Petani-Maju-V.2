@@ -124,6 +124,9 @@ class MainApp extends StatelessWidget {
         RepositoryProvider<HistoryRepository>(
           create: (_) => HistoryRepository(
             pestService: pestService,
+            cacheService: cacheService,
+          ),
+        ),
         RepositoryProvider<ChatbotRepository>(
           create: (_) => ChatbotRepository(
             chatbotService: ChatbotService(
