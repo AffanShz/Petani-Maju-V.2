@@ -99,6 +99,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'mainScannerFab',
         onPressed: () {
           Navigator.push(
             context,

@@ -71,11 +71,28 @@ class PestService {
     }
   }
 
-  /// Fetch tomato disease detail from penyakit_tomat table
-  Future<Map<String, dynamic>?> fetchTomatoDiseaseByName(String name) async {
+  /// Map jenis tanaman -> nama tabel detail penyakit di Supabase
+  static const Map<String, String> _diseaseTableByPlant = {
+    'Tomat': 'penyakit_tomat',
+    'Padi': 'penyakit_padi',
+    'Teh': 'penyakit_teh',
+  };
+
+  /// Fetch detail penyakit dari tabel sesuai jenis tanaman.
+  /// Tabel: penyakit_tomat / penyakit_padi / penyakit_teh (skema identik).
+  Future<Map<String, dynamic>?> fetchDiseaseDetailByName({
+    required String plantType,
+    required String name,
+  }) async {
+    final table = _diseaseTableByPlant[plantType];
+    if (table == null) {
+      debugPrint('PestService: No disease table for plant "$plantType"');
+      return null;
+    }
+
     try {
       final response = await _supabase
-          .from('penyakit_tomat')
+          .from(table)
           .select()
           .ilike('nama_penyakit', name)
           .maybeSingle()
@@ -83,9 +100,15 @@ class PestService {
 
       return response;
     } catch (e) {
-      debugPrint('PestService Error fetching tomato disease: $e');
+      debugPrint('PestService Error fetching disease from $table: $e');
       return null;
     }
+  }
+
+  /// Fetch tomato disease detail from penyakit_tomat table.
+  /// Dipertahankan untuk kompatibilitas; delegasi ke [fetchDiseaseDetailByName].
+  Future<Map<String, dynamic>?> fetchTomatoDiseaseByName(String name) {
+    return fetchDiseaseDetailByName(plantType: 'Tomat', name: name);
   }
 
   /// Upload image to Supabase Storage
