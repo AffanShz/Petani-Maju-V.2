@@ -12,16 +12,11 @@ import '../../../data/repositories/history_repository.dart';
 import '../../../data/datasources/pest_services.dart';
 import '../../../core/services/cache_service.dart';
 
-// Available plant types
+// Jenis tanaman yang didukung model penyakit
 const List<String> _plantTypes = [
   'Tomat',
-  'Kentang',
-  'Jagung',
-  'Cabai',
-  'Bayam',
-  'Kangkung',
-  'Terong',
   'Padi',
+  'Teh',
 ];
 
 class ScannerScreen extends StatelessWidget {
@@ -55,6 +50,63 @@ class ScannerView extends StatelessWidget {
     );
   }
 
+  /// Bottom sheet untuk memilih sumber gambar (kamera / galeri).
+  void _showSourcePicker(
+    BuildContext context,
+    ValueChanged<ImageSource> onPicked,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Deteksi Otomatis — Pilih Sumber Gambar',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Color(0xFF2E7D32)),
+                title: const Text('Gunakan Kamera'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  onPicked(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined,
+                    color: Color(0xFF2E7D32)),
+                title: const Text('Pilih dari Galeri'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  onPicked(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,13 +120,6 @@ class ScannerView extends StatelessWidget {
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () => _openHistory(context),
-            icon: const Icon(Icons.history, color: Colors.white),
-            tooltip: 'Riwayat Deteksi',
-          ),
-        ],
       ),
       body: BlocConsumer<ScannerBloc, ScannerState>(
         listener: (context, state) {
@@ -113,27 +158,64 @@ class ScannerView extends StatelessWidget {
 
   Widget _buildLoadingView(String message) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(
-            width: 60,
-            height: 60,
-            child: CircularProgressIndicator(
-              strokeWidth: 4,
-              color: Color(0xFF2E7D32),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            message,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                const SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 6,
+                    color: Color(0xFF2E7D32),
+                    backgroundColor: Color(0xFFE8F5E9),
+                  ),
+                ),
+                Icon(
+                  Icons.document_scanner_outlined,
+                  size: 32,
+                  color: Colors.green.shade700,
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 32),
+            Text(
+              message.replaceAll('AI', '').trim(), // Ensure no AI in runtime messages
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF2E7D32),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Harap tunggu sebentar...',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -144,52 +226,105 @@ class ScannerView extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 16),
-          // Hero illustration
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+          // Hero card — tap untuk deteksi otomatis jenis tanaman (MODEL_PLANT)
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
               borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    shape: BoxShape.circle,
+              onTap: () => _showSourcePicker(
+                context,
+                (source) =>
+                    context.read<ScannerBloc>().add(ScanWithAutoDetect(source)),
+              ),
+              child: Ink(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 36),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: const Icon(Icons.camera_enhance_outlined,
-                      size: 50, color: Colors.white),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Deteksi Penyakit Daun',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.camera_enhance_outlined,
+                          size: 50, color: Colors.white),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Deteksi Penyakit Daun',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Tap untuk deteksi otomatis jenis tanaman\nlalu analisis penyakitnya',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.touch_app_outlined,
+                              size: 16, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text(
+                            'Ketuk untuk mulai',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Foto daun untuk analisis penyakit\nmenggunakan kecerdasan buatan',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
 
-          // Plant type selector
+          // Pemisah "atau pilih manual"
+          Row(
+            children: [
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'atau pilih manual',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ),
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Plant type selector (manual)
           _PlantTypeSelector(
             selectedPlantType: selectedPlantType,
             onChanged: (value) {
@@ -197,14 +332,15 @@ class ScannerView extends StatelessWidget {
             },
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
 
-          // Action buttons
+          // Action buttons (manual — pakai jenis tanaman yang dipilih)
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () =>
-                  context.read<ScannerBloc>().add(PickImage(ImageSource.camera)),
+              onPressed: () => context
+                  .read<ScannerBloc>()
+                  .add(ScanWithSelectedPlant(ImageSource.camera)),
               icon: const Icon(Icons.camera_alt, size: 22),
               label: const Text(
                 'Gunakan Kamera',
@@ -224,8 +360,9 @@ class ScannerView extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () =>
-                  context.read<ScannerBloc>().add(PickImage(ImageSource.gallery)),
+              onPressed: () => context
+                  .read<ScannerBloc>()
+                  .add(ScanWithSelectedPlant(ImageSource.gallery)),
               icon: const Icon(Icons.photo_library_outlined, size: 22),
               label: const Text(
                 'Pilih dari Galeri',
@@ -317,7 +454,7 @@ class ScannerView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Hasil Analisis AI',
+                const Text('Hasil Analisis',
                     style: TextStyle(fontSize: 13, color: Colors.grey)),
                 const SizedBox(height: 6),
                 Text(

@@ -249,7 +249,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final List<dynamic> weatherList = current['weather'];
     if (weatherList.isEmpty) return null;
 
-    final int conditionId = weatherList[0]['id'];
+    // Data cache/dummy mungkin tidak punya field 'id', jadi tangani null
+    final conditionId = weatherList[0]['id'];
+    if (conditionId is! int) return null;
 
     // Menggunakan WeatherUtils untuk rekomendasi
     return WeatherUtils.getRecommendation(conditionId);

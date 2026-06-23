@@ -69,6 +69,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'calendarAddFab',
         onPressed: () => _showScheduleDialog(context, isEdit: false),
         backgroundColor: Colors.green,
         shape: const CircleBorder(),

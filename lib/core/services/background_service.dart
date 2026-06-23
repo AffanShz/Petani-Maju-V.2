@@ -1,4 +1,5 @@
 import 'package:workmanager/workmanager.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:petani_maju/core/services/notification_scheduler.dart';
 import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/core/services/notification_service.dart';
@@ -19,7 +20,14 @@ void callbackDispatcher() {
 
     if (task == weatherCheckTask) {
       try {
-        // No need to load .env — compile-time constants are available in all isolates
+        // Background isolate punya memori terpisah, jadi .env WAJIB di-load ulang
+        // di sini sebelum service apa pun mengakses dotenv (mis. WeatherService).
+        try {
+          await dotenv.load(fileName: ".env");
+        } catch (e) {
+          if (kDebugMode) print("⚠️ Background: gagal load .env: $e");
+        }
+
         await CacheService.init();
         await NotificationService().init();
 
