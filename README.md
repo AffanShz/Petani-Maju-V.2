@@ -14,10 +14,6 @@ Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca re
 | [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | Panduan kontribusi developer                       |
 | [📋 CHANGELOG.md](./CHANGELOG.md)       | Riwayat perubahan versi                            |
 
-> 📂 **Dokumentasi Lengkap**: Untuk dokumentasi lengkap termasuk User Guide, Security (OWASP MASVS), ERD, dan User Flow, silakan kunjungi repository dokumentasi di:
->
-> 🔗 **[Capstone-RPL-Documentation](https://github.com/AffanShz/Capstone-RPL-Documentation.git)**
-
 ## 🚀 Fitur Utama
 
 ### 🌤️ Sistem Cuaca Cerdas
