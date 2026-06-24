@@ -26,7 +26,6 @@ Backend utama menggunakan **Supabase (PostgreSQL)**. Aplikasi memakai 4 tabel + 
 | `prediction_history` | Tabel | Riwayat hasil deteksi penyakit |
 | `images` | Storage Bucket | File foto yang di-scan (folder `history/`) |
 
-Struktur cenderung **denormalized** (sedikit/tanpa FK formal). `prediction_history` mereferensikan penyakit **berdasarkan nama**, bukan ID.
 
 ---
 
@@ -120,7 +119,6 @@ Katalog hama & penyakit umum (fitur Pests). Kolom diturunkan dari pemakaian di U
 | `cara_mengatasi` | text _(inferred)_ | Solusi penanganan |
 | `gambar_url` | text _(inferred)_ | Link gambar |
 
-> ℹ️ Model `Pest` (`lib/data/models/pest.dart`) punya field berbeda (`jenis`, `gejala`, `pengendalian`, `pencegahan`) yang **tidak** terpakai di layar Pests saat ini — kemungkinan model lama/alternatif. Skema kolom asli `hama` perlu diverifikasi ke DB.
 
 ### `penyakit_tomat`
 Detail penyakit tomat — target hasil deteksi scanner AI.
@@ -183,14 +181,5 @@ Cache lokal AES-256 (lihat `CacheService`). Bukan bagian ERD relasional:
 | `plantingSchedule` | Jadwal tanam (kalender) |
 | `notificationHistory` | Riwayat notifikasi |
 
----
-
-## ✅ Cara Memverifikasi Skema Asli
-
-Untuk skema otoritatif (akurat 100%), introspeksi langsung Supabase:
-- **Supabase Dashboard** → Table Editor / Database → lihat kolom, tipe, & FK.
-- Atau SQL: `select table_name, column_name, data_type from information_schema.columns where table_schema='public';`
-
-Setelah itu, perbarui bagian _(inferred)_ di dokumen ini.
 
 ---
