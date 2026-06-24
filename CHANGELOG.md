@@ -10,9 +10,52 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 ## [Unreleased]
 
 ### Planned
-- Notifikasi push untuk peringatan cuaca
-- Profil pengguna dengan sinkronisasi cloud
-- Marketplace hasil tani
+- **Deep-link Scanner → Katalog Obat**: dari hasil scan langsung buka detail obat yang cocok (sedang dikerjakan).
+- Dukungan tanaman selain Tomat untuk Scanner.
+- Marketplace hasil tani.
+
+---
+
+## [0.6.0] - 2026-06-24
+
+### 🤖 AI Suite: Deteksi Penyakit, Katalog Obat, Riwayat & Chatbot
+
+Rilis besar yang menambahkan kemampuan AI: deteksi penyakit tanaman berbasis foto, katalog obat, riwayat prediksi, dan chatbot percakapan.
+
+### Added
+
+#### 🔬 Scanner Penyakit Tanaman (AI)
+- **Deteksi via Foto**: ambil gambar dari kamera/galeri (`image_picker`), inferensi otomatis.
+- **Cloud Inference**: upload ke Supabase Storage (`images/history`) → `PestScannerService` POST ke endpoint `MODEL_TOMATO/predict` → label + confidence.
+- **Detail Penyakit**: deskripsi, langkah penanganan, dan rekomendasi obat dari tabel `penyakit_tomat`.
+- **Scanner UI/BLoC**: state lengkap (pick → loading → result/error), pemilihan jenis tanaman.
+
+#### 💊 Katalog Obat Tanaman
+- **Database Lokal** dari aset `katalog_obat_tanaman.json` (offline).
+- **Pencarian & Filter** (nama, bahan aktif, sasaran, kategori/Organik), layout grid/list, dan halaman detail.
+
+#### 📜 Riwayat Prediksi
+- **`prediction_history`** di Supabase + model `PredictionHistory`.
+- **Offline-First** via `HistoryRepository` (Supabase → fallback cache Hive).
+- Hapus per item & hapus semua.
+
+#### 🤖 Chatbot Asisten Tani (Gemini)
+- **Streaming** jawaban via Google Gemini (`gemini-2.5-flash`, SSE).
+- **Context-aware**: inject cuaca terkini + hama aktif ke prompt.
+- **Domain-locked** + **prompt-injection guard** (sanitasi input 500 char, blokir pola berbahaya).
+- Diakses via FAB di Home Screen.
+
+#### 🔔 Riwayat Notifikasi
+- Notifikasi tersimpan di Hive box terenkripsi (`notificationHistory`), dengan sorting & hapus.
+
+### Changed
+- **CacheService**: tambah box `settingsCache`, `plantingSchedule`, `notificationHistory`; method `saveRawData`/`getRawData`, profil & notification settings; enkripsi AES via `flutter_secure_storage`.
+- **PestService**: tambah `fetchTomatoDiseaseByName`, `uploadImage`, dan CRUD `prediction_history`.
+- **Environment**: variabel baru `MODEL_TOMATO` & `GEMINI_API_KEY` (diakses via `EnvConfig`); load `.env` dengan `flutter_dotenv`.
+- **DI** (`main.dart`): tambah `HistoryRepository` & `ChatbotRepository` ke `MultiRepositoryProvider`.
+
+### Dependencies
+- Tambah `google_generative_ai`, `flutter_dotenv`, `image_picker`, `flutter_cache_manager`.
 
 ---
 
@@ -133,8 +176,9 @@ Rilis pertama aplikasi Petani Maju dengan fitur dasar:
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 0.6.0 | 2026-06-24 | AI Suite: Scanner, Katalog Obat, Riwayat, Chatbot |
 | 0.5.0 | 2026-01-11 | Localization & UI Polish |
 | 0.4.0 | 2026-01-11 | UX & Profile Management |
-| 0.3.0 | 2024-12-31 | BLoC Refactor & Smart Notifications |
-| 0.2.0 | 2024-12-21 | Offline Mode & Stability |
-| 0.1.0 | 2024-12-17 | Initial Release |
+| 0.3.0 | 2025-12-31 | BLoC Refactor & Smart Notifications |
+| 0.2.0 | 2025-12-21 | Offline Mode & Stability |
+| 0.1.0 | 2025-12-17 | Initial Release |

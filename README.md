@@ -1,13 +1,16 @@
 # 🌾 Petani Maju
 
-Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca real-time, tips pertanian, kalender tanam, dan sistem peringatan berbasis cuaca.
+Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca real-time, tips pertanian, kalender tanam, sistem peringatan berbasis cuaca, **deteksi penyakit tanaman berbasis AI**, **katalog obat tanaman**, dan **chatbot Asisten Tani**.
 
 ## 📚 Dokumentasi Utama
 
 | Dokumen                                 | Deskripsi                                          |
 | --------------------------------------- | -------------------------------------------------- |
-| [📖 DOCS.md](./DOCS.md)                 | Dokumentasi teknis & arsitektur lengkap            |
-| [🔌 API.md](./API.md)                   | Dokumentasi integrasi API (Supabase & OpenWeather) |
+| [📖 DOCS.md](./docs/DOCS.md)                 | Dokumentasi teknis & arsitektur lengkap            |
+| [🔌 API.md](./docs/API.md)                   | Dokumentasi integrasi API (Supabase & OpenWeather) |
+| [🗄️ ERD.md](./docs/ERD.md)                   | Struktur database & diagram ERD (Supabase)         |
+| [🔄 SEQUENCE_DIAGRAM.md](./docs/SEQUENCE_DIAGRAM.md) | Sequence diagram interaksi antar komponen      |
+| [🏃 ACTIVITY_DIAGRAM.md](./docs/ACTIVITY_DIAGRAM.md) | Activity diagram alur & logika keputusan       |
 | [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | Panduan kontribusi developer                       |
 | [📋 CHANGELOG.md](./CHANGELOG.md)       | Riwayat perubahan versi                            |
 
@@ -42,6 +45,36 @@ Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca re
 - **Konten Terkurasi**: Tips budidaya Padi, Jagung, dan Nutrisi Tanaman.
 - **Offline Cache**: Artikel tersimpan lokal, baca kapan saja tanpa internet.
 
+### 🔬 Scanner Penyakit Tanaman (AI)
+
+- **Deteksi via Foto**: Ambil foto daun dari kamera atau galeri, model AI mendeteksi penyakit (saat ini fokus **Tomat**).
+- **Cloud Inference**: Gambar di-upload ke Supabase Storage, lalu dikirim ke model API (endpoint `MODEL_TOMATO`) yang mengembalikan label penyakit + tingkat keyakinan (confidence).
+- **Detail Penyakit**: Deskripsi penyakit, langkah penanganan, dan **rekomendasi obat** diambil dari tabel `penyakit_tomat` di Supabase.
+- **Auto-Save History**: Setiap hasil scan otomatis tersimpan ke riwayat prediksi.
+
+### 💊 Katalog Obat Tanaman
+
+- **Database Lokal**: Daftar obat/pestisida dari aset `katalog_obat_tanaman.json` (tanpa internet).
+- **Detail Lengkap**: Bahan aktif, dosis, cara pakai, produsen, sasaran hama/penyakit, dan tanaman target.
+- **Pencarian & Filter**: Cari berdasarkan nama, bahan aktif, sasaran; filter kategori (termasuk Organik) dengan layout grid/list.
+
+### 📜 Riwayat Prediksi (History)
+
+- **Sinkronisasi Cloud**: Riwayat hasil scan tersimpan di Supabase (`prediction_history`).
+- **Offline-First**: Ambil dari Supabase dulu, fallback ke cache lokal Hive jika offline.
+- **Manajemen**: Hapus satu per satu atau hapus semua riwayat.
+
+### 🤖 Chatbot Asisten Tani (Gemini AI)
+
+- **Streaming Jawaban**: Respons real-time token-per-token via Google Gemini (`gemini-2.5-flash`).
+- **Context-Aware**: Menyuntikkan konteks cuaca terkini & daftar hama aktif ke prompt agar jawaban relevan.
+- **Domain-Locked**: System prompt membatasi topik hanya seputar pertanian.
+- **Prompt-Injection Guard**: Sanitasi input (batas 500 karakter + blokir pola berbahaya seperti "ignore previous", "jailbreak", dll).
+
+### 🔔 Riwayat Notifikasi
+
+- **Notification History**: Semua notifikasi tersimpan di Hive box terenkripsi, dengan sorting terbaru & hapus per item.
+
 ### 👤 Manajemen Profil & Support
 
 - **Profil Lokal**: Personalisasi nama dan foto pengguna.
@@ -71,6 +104,8 @@ Aplikasi ini dibangun dengan **Clean Architecture** dan **BLoC Pattern** untuk s
 | **Architecture**       | Feature-First (Data, Domain, Presentation)       |
 | **Backend**            | Supabase (PostgreSQL, Auth, Storage)             |
 | **Weather API**        | OpenWeatherMap                                   |
+| **Disease Detection**  | Model API eksternal (HTTP, endpoint `MODEL_TOMATO`) |
+| **Conversational AI**  | Google Gemini (`gemini-2.5-flash`, streaming SSE) |
 | **Local Storage**      | Hive (NoSQL Database) with AES-256 Encryption    |
 | **Secure Storage**     | Flutter Secure Storage (Keystore/Keychain)       |
 | **Background Service** | Workmanager & Android Alarm Manager              |
@@ -82,6 +117,7 @@ Aplikasi ini dibangun dengan **Clean Architecture** dan **BLoC Pattern** untuk s
 
 | Versi | Tanggal    | Deskripsi                                  |
 | ----- | ---------- | ------------------------------------------ |
+| 0.6.0 | 2026-06-24 | AI Suite: Scanner Penyakit, Katalog Obat, Riwayat Prediksi, Chatbot Gemini |
 | 0.5.0 | 2026-01-11 | Localization (ID/EN) & Skeleton Loading UI |
 | 0.4.0 | 2026-01-11 | Profile, Support, & Security (OWASP MASVS) |
 | 0.3.0 | 2025-12-31 | BLoC Refactor & Smart Notifications        |
@@ -107,6 +143,11 @@ dependencies:
   easy_localization: ^3.0.8 # Multi-language
   shimmer: ^3.0.0 # Skeleton loading
   cached_network_image: ^3.4.1 # Image caching
+  google_generative_ai: ">=0.4.7 <2.0.0" # Chatbot (Gemini)
+  flutter_dotenv: ^6.0.1 # Load .env variables
+  image_picker: ^1.1.0 # Ambil foto untuk scanner
+  flutter_cache_manager: ^3.4.1 # Cache file/gambar
+  url_launcher: ^6.2.0 # Email support
 ```
 
 ## 📂 Struktur Project (Feature-First)
@@ -114,22 +155,27 @@ dependencies:
 ```
 lib/
 ├── core/                   # Shared logic & services
-│   ├── services/           # Background, Notification, Cache
-│   ├── constants/          # Colors, API Keys
+│   ├── services/           # Background, Notification, Cache, Connectivity
+│   ├── constants/          # Colors, API Keys, EnvConfig
 │   └── theme/              # App Themes
 ├── data/                   # Data Layer
-│   ├── datasources/        # API calls & Local DB
+│   ├── datasources/        # API & Local DB (weather, pest, scanner, chatbot, ...)
 │   ├── repositories/       # Data mediation logic
-│   └── models/             # Data classes
+│   └── models/             # Data classes (chat_message, prediction_history, ...)
 ├── features/               # Feature Modules
 │   ├── home/               # HomeLogic, BLoC, UI, Skeleton
 │   ├── calendar/           # CalendarLogic, BLoC, UI
 │   ├── tips/               # TipsLogic, BLoC, UI
 │   ├── pests/              # Hama & Penyakit Tanaman
+│   ├── scanner/            # Deteksi penyakit via AI (BLoC + UI)
+│   ├── drugs/              # Katalog obat tanaman
+│   ├── history/            # Riwayat prediksi (BLoC + UI)
+│   ├── chatbot/            # Asisten Tani (Gemini, BLoC + UI)
 │   ├── weather/            # WeatherUI & Detail
 │   ├── settings/           # Profile, Notifikasi, Bahasa
 │   ├── onboarding/         # First-time User Guide
 │   └── notifications/      # Notification History
+├── logic/                  # Global BLoC (app lifecycle)
 ├── widgets/                # Reusable global widgets
 ├── utils/                  # Helper utilities
 └── main.dart               # Entry point & DI Setup
@@ -159,7 +205,11 @@ lib/
    SUPABASE_URL=your_supabase_url
    SUPABASE_ANON_KEY=your_supabase_anon_key
    OPENWEATHER_API_KEY=your_openweather_api_key
+   MODEL_TOMATO=your_model_tomato_api_url   # Endpoint model deteksi penyakit (Scanner)
+   GEMINI_API_KEY=your_gemini_api_key       # Google Gemini (Chatbot Asisten Tani)
    ```
+
+   > 💡 `MODEL_TOMATO` & `GEMINI_API_KEY` wajib untuk fitur Scanner & Chatbot. Tanpa keduanya, fitur tersebut tidak berfungsi (default `MODEL_TOMATO` fallback ke endpoint demo Hugging Face).
 
    **📋 Cara mendapatkan credential:**
 
@@ -184,6 +234,14 @@ lib/
    ```env
    OPENWEATHER_API_KEY=abc123def456ghi789jkl012mno34567pqr
    ```
+
+   **C. Gemini API Key (Chatbot)**
+   - Buka [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) → Login Google
+   - Klik **Create API Key** → copy → paste ke `GEMINI_API_KEY`
+
+   **D. Model Tomato URL (Scanner)**
+   - URL endpoint model deteksi penyakit (mengekspos `POST /predict`)
+   - Paste base URL ke `MODEL_TOMATO` (contoh: `https://xxxx.hf.space`)
 
    ⚠️ **Penting:**
    - File `.env` sudah ada di `.gitignore` (tidak akan ter-push ke GitHub)
