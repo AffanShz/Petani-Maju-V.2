@@ -11,6 +11,7 @@ import '../../history/bloc/history_event.dart';
 import '../../../data/repositories/history_repository.dart';
 import '../../../data/datasources/pest_services.dart';
 import '../../../core/services/cache_service.dart';
+import '../../drugs/screens/drug_detail_screen.dart';
 
 // Jenis tanaman yang didukung model penyakit
 const List<String> _plantTypes = [
@@ -536,14 +537,90 @@ class ScannerView extends StatelessWidget {
               const SizedBox(height: 16),
             ],
 
+            // Contoh Visual Penyakit (Placeholder 3 Gambar)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Contoh Visual Penyakit',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2E7D32),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 3,
+                    itemBuilder: (context, index) {
+                      // Menggunakan placeholder image daun/penyakit secara umum
+                      final placeholders = [
+                        'https://images.unsplash.com/photo-1590680695028-d7607cb3ccb7?auto=format&fit=crop&q=80&w=400',
+                        'https://images.unsplash.com/photo-1530836369250-ef71a3f5e481?auto=format&fit=crop&q=80&w=400',
+                        'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&q=80&w=400',
+                      ];
+                      
+                      return Container(
+                        width: 160,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                placeholders[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Contoh ${index + 1}',
+                                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
             // Penanganan
             if (disease['penanganan'] != null) ...[
               _buildInfoSection('Langkah Penanganan', disease['penanganan']),
               const SizedBox(height: 16),
             ],
 
-            // Obat (Highlight Section)
-            if (disease['obat'] != null) ...[
+            // Obat (Highlight Section) dari Supabase (jika ada)
+            if (disease['obat'] != null && state.recommendedDrugs.isEmpty) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -560,7 +637,7 @@ class ScannerView extends StatelessWidget {
                         Icon(Icons.medication_liquid, color: Colors.green),
                         SizedBox(width: 8),
                         Text(
-                          'Rekomendasi Obat',
+                          'Saran Pengobatan',
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -598,6 +675,127 @@ class ScannerView extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          // Katalog Rekomendasi Obat dari JSON
+          if (state.recommendedDrugs.isNotEmpty) ...[
+            const Row(
+              children: [
+                Icon(Icons.medical_services_outlined, color: Color(0xFF2E7D32)),
+                SizedBox(width: 8),
+                Text(
+                  'Rekomendasi Produk Obat',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E7D32)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 140, // Height for small horizontal cards
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: state.recommendedDrugs.length,
+                itemBuilder: (context, index) {
+                  final drug = state.recommendedDrugs[index];
+                  final name = drug['nama'] ?? drug['nama_obat'] ?? '-';
+                  final category = drug['kategori'] ?? '-';
+                  String imageUrl = drug['gambar_url'] ?? '';
+                  if (imageUrl.isEmpty) {
+                    imageUrl = 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&q=80&w=400';
+                  }
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DrugDetailScreen(drug: drug),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 220,
+                      margin: const EdgeInsets.only(right: 12, bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.horizontal(
+                                left: Radius.circular(16)),
+                            child: Image.network(
+                              imageUrl,
+                              width: 90,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                width: 90,
+                                color: Colors.grey.shade200,
+                                child: Icon(Icons.image_not_supported_outlined,
+                                    color: Colors.grey[400]),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE8F5E9),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      category,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF2E7D32),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 24),

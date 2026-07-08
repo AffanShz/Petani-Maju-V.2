@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -130,7 +132,73 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       final finalLabel =
           pestData != null ? pestData['nama_penyakit'] : searchName;
 
-      // 5. Simpan histori
+      // 5. Cari obat rekomendasi dari JSON
+      List<Map<String, dynamic>> recommendedDrugs = [];
+      if (finalLabel != 'Sehat' && finalLabel != 'Tidak Terdeteksi') {
+        try {
+          final jsonString = await rootBundle.loadString('katalog_obat_tanaman.json');
+          final data = jsonDecode(jsonString) as List<dynamic>;
+          
+          final qPlant = plantType.toLowerCase();
+          final qDisease = finalLabel.toLowerCase();
+          final qSearchName = searchName.toLowerCase();
+          final qRawLabel = rawLabel.toLowerCase();
+          
+          for (final item in data) {
+            final drug = Map<String, dynamic>.from(item as Map<String, dynamic>);
+            final sasaranRaw = drug['sasaran'];
+            final tanamanRaw = drug['tanaman'];
+            
+            bool matchPlant = false;
+            if (tanamanRaw is List) {
+              matchPlant = tanamanRaw.any((t) => t.toString().toLowerCase().contains(qPlant));
+            } else if (tanamanRaw != null) {
+              matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
+            }
+            
+            bool matchDisease = false;
+            final sStr = sasaranRaw is List ? sasaranRaw.join(' ').toLowerCase() : sasaranRaw?.toString().toLowerCase() ?? '';
+            
+            if (sStr.contains(qDisease) || sStr.contains(qSearchName) || sStr.contains(qRawLabel) || qDisease.contains(sStr) || qSearchName.contains(sStr)) {
+              matchDisease = true;
+            } else {
+              // Fallback: check overlapping words > 4 chars
+              final sTokens = sStr.split(RegExp(r'[^a-z0-9]')).where((e) => e.length > 4);
+              for (final t in sTokens) {
+                if (qDisease.contains(t) || qSearchName.contains(t) || qRawLabel.contains(t)) {
+                  matchDisease = true;
+                  break;
+                }
+              }
+            }
+
+            if (matchPlant && matchDisease) {
+              recommendedDrugs.add(drug);
+            }
+          }
+
+          // Fallback: jika tidak ada obat yang cocok spesifik penyakit,
+          // tampilkan obat yang relevan untuk jenis tanaman ini agar
+          // rekomendasi tetap muncul saat penyakit terdeteksi.
+          if (recommendedDrugs.isEmpty) {
+            for (final item in data) {
+              final drug = Map<String, dynamic>.from(item as Map<String, dynamic>);
+              final tanamanRaw = drug['tanaman'];
+              bool matchPlant = false;
+              if (tanamanRaw is List) {
+                matchPlant = tanamanRaw.any((t) => t.toString().toLowerCase().contains(qPlant));
+              } else if (tanamanRaw != null) {
+                matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
+              }
+              if (matchPlant) recommendedDrugs.add(drug);
+            }
+          }
+        } catch (e) {
+          debugPrint('Error loading recommended drugs: $e');
+        }
+      }
+
+      // 6. Simpan histori
       await _pestService.savePredictionHistory({
         'user_id': null,
         'image_url': cloudImageUrl,
@@ -148,6 +216,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
         confidence: confidence,
         plantType: plantType,
         pestData: pestData,
+        recommendedDrugs: recommendedDrugs,
       ));
     } catch (e) {
       emit(ScannerError('Terjadi kesalahan saat analisis: ${e.toString()}'));
