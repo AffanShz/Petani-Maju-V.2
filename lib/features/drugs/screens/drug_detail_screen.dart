@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/widgets/skeleton_container.dart';
 
@@ -15,6 +16,50 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
   int _selectedTabIndex = 0;
   bool _isSaved = false;
 
+  /// Nama obat — dukung dua bentuk data: 'nama' (katalog) & 'nama_obat' (rekomendasi scanner).
+  String get _drugName =>
+      _safeString(widget.drug['nama'], fallback: _safeString(widget.drug['nama_obat']));
+
+  /// Link pembelian dari JSON (mis. hyperlink Shopee). Null jika tidak tersedia.
+  String? get _purchaseUrl {
+    final raw = widget.drug['link_pembelian'];
+    if (raw == null) return null;
+    final text = raw.toString().trim();
+    return text.isEmpty ? null : text;
+  }
+
+  Future<void> _openPurchaseLink() async {
+    final url = _purchaseUrl;
+    if (url == null) return;
+
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _showSnack('Link pembelian tidak valid');
+      return;
+    }
+
+    try {
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        _showSnack('Tidak dapat membuka link pembelian');
+      }
+    } catch (e) {
+      _showSnack('Gagal membuka link pembelian');
+    }
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final drug = widget.drug;
@@ -24,6 +69,7 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
+      bottomNavigationBar: _purchaseUrl != null ? _buildBuyBar() : null,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -181,7 +227,7 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
 
                   // Drug Name
                   Text(
-                    _safeString(drug['nama']),
+                    _drugName,
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -276,6 +322,46 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Bottom bar dengan tombol beli obat (hyperlink ke link_pembelian).
+  Widget _buildBuyBar() {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _openPurchaseLink,
+            icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+            label: const Text(
+              'Beli Obat',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
+            ),
+          ),
         ),
       ),
     );
