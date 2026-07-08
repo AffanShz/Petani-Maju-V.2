@@ -46,13 +46,15 @@ class _ChatInputBarState extends State<ChatInputBar> {
       ),
       child: SafeArea(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: TextField(
                 controller: _controller,
                 enabled: !widget.isStreaming,
                 maxLength: 500,
-                maxLines: null,
+                minLines: 1,
+                maxLines: 5,
                 keyboardType: TextInputType.multiline,
                 textInputAction: TextInputAction.newline,
                 decoration: InputDecoration(

@@ -6,21 +6,24 @@ abstract class ScannerEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class PickImage extends ScannerEvent {
+/// Alur MANUAL: ambil gambar lalu langsung jalankan model penyakit
+/// sesuai jenis tanaman yang sedang dipilih user.
+class ScanWithSelectedPlant extends ScannerEvent {
   final ImageSource source;
-  PickImage(this.source);
+  ScanWithSelectedPlant(this.source);
 
   @override
   List<Object?> get props => [source];
 }
 
-class RunInference extends ScannerEvent {
-  final String imagePath;
-  final String plantType;
-  RunInference(this.imagePath, {this.plantType = 'Tomat'});
+/// Alur AUTO: ambil gambar, deteksi jenis tanaman dulu (MODEL_PLANT),
+/// lalu jalankan model penyakit sesuai hasil deteksi.
+class ScanWithAutoDetect extends ScannerEvent {
+  final ImageSource source;
+  ScanWithAutoDetect(this.source);
 
   @override
-  List<Object?> get props => [imagePath, plantType];
+  List<Object?> get props => [source];
 }
 
 class ResetScanner extends ScannerEvent {}

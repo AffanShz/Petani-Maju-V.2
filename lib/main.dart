@@ -31,6 +31,7 @@ import 'package:petani_maju/data/repositories/pest_repository.dart';
 import 'package:petani_maju/data/repositories/tips_repository.dart';
 import 'package:petani_maju/data/repositories/calendar_repository.dart';
 import 'package:petani_maju/data/repositories/history_repository.dart';
+import 'package:petani_maju/data/repositories/drug_repository.dart';
 
 // Global BLoC
 import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
@@ -130,6 +131,9 @@ class MainApp extends StatelessWidget {
             pestService: pestService,
             cacheService: cacheService,
           ),
+        ),
+        RepositoryProvider<DrugRepository>(
+          create: (_) => DrugRepository(),
         ),
         RepositoryProvider<ChatbotRepository>(
           create: (_) => ChatbotRepository(

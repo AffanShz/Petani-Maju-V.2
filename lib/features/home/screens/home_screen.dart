@@ -55,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, state) {
           if (state is! HomeLoaded) return const SizedBox.shrink();
           return FloatingActionButton(
+            heroTag: 'homeChatbotFab',
             onPressed: () => _openChatbot(context, state),
             backgroundColor: Colors.green,
             tooltip: 'Asisten Tani',

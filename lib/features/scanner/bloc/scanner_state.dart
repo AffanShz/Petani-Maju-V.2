@@ -38,6 +38,7 @@ class ScannerSuccess extends ScannerState {
   final double confidence;
   final String plantType;
   final Map<String, dynamic>? pestData;
+  final List<Map<String, dynamic>> recommendedDrugs;
 
   const ScannerSuccess({
     required this.imagePath,
@@ -46,6 +47,7 @@ class ScannerSuccess extends ScannerState {
     required this.confidence,
     required this.plantType,
     this.pestData,
+    this.recommendedDrugs = const [],
   });
 
   @override
@@ -56,6 +58,7 @@ class ScannerSuccess extends ScannerState {
         confidence,
         plantType,
         pestData,
+        recommendedDrugs,
       ];
 }
 
