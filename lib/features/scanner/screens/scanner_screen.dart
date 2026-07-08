@@ -11,17 +11,13 @@ import '../../history/bloc/history_event.dart';
 import '../../../data/repositories/history_repository.dart';
 import '../../../data/datasources/pest_services.dart';
 import '../../../core/services/cache_service.dart';
+import '../../drugs/screens/drug_detail_screen.dart';
 
-// Available plant types
+// Jenis tanaman yang didukung model penyakit
 const List<String> _plantTypes = [
   'Tomat',
-  'Kentang',
-  'Jagung',
-  'Cabai',
-  'Bayam',
-  'Kangkung',
-  'Terong',
   'Padi',
+  'Teh',
 ];
 
 class ScannerScreen extends StatelessWidget {
@@ -55,6 +51,63 @@ class ScannerView extends StatelessWidget {
     );
   }
 
+  /// Bottom sheet untuk memilih sumber gambar (kamera / galeri).
+  void _showSourcePicker(
+    BuildContext context,
+    ValueChanged<ImageSource> onPicked,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Deteksi Otomatis — Pilih Sumber Gambar',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Color(0xFF2E7D32)),
+                title: const Text('Gunakan Kamera'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  onPicked(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined,
+                    color: Color(0xFF2E7D32)),
+                title: const Text('Pilih dari Galeri'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  onPicked(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,13 +121,6 @@ class ScannerView extends StatelessWidget {
         backgroundColor: const Color(0xFF2E7D32),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () => _openHistory(context),
-            icon: const Icon(Icons.history, color: Colors.white),
-            tooltip: 'Riwayat Deteksi',
-          ),
-        ],
       ),
       body: BlocConsumer<ScannerBloc, ScannerState>(
         listener: (context, state) {
@@ -113,27 +159,64 @@ class ScannerView extends StatelessWidget {
 
   Widget _buildLoadingView(String message) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(
-            width: 60,
-            height: 60,
-            child: CircularProgressIndicator(
-              strokeWidth: 4,
-              color: Color(0xFF2E7D32),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            message,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                const SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 6,
+                    color: Color(0xFF2E7D32),
+                    backgroundColor: Color(0xFFE8F5E9),
+                  ),
+                ),
+                Icon(
+                  Icons.document_scanner_outlined,
+                  size: 32,
+                  color: Colors.green.shade700,
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 32),
+            Text(
+              message.replaceAll('AI', '').trim(), // Ensure no AI in runtime messages
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF2E7D32),
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Harap tunggu sebentar...',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -144,52 +227,105 @@ class ScannerView extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 16),
-          // Hero illustration
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+          // Hero card — tap untuk deteksi otomatis jenis tanaman (MODEL_PLANT)
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
               borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    shape: BoxShape.circle,
+              onTap: () => _showSourcePicker(
+                context,
+                (source) =>
+                    context.read<ScannerBloc>().add(ScanWithAutoDetect(source)),
+              ),
+              child: Ink(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 36),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2E7D32), Color(0xFF66BB6A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: const Icon(Icons.camera_enhance_outlined,
-                      size: 50, color: Colors.white),
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Deteksi Penyakit Daun',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.camera_enhance_outlined,
+                          size: 50, color: Colors.white),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Deteksi Penyakit Daun',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Tap untuk deteksi otomatis jenis tanaman\nlalu analisis penyakitnya',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.touch_app_outlined,
+                              size: 16, color: Colors.white),
+                          SizedBox(width: 6),
+                          Text(
+                            'Ketuk untuk mulai',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Foto daun untuk analisis penyakit\nmenggunakan kecerdasan buatan',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
 
-          // Plant type selector
+          // Pemisah "atau pilih manual"
+          Row(
+            children: [
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'atau pilih manual',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ),
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Plant type selector (manual)
           _PlantTypeSelector(
             selectedPlantType: selectedPlantType,
             onChanged: (value) {
@@ -197,14 +333,15 @@ class ScannerView extends StatelessWidget {
             },
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 16),
 
-          // Action buttons
+          // Action buttons (manual — pakai jenis tanaman yang dipilih)
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () =>
-                  context.read<ScannerBloc>().add(PickImage(ImageSource.camera)),
+              onPressed: () => context
+                  .read<ScannerBloc>()
+                  .add(ScanWithSelectedPlant(ImageSource.camera)),
               icon: const Icon(Icons.camera_alt, size: 22),
               label: const Text(
                 'Gunakan Kamera',
@@ -224,8 +361,9 @@ class ScannerView extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () =>
-                  context.read<ScannerBloc>().add(PickImage(ImageSource.gallery)),
+              onPressed: () => context
+                  .read<ScannerBloc>()
+                  .add(ScanWithSelectedPlant(ImageSource.gallery)),
               icon: const Icon(Icons.photo_library_outlined, size: 22),
               label: const Text(
                 'Pilih dari Galeri',
@@ -317,7 +455,7 @@ class ScannerView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Hasil Analisis AI',
+                const Text('Hasil Analisis',
                     style: TextStyle(fontSize: 13, color: Colors.grey)),
                 const SizedBox(height: 6),
                 Text(
@@ -399,14 +537,90 @@ class ScannerView extends StatelessWidget {
               const SizedBox(height: 16),
             ],
 
+            // Contoh Visual Penyakit (Placeholder 3 Gambar)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Contoh Visual Penyakit',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2E7D32),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 3,
+                    itemBuilder: (context, index) {
+                      // Menggunakan placeholder image daun/penyakit secara umum
+                      final placeholders = [
+                        'https://images.unsplash.com/photo-1590680695028-d7607cb3ccb7?auto=format&fit=crop&q=80&w=400',
+                        'https://images.unsplash.com/photo-1530836369250-ef71a3f5e481?auto=format&fit=crop&q=80&w=400',
+                        'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&q=80&w=400',
+                      ];
+                      
+                      return Container(
+                        width: 160,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                placeholders[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Contoh ${index + 1}',
+                                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
             // Penanganan
             if (disease['penanganan'] != null) ...[
               _buildInfoSection('Langkah Penanganan', disease['penanganan']),
               const SizedBox(height: 16),
             ],
 
-            // Obat (Highlight Section)
-            if (disease['obat'] != null) ...[
+            // Obat (Highlight Section) dari Supabase (jika ada)
+            if (disease['obat'] != null && state.recommendedDrugs.isEmpty) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -423,7 +637,7 @@ class ScannerView extends StatelessWidget {
                         Icon(Icons.medication_liquid, color: Colors.green),
                         SizedBox(width: 8),
                         Text(
-                          'Rekomendasi Obat',
+                          'Saran Pengobatan',
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -461,6 +675,127 @@ class ScannerView extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          // Katalog Rekomendasi Obat dari JSON
+          if (state.recommendedDrugs.isNotEmpty) ...[
+            const Row(
+              children: [
+                Icon(Icons.medical_services_outlined, color: Color(0xFF2E7D32)),
+                SizedBox(width: 8),
+                Text(
+                  'Rekomendasi Produk Obat',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2E7D32)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 140, // Height for small horizontal cards
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: state.recommendedDrugs.length,
+                itemBuilder: (context, index) {
+                  final drug = state.recommendedDrugs[index];
+                  final name = drug['nama'] ?? drug['nama_obat'] ?? '-';
+                  final category = drug['kategori'] ?? '-';
+                  String imageUrl = drug['gambar_url'] ?? '';
+                  if (imageUrl.isEmpty) {
+                    imageUrl = 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&q=80&w=400';
+                  }
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DrugDetailScreen(drug: drug),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 220,
+                      margin: const EdgeInsets.only(right: 12, bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.horizontal(
+                                left: Radius.circular(16)),
+                            child: Image.network(
+                              imageUrl,
+                              width: 90,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                width: 90,
+                                color: Colors.grey.shade200,
+                                child: Icon(Icons.image_not_supported_outlined,
+                                    color: Colors.grey[400]),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE8F5E9),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      category,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF2E7D32),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 24),
