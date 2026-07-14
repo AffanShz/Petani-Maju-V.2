@@ -12,7 +12,8 @@ import 'package:petani_maju/core/constants/env_config.dart';
 ///
 /// Seluruh output dinormalisasi ke {label, confidence} dengan confidence 0..1.
 class PestScannerService {
-  static const Duration _timeout = Duration(seconds: 45);
+  // HuggingFace Spaces need up to 90s to wake from sleep (cold start)
+  static const Duration _timeout = Duration(seconds: 120);
 
   // ─── Deteksi jenis tanaman (MODEL_PLANT) ──────────────────────────────────
   /// Mengembalikan {plant: 'Tomat'|'Padi'|'Teh', confidence: 0..1, accepted: bool}
@@ -117,7 +118,8 @@ class PestScannerService {
         ..files.add(await http.MultipartFile.fromPath('file', image.path));
 
       final streamed = await request.send().timeout(_timeout);
-      final response = await http.Response.fromStream(streamed);
+      final response =
+          await http.Response.fromStream(streamed).timeout(_timeout);
 
       debugPrint(
           'PestScannerService[$tag]: ${response.statusCode} ${response.body}');
