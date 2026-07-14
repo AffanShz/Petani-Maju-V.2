@@ -148,6 +148,7 @@ class PestService {
       final response = await _supabase
           .from('prediction_history')
           .select()
+          .eq('user_id', _supabase.auth.currentUser!.id)
           .order('created_at', ascending: false)
           .timeout(_timeout);
       debugPrint('PestService: Fetched ${response.length} history items');
@@ -178,11 +179,10 @@ class PestService {
   Future<void> deleteAllPredictionHistory() async {
     try {
       debugPrint('PestService: Deleting all history...');
-      // Using neq with a non-existing value effectively deletes all rows
       await _supabase
           .from('prediction_history')
           .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000')
+          .eq('user_id', _supabase.auth.currentUser!.id)
           .timeout(_timeout);
       debugPrint('PestService: Successfully deleted all history');
     } catch (e) {

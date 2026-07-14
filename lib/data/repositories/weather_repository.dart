@@ -45,28 +45,28 @@ class WeatherRepository {
   /// Dummy forecast cuaca untuk fallback
   static final List<dynamic> _dummyForecast = [
     {
-      'dt': DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
+      'dt': DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
       'temp': 28.0,
       'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
       'pop': 0.0,
       'dt_txt': '2026-06-16 13:00:00'
     },
     {
-      'dt': DateTime.now().add(Duration(hours: 7)).millisecondsSinceEpoch ~/ 1000,
+      'dt': DateTime.now().add(const Duration(hours: 7)).millisecondsSinceEpoch ~/ 1000,
       'temp': 27.5,
       'weather': [{'main': 'Rain', 'description': 'Hujan ringan'}],
       'pop': 0.3,
       'dt_txt': '2026-06-16 19:00:00'
     },
     {
-      'dt': DateTime.now().add(Duration(hours: 13)).millisecondsSinceEpoch ~/ 1000,
+      'dt': DateTime.now().add(const Duration(hours: 13)).millisecondsSinceEpoch ~/ 1000,
       'temp': 25.0,
       'weather': [{'main': 'Rain', 'description': 'Hujan'}],
       'pop': 0.8,
       'dt_txt': '2026-06-17 01:00:00'
     },
     {
-      'dt': DateTime.now().add(Duration(hours: 19)).millisecondsSinceEpoch ~/ 1000,
+      'dt': DateTime.now().add(const Duration(hours: 19)).millisecondsSinceEpoch ~/ 1000,
       'temp': 24.5,
       'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
       'pop': 0.2,
