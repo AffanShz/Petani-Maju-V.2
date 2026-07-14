@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/features/home/bloc/home_bloc.dart';
 import 'package:petani_maju/features/home/widgets/forecast_list.dart';
 import 'package:petani_maju/features/home/widgets/quick_access.dart';
@@ -57,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return FloatingActionButton(
             heroTag: 'homeChatbotFab',
             onPressed: () => _openChatbot(context, state),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.primaryGreen,
             tooltip: 'Asisten Tani',
             child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
           );
