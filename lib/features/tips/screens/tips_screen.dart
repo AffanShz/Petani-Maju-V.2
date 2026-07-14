@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 
 import 'package:petani_maju/features/tips/bloc/tips_bloc.dart';
 import 'package:petani_maju/features/tips/screens/tips_detail_screen.dart';
@@ -75,6 +76,7 @@ class _TipsScreenState extends State<TipsScreen> {
                           // Debounce
                           Future.delayed(const Duration(milliseconds: 500), () {
                             if (_searchController.text == value) {
+                              if (!context.mounted) return;
                               context
                                   .read<TipsBloc>()
                                   .add(SearchTips(query: value));
@@ -174,7 +176,7 @@ class _TipsScreenState extends State<TipsScreen> {
             label,
             style: TextStyle(color: isSelected ? Colors.white : Colors.black),
           ),
-          backgroundColor: isSelected ? Colors.green : Colors.white,
+          backgroundColor: isSelected ? AppColors.primaryGreen : Colors.white,
           side: BorderSide(color: Colors.grey.shade300),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -253,7 +255,7 @@ class _TipsScreenState extends State<TipsScreen> {
                 children: [
                   Text(
                     category,
-                    style: const TextStyle(color: Colors.green, fontSize: 12),
+                    style: const TextStyle(color: AppColors.primaryGreen, fontSize: 12),
                   ),
                   const SizedBox(height: 4),
                   Text(

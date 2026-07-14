@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 
 import 'package:petani_maju/features/pests/bloc/pest_bloc.dart';
 import 'package:petani_maju/features/pests/screens/pest_detail_screen.dart';
@@ -54,6 +55,7 @@ class _PestScreenState extends State<PestScreen> {
                           // Debounce search
                           Future.delayed(const Duration(milliseconds: 500), () {
                             if (_searchController.text == value) {
+                              if (!context.mounted) return;
                               context
                                   .read<PestBloc>()
                                   .add(SearchPests(query: value));
@@ -134,10 +136,17 @@ class _PestScreenState extends State<PestScreen> {
 
     if (pests.isEmpty) {
       return Center(
-        child: Text(
-          state.searchQuery.isNotEmpty || state.selectedCategory != 'Semua'
-              ? 'pests.empty_search'.tr()
-              : 'common.no_data'.tr(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.pest_control, size: 64, color: Colors.grey),
+            const SizedBox(height: 12),
+            Text(
+              state.searchQuery.isNotEmpty || state.selectedCategory != 'Semua'
+                  ? 'pests.empty_search'.tr()
+                  : 'common.no_data'.tr(),
+            ),
+          ],
         ),
       );
     }
@@ -190,7 +199,7 @@ class _PestScreenState extends State<PestScreen> {
               icon: const Icon(Icons.refresh),
               label: Text('common.retry'.tr()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: AppColors.primaryGreen,
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -213,7 +222,7 @@ class _PestScreenState extends State<PestScreen> {
           style: TextStyle(color: isSelected ? Colors.white : Colors.black),
         ),
         selected: isSelected,
-        selectedColor: Colors.green,
+        selectedColor: AppColors.primaryGreen,
         backgroundColor: Colors.white,
         side: BorderSide(color: Colors.grey.shade300),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

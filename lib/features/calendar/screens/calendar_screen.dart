@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 
 import 'package:petani_maju/features/calendar/bloc/calendar_bloc.dart';
 import 'package:petani_maju/core/services/notification_service.dart';
@@ -71,7 +72,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'calendarAddFab',
         onPressed: () => _showScheduleDialog(context, isEdit: false),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.primaryGreen,
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -106,7 +107,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('calendar.add_success'.tr()),
-                backgroundColor: Colors.green,
+                backgroundColor: AppColors.primaryGreen,
               ),
             );
           } else if (state is CalendarScheduleUpdated) {
@@ -117,6 +118,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             // Cancel old notifications first (id*10+0, +1, +2)
             final scheduler = NotificationScheduler();
             await scheduler.cancelCalendarReminders(state.scheduleId);
+            if (!context.mounted) return;
 
             // Schedule new notifications
             _scheduleNotifications(
@@ -217,7 +219,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha:0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -255,15 +257,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 },
                 calendarStyle: CalendarStyle(
                   todayDecoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
+                    color: AppColors.primaryGreen.withValues(alpha:0.2),
                     shape: BoxShape.circle,
                   ),
                   todayTextStyle: const TextStyle(
-                    color: Colors.green,
+                    color: AppColors.primaryGreen,
                     fontWeight: FontWeight.bold,
                   ),
                   selectedDecoration: const BoxDecoration(
-                    color: Colors.green,
+                    color: AppColors.primaryGreen,
                     shape: BoxShape.circle,
                   ),
                   markerDecoration: const BoxDecoration(
@@ -323,7 +325,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          border: Border.all(color: Colors.grey.withValues(alpha:0.1)),
         ),
         child: Column(
           children: [
@@ -351,7 +353,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           timeString = DateFormat('HH:mm').format(dt);
         } catch (_) {}
 
-        Color accentColor = index % 2 == 0 ? Colors.green : Colors.orange;
+        Color accentColor = index % 2 == 0 ? AppColors.primaryGreen : Colors.orange;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -360,7 +362,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha:0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -477,7 +479,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2E7D32).withOpacity(0.3),
+                color: const Color(0xFF2E7D32).withValues(alpha:0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -491,7 +493,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha:0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.spa, color: Colors.white, size: 24),
@@ -534,7 +536,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           child: Text(
             text,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha:0.9),
               fontSize: 14,
               height: 1.5,
             ),
@@ -762,11 +764,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   // For now, notifications for new items need manual handling
                                 }
 
+                                if (!context.mounted) return;
                                 Navigator.pop(context);
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
+                              backgroundColor: AppColors.primaryGreen,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -881,7 +884,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
-          prefixIcon: Icon(icon, color: Colors.green),
+          prefixIcon: Icon(icon, color: AppColors.primaryGreen),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,

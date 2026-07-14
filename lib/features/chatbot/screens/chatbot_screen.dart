@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_bubble.dart';
@@ -83,7 +84,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
         elevation: 1,
         title: const Row(
           children: [
-            Icon(Icons.eco, color: Colors.green, size: 22),
+            Icon(Icons.eco, color: AppColors.primaryGreen, size: 22),
             SizedBox(width: 8),
             Text(
               'Asisten Tani',
@@ -175,10 +176,10 @@ class _ChatbotViewState extends State<_ChatbotView> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
+                color: AppColors.primaryGreen.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.eco, size: 48, color: Colors.green),
+              child: const Icon(Icons.eco, size: 48, color: AppColors.primaryGreen),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -225,12 +226,12 @@ class _ChatbotViewState extends State<_ChatbotView> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.green.shade200),
+            border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.2)),
           ),
           child: Text(
             text,
-            style: TextStyle(
-              color: Colors.green.shade700,
+            style: const TextStyle(
+              color: AppColors.primaryGreen,
               fontSize: 13,
             ),
           ),
@@ -284,7 +285,7 @@ class _AnimatedRefreshButtonState extends State<_AnimatedRefreshButton>
         turns: _controller,
         child: Icon(
           Icons.refresh_outlined,
-          color: widget.enabled ? Colors.green : Colors.grey,
+          color: widget.enabled ? AppColors.primaryGreen : Colors.grey,
         ),
       ),
     );

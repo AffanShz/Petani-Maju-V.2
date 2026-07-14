@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 import '../bloc/scanner_bloc.dart';
 import '../bloc/scanner_event.dart';
 import '../bloc/scanner_state.dart';
@@ -115,11 +116,11 @@ class ScannerView extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Deteksi Penyakit Tanaman',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
         elevation: 0,
       ),
       body: BlocConsumer<ScannerBloc, ScannerState>(
@@ -166,7 +167,7 @@ class ScannerView extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha:0.05),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -176,10 +177,10 @@ class ScannerView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Stack(
+            const Stack(
               alignment: Alignment.center,
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 80,
                   height: 80,
                   child: CircularProgressIndicator(
@@ -191,7 +192,7 @@ class ScannerView extends StatelessWidget {
                 Icon(
                   Icons.document_scanner_outlined,
                   size: 32,
-                  color: Colors.green.shade700,
+                  color: AppColors.primaryGreen,
                 ),
               ],
             ),
@@ -254,7 +255,7 @@ class ScannerView extends StatelessWidget {
                       width: 90,
                       height: 90,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha:0.15),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.camera_enhance_outlined,
@@ -280,7 +281,7 @@ class ScannerView extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha:0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Row(
@@ -397,7 +398,7 @@ class ScannerView extends StatelessWidget {
         state.label.toLowerCase().contains('healthy');
     final statusColor =
         isHealthy ? const Color(0xFF2E7D32) : const Color(0xFFB71C1C);
-    final statusBgColor = statusColor.withOpacity(0.08);
+    final statusBgColor = statusColor.withValues(alpha:0.08);
 
     final disease = state.pestData;
 
@@ -430,7 +431,7 @@ class ScannerView extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
+                  color: Colors.black.withValues(alpha:0.06),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -591,7 +592,7 @@ class ScannerView extends StatelessWidget {
                                   padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                                      colors: [Colors.black.withValues(alpha:0.7), Colors.transparent],
                                       begin: Alignment.bottomCenter,
                                       end: Alignment.topCenter,
                                     ),
@@ -625,23 +626,23 @@ class ScannerView extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.green.shade100),
+                  border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.15)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.medication_liquid, color: Colors.green),
+                        Icon(Icons.medication_liquid, color: AppColors.primaryGreen),
                         SizedBox(width: 8),
                         Text(
                           'Saran Pengobatan',
                           style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.green),
+                              color: AppColors.primaryGreen),
                         ),
                       ],
                     ),
@@ -649,7 +650,7 @@ class ScannerView extends StatelessWidget {
                     Text(
                       disease['obat'],
                       style:
-                          TextStyle(color: Colors.green.shade900, height: 1.5),
+                          const TextStyle(color: AppColors.primaryGreen, height: 1.5),
                     ),
                   ],
                 ),
@@ -729,7 +730,7 @@ class ScannerView extends StatelessWidget {
                         border: Border.all(color: Colors.grey.shade200),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha:0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -881,7 +882,7 @@ class _PlantTypeSelector extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha:0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

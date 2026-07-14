@@ -17,18 +17,18 @@ class HistoryScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Riwayat Deteksi',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
         elevation: 0,
         actions: [
           BlocBuilder<HistoryBloc, HistoryState>(
             builder: (context, state) {
               if (state is HistoryLoaded && state.items.isNotEmpty) {
                 return IconButton(
-                  icon: const Icon(Icons.delete_sweep_outlined, color: Colors.white),
+                  icon: const Icon(Icons.delete_sweep_outlined, color: Color(0xFF1A1A1A)),
                   tooltip: 'Hapus Semua',
                   onPressed: () => _confirmDeleteAll(context),
                 );
@@ -105,7 +105,7 @@ class HistoryScreen extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32).withOpacity(0.08),
+              color: const Color(0xFF2E7D32).withValues(alpha:0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.history_outlined, size: 60, color: Color(0xFF2E7D32)),
@@ -232,7 +232,7 @@ class _HistoryCard extends StatelessWidget {
 
   Color _getStatusBgColor() {
     final color = _getStatusColor();
-    return color.withOpacity(0.1);
+    return color.withValues(alpha:0.1);
   }
 
   @override
@@ -248,7 +248,7 @@ class _HistoryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha:0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

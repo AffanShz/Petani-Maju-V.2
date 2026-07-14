@@ -9,7 +9,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
 
   HistoryBloc({required HistoryRepository historyRepository})
       : _historyRepository = historyRepository,
-        super(HistoryInitial()) {
+        super(const HistoryInitial()) {
     on<LoadHistory>(_onLoadHistory);
     on<DeleteHistoryItem>(_onDeleteHistoryItem);
     on<DeleteAllHistory>(_onDeleteAllHistory);
@@ -17,7 +17,7 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
 
   Future<void> _onLoadHistory(
       LoadHistory event, Emitter<HistoryState> emit) async {
-    emit(HistoryLoading());
+    emit(const HistoryLoading());
     try {
       final items = await _historyRepository.getHistory();
       emit(HistoryLoaded(items));
