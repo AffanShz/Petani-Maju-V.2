@@ -16,6 +16,13 @@ Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca re
 
 ## 🚀 Fitur Utama
 
+### 🔐 Autentikasi Pengguna
+
+- **Login & Register**: Email dan password via Supabase Auth dengan validasi form.
+- **Reset Password**: Kirim email reset password langsung dari aplikasi.
+- **Onboarding**: Tampilan panduan pertama kali untuk pengguna baru.
+- **Session Persistence**: Sesi login tetap aktif antar buka aplikasi.
+
 ### 🌤️ Sistem Cuaca Cerdas
 
 - **Real-time Weather**: Data akurat dari OpenWeatherMap.
@@ -43,9 +50,10 @@ Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca re
 
 ### 🔬 Scanner Penyakit Tanaman (AI)
 
-- **Deteksi via Foto**: Ambil foto daun dari kamera atau galeri, model AI mendeteksi penyakit (saat ini fokus **Tomat**).
-- **Cloud Inference**: Gambar di-upload ke Supabase Storage, lalu dikirim ke model API (endpoint `MODEL_TOMATO`) yang mengembalikan label penyakit + tingkat keyakinan (confidence).
-- **Detail Penyakit**: Deskripsi penyakit, langkah penanganan, dan **rekomendasi obat** diambil dari tabel `penyakit_tomat` di Supabase.
+- **Deteksi via Foto**: Ambil foto daun dari kamera atau galeri — mendukung **Tomat**, **Padi**, dan **Teh**.
+- **Auto-Detect Tanaman**: Mode otomatis mendeteksi jenis tanaman sebelum menganalisis penyakit; atau pilih manual via chip tanaman.
+- **Multi-Model Inference**: Tomat via cloud URL (`MODEL_TOMATO`), Padi & Teh via HuggingFace multipart. Gambar di-upload ke Supabase Storage sebelum dianalisis.
+- **Detail Penyakit**: Deskripsi, langkah penanganan, dan **rekomendasi obat** diambil dari tabel `penyakit_tomat` / `penyakit_padi` / `penyakit_teh` di Supabase sesuai tanaman terdeteksi.
 - **Auto-Save History**: Setiap hasil scan otomatis tersimpan ke riwayat prediksi.
 
 ### 💊 Katalog Obat Tanaman
@@ -100,7 +108,7 @@ Aplikasi ini dibangun dengan **Clean Architecture** dan **BLoC Pattern** untuk s
 | **Architecture**       | Feature-First (Data, Domain, Presentation)       |
 | **Backend**            | Supabase (PostgreSQL, Auth, Storage)             |
 | **Weather API**        | OpenWeatherMap                                   |
-| **Disease Detection**  | Model API eksternal (HTTP, endpoint `MODEL_TOMATO`) |
+| **Disease Detection**  | Multi-model via HuggingFace — Tomat (cloud URL), Padi & Teh (multipart), Auto-detect |
 | **Conversational AI**  | Google Gemini (`gemini-2.5-flash`, streaming SSE) |
 | **Local Storage**      | Hive (NoSQL Database) with AES-256 Encryption    |
 | **Secure Storage**     | Flutter Secure Storage (Keystore/Keychain)       |
@@ -252,7 +260,7 @@ lib/
 
 4. **Jalankan Aplikasi**
    ```bash
-   flutter run
+   flutter run --dart-define-from-file=.env
    ```
 
 ## 🔄 Alur Caching (Offline First)
@@ -288,7 +296,7 @@ Pesan ini muncul ketika aplikasi **tidak bisa mengakses Supabase atau OpenWeathe
 | `Invalid SUPABASE_ANON_KEY` | Credential salah atau format salah | ✅ Copy ulang dari Supabase dashboard → paste di `.env` |
 | `OPENWEATHER_API_KEY is empty` | API key tidak dikonfigurasi | ✅ Buat API key di openweathermap.org → paste ke `.env` |
 | `Network timeout` | Internet lambat atau endpoint down | ✅ Cek koneksi internet, tunggu beberapa detik, coba lagi |
-| `Database table not found` | Tabel di Supabase belum dibuat | ✅ Buat tabel: `tips`, `pests`, `weather_alerts` di Supabase |
+| `Database table not found` | Tabel di Supabase belum dibuat | ✅ Buat tabel: `tips`, `hama`, `penyakit_tomat`, `penyakit_padi`, `penyakit_teh`, `prediction_history` di Supabase |
 
 **Langkah Debug:**
 
@@ -312,7 +320,7 @@ Pesan ini muncul ketika aplikasi **tidak bisa mengakses Supabase atau OpenWeathe
    ```bash
    flutter clean
    flutter pub get
-   flutter run
+   flutter run --dart-define-from-file=.env
    ```
 
 4. **Cek log terminal** untuk error detail:
@@ -323,7 +331,7 @@ Pesan ini muncul ketika aplikasi **tidak bisa mengakses Supabase atau OpenWeathe
 
 1. Buka [supabase.com](https://supabase.com) → Dashboard
 2. Verifikasi project **aktif** dan **online**
-3. Cek **Tables** → pastikan tabel `tips`, `pests`, dll. ada data
+3. Cek **Tables** → pastikan tabel `tips`, `hama`, `penyakit_tomat`, dll. ada data
 4. Settings → **API** → copy URL dan key **yang benar**
 5. Restart app dan coba lagi
 

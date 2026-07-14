@@ -6,6 +6,7 @@ import '../bloc/history_bloc.dart';
 import '../bloc/history_event.dart';
 import '../bloc/history_state.dart';
 import '../../../data/models/prediction_history.dart';
+import 'history_detail_screen.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -144,6 +145,12 @@ class HistoryScreen extends StatelessWidget {
           return _HistoryCard(
             item: items[index],
             onDelete: () => _confirmDelete(context, items[index]),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => HistoryDetailScreen(item: items[index]),
+              ),
+            ),
           );
         },
       ),
@@ -216,8 +223,9 @@ class HistoryScreen extends StatelessWidget {
 class _HistoryCard extends StatelessWidget {
   final PredictionHistory item;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
-  const _HistoryCard({required this.item, required this.onDelete});
+  const _HistoryCard({required this.item, required this.onDelete, required this.onTap});
 
   Color _getStatusColor() {
     final disease = item.disease.toLowerCase();
@@ -276,7 +284,9 @@ class _HistoryCard extends StatelessWidget {
               ],
             ),
           ),
-          child: Row(
+          child: InkWell(
+            onTap: onTap,
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image thumbnail
@@ -378,6 +388,7 @@ class _HistoryCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),
