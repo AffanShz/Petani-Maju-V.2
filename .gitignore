@@ -62,3 +62,4 @@ local.properties
 *.p12
 secrets/
 .katalog_obat_tanaman.json
+.claude/
