@@ -6,7 +6,7 @@ class ChatbotService {
   final String apiKey;
   final List<Map<String, dynamic>> _history = [];
 
-  static const String _model = 'gemini-2.5-flash';
+  static const String _model = 'gemini-3.5-flash';
   static const String _apiBase = 'https://generativelanguage.googleapis.com/v1';
 
   ChatbotService({required this.apiKey});
@@ -22,7 +22,10 @@ class ChatbotService {
     _history.add({
       'role': 'model',
       'parts': [
-        {'text': 'Mengerti. Saya Asisten Tani, siap membantu pertanyaan seputar pertanian.'}
+        {
+          'text':
+              'Mengerti. Saya Asisten Tani, siap membantu pertanyaan seputar pertanian.'
+        }
       ]
     });
   }
