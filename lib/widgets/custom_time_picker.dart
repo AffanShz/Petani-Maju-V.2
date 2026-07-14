@@ -147,7 +147,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -167,7 +167,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
             border: Border.all(color: Colors.grey[200]!),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               )
@@ -199,7 +199,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

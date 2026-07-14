@@ -21,7 +21,7 @@ class SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -32,14 +32,14 @@ class SectionHeader extends StatelessWidget {
             children: [
               Text(
                 actionText ?? 'home.see_all'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primaryGreen,
                 ),
               ),
-              SizedBox(width: 4),
-              Icon(Icons.arrow_forward_ios, size: 16),
+              const SizedBox(width: 4),
+              const Icon(Icons.arrow_forward_ios, size: 16),
             ],
           ),
         ),

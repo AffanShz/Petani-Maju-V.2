@@ -9,22 +9,18 @@ class SkeletonContainer extends StatelessWidget {
   // Factory constructor for rectangular skeleton
   const SkeletonContainer.square({
     super.key,
-    required double width,
-    required double height,
+    required this.width,
+    required this.height,
     BorderRadius? borderRadius,
-  })  : width = width,
-        height = height,
-        borderRadius =
+  })  : borderRadius =
             borderRadius ?? const BorderRadius.all(Radius.circular(12));
 
   // Factory constructor for rounded/circular skeleton
   const SkeletonContainer.circular({
     super.key,
-    required double width,
-    required double height,
-  })  : width = width,
-        height = height,
-        borderRadius = const BorderRadius.all(Radius.circular(100));
+    required this.width,
+    required this.height,
+  })  : borderRadius = const BorderRadius.all(Radius.circular(100));
 
   @override
   Widget build(BuildContext context) {
