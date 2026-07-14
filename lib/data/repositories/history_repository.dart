@@ -3,12 +3,16 @@ import 'package:flutter/foundation.dart';
 import 'package:petani_maju/data/models/prediction_history.dart';
 import 'package:petani_maju/data/datasources/pest_services.dart';
 import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HistoryRepository {
   final PestService _pestService;
   final CacheService _cacheService;
 
-  static const String _cacheKey = 'prediction_history_cache';
+  String get _cacheKey {
+    final uid = Supabase.instance.client.auth.currentUser?.id ?? 'anonymous';
+    return 'prediction_history_cache_$uid';
+  }
 
   HistoryRepository({
     required PestService pestService,
