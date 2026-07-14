@@ -22,12 +22,12 @@ class WeatherAlert extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.red, 
+            decoration: const BoxDecoration(
+              color: AppColors.red,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.notifications_active_outlined, 
+            child: const Icon(
+              Icons.notifications_active_outlined,
               color: AppColors.white,
               size: 24,
             ),

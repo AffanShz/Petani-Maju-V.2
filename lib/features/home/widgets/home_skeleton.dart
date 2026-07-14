@@ -14,20 +14,20 @@ class HomeSkeleton extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Custom App Bar Skeleton
-            Row(
+            const Row(
               children: [
-                const SkeletonContainer.circular(width: 48, height: 48),
-                const SizedBox(width: 12),
+                SkeletonContainer.circular(width: 48, height: 48),
+                SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     SkeletonContainer.square(width: 120, height: 20),
                     SizedBox(height: 8),
                     SkeletonContainer.square(width: 80, height: 14),
                   ],
                 ),
-                const Spacer(),
-                const SkeletonContainer.circular(width: 40, height: 40),
+                Spacer(),
+                SkeletonContainer.circular(width: 40, height: 40),
               ],
             ),
             const SizedBox(height: 16),
@@ -50,9 +50,9 @@ class HomeSkeleton extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Section Header Skeleton
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 SkeletonContainer.square(width: 140, height: 24),
                 SkeletonContainer.square(width: 60, height: 20),
               ],
@@ -77,9 +77,9 @@ class HomeSkeleton extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Section Header Skeleton
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 SkeletonContainer.square(width: 140, height: 24),
                 SkeletonContainer.square(width: 60, height: 20),
               ],
@@ -90,10 +90,10 @@ class HomeSkeleton extends StatelessWidget {
             Column(
               children: List.generate(
                 3,
-                (index) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
+                (index) => const Padding(
+                  padding: EdgeInsets.only(bottom: 12.0),
                   child: Row(
-                    children: const [
+                    children: [
                       SkeletonContainer.square(
                         width: 80,
                         height: 80,

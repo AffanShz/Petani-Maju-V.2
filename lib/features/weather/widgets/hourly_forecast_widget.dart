@@ -30,7 +30,7 @@ class HourlyForecastWidget extends StatelessWidget {
       return const SizedBox();
     }
 
-    final double itemWidth = 65.0;
+    const double itemWidth = 65.0;
     final double totalWidth = items.length * itemWidth;
 
     return Container(
@@ -231,7 +231,7 @@ class _TemperatureLinePainter extends CustomPainter {
     if (tempRange == 0) return;
 
     // Graph area - positioned in the middle section
-    final graphTop = 100.0;
+    const double graphTop = 100.0;
     final graphBottom = size.height - 30.0;
     final graphHeight = graphBottom - graphTop;
 

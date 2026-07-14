@@ -20,8 +20,8 @@ class ForecastItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 100,
-      margin: EdgeInsets.only(right: 12),
-      padding: EdgeInsets.symmetric(vertical: 16),
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
