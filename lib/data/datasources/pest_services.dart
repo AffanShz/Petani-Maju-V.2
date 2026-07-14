@@ -114,14 +114,26 @@ class PestService {
   /// Upload image to Supabase Storage
   Future<String> uploadImage(String filePath) async {
     try {
+      // Validate session before upload — expired JWT causes RLS 403
+      final session = _supabase.auth.currentSession;
+      if (session == null) {
+        throw Exception('Sesi tidak ditemukan. Silakan masuk kembali.');
+      }
+      final expiresAt = session.expiresAt;
+      final nowSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      if (expiresAt != null && nowSeconds >= expiresAt) {
+        await _supabase.auth.refreshSession();
+      }
+
       final file = File(filePath);
       final extension = filePath.split('.').last.toLowerCase();
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.$extension';
       final path = 'history/$fileName';
 
       await _supabase.storage.from('images').upload(path, file);
-      
-      final String publicUrl = _supabase.storage.from('images').getPublicUrl(path);
+
+      final String publicUrl =
+          _supabase.storage.from('images').getPublicUrl(path);
       return publicUrl;
     } catch (e) {
       debugPrint('PestService Error uploading image: $e');

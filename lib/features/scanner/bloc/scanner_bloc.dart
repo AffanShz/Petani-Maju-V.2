@@ -99,7 +99,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     required String imagePath,
     required String plantType,
   }) async {
-    emit(const ScannerLoading(message: 'Menganalisis penyakit...'));
+    emit(const ScannerLoading(message: 'Menganalisis penyakit... (mungkin perlu beberapa saat)'));
 
     try {
       // 1. Upload gambar ke Supabase Storage (untuk histori + dibutuhkan model Tomat)
