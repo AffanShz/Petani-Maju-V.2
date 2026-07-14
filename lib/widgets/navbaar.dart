@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 
 // Screens
 import 'package:petani_maju/features/home/screens/home_screen.dart';
@@ -47,13 +48,13 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           Icon(
             isSelected ? activeIcon : icon,
-            color: isSelected ? Colors.green : Colors.grey,
+            color: isSelected ? AppColors.primaryGreen : Colors.grey,
           ),
           Text(
             label,
             style: TextStyle(
               fontSize: 10,
-              color: isSelected ? Colors.green : Colors.grey,
+              color: isSelected ? AppColors.primaryGreen : Colors.grey,
             ),
           ),
         ],
@@ -106,7 +107,7 @@ class _MainScreenState extends State<MainScreen> {
             MaterialPageRoute(builder: (context) => const ScannerScreen()),
           );
         },
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.primaryGreen,
         shape: const CircleBorder(),
         child: const Icon(Icons.camera_alt, color: Colors.white, size: 28),
       ),
