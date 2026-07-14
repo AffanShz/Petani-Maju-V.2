@@ -16,6 +16,9 @@ class AppLoading extends AppState {}
 
 class AppOnboarding extends AppState {}
 
+/// State saat user perlu login
+class AppLogin extends AppState {}
+
 /// State saat aplikasi siap digunakan
 class AppReady extends AppState {
   /// Apakah saat ini terhubung ke internet

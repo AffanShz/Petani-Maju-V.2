@@ -32,3 +32,9 @@ class ToggleOfflineMode extends AppEvent {
 }
 
 class CompleteOnboarding extends AppEvent {}
+
+/// Event saat user berhasil login
+class AppLoggedIn extends AppEvent {}
+
+/// Event saat user logout
+class AppLoggedOut extends AppEvent {}
