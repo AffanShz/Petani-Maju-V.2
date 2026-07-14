@@ -55,6 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${'profile.image_error'.tr()}$e')),
       );
@@ -132,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Center(

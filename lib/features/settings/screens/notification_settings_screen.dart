@@ -302,8 +302,8 @@ class _NotificationSettingsScreenState
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: value
-                  ? AppColors.primaryGreen.withOpacity(0.1)
-                  : Colors.grey.withOpacity(0.1),
+                  ? AppColors.primaryGreen.withValues(alpha: 0.1)
+                  : Colors.grey.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -338,7 +338,7 @@ class _NotificationSettingsScreenState
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
             activeTrackColor: AppColors.primaryGreen,
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: Colors.grey[300],
@@ -364,10 +364,10 @@ class _NotificationSettingsScreenState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.access_time,
                   color: AppColors.primaryGreen,
                   size: 22,
@@ -435,7 +435,7 @@ class _NotificationSettingsScreenState
               ),
               child: Text(
                 '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primaryGreen,
@@ -459,7 +459,7 @@ class _NotificationSettingsScreenState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -615,7 +615,7 @@ class _NotificationSettingsScreenState
             const SizedBox(height: 4),
             Text(
               '${hour.toString().padLeft(2, '0')}:00',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primaryGreen,

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/datasources/pest_scanner_service.dart';
 import '../../../data/datasources/pest_services.dart';
 import 'scanner_event.dart';
@@ -200,7 +201,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
 
       // 6. Simpan histori
       await _pestService.savePredictionHistory({
-        'user_id': null,
+        'user_id': Supabase.instance.client.auth.currentUser?.id,
         'image_url': cloudImageUrl,
         'plant_type': plantType,
         'disease': finalLabel,

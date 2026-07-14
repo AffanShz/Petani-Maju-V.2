@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:petani_maju/core/constants/colors.dart';
 
 class TipsDetailScreen extends StatelessWidget {
   final Map<String, dynamic> tipData;
@@ -56,12 +57,12 @@ class TipsDetailScreen extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: AppColors.primaryGreen.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       category,
-                      style: const TextStyle(color: Colors.green),
+                      style: const TextStyle(color: AppColors.primaryGreen),
                     ),
                   ),
                   const SizedBox(height: 16),

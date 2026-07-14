@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/features/settings/screens/profile_screen.dart';
+import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
 
 import 'package:petani_maju/features/settings/screens/notification_settings_screen.dart';
 import 'package:petani_maju/features/settings/screens/help_support_screen.dart';
@@ -205,6 +208,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ]),
               const SizedBox(height: 24),
+
+              // KELUAR Section
+              _buildSettingsCard([
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Keluar',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () async {
+                    try {
+                      await Supabase.instance.client.auth.signOut();
+                    } catch (e) {
+                      if (kDebugMode) print('Sign out error: $e');
+                    }
+                    if (context.mounted) {
+                      context.read<AppBloc>().add(AppLoggedOut());
+                    }
+                  },
+                ),
+              ]),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -362,7 +387,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.white,
+            activeThumbColor: Colors.white,
             activeTrackColor: AppColors.primaryGreen,
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: Colors.grey[300],

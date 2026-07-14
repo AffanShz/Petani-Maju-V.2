@@ -153,7 +153,7 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
                           border: Border.all(color: Colors.green.shade300, width: 2),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha:0.1),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -188,7 +188,7 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withOpacity(0.1),
+                            Colors.black.withValues(alpha:0.1),
                           ],
                         ),
                       ),
@@ -208,10 +208,10 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _getCategoryColor(categoryLabel).withOpacity(0.15),
+                      color: _getCategoryColor(categoryLabel).withValues(alpha:0.15),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: _getCategoryColor(categoryLabel).withOpacity(0.3),
+                        color: _getCategoryColor(categoryLabel).withValues(alpha:0.3),
                       ),
                     ),
                     child: Text(
@@ -337,7 +337,7 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha:0.06),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -381,7 +381,7 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha:0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -393,7 +393,7 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 16, color: color),
@@ -465,9 +465,9 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Deskripsi Produk',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -492,9 +492,9 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'Bahan Aktif Lengkap',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -527,9 +527,9 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Sasaran Pengendalian',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -597,9 +597,9 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Dosis & Cara Penggunaan',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
