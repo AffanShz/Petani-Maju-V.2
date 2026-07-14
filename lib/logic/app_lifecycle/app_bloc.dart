@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/core/services/connectivity_service.dart';
@@ -25,6 +26,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     on<ConnectivityChanged>(_onConnectivityChanged);
     on<ToggleOfflineMode>(_onToggleOfflineMode);
     on<CompleteOnboarding>(_onCompleteOnboarding);
+    on<AppLoggedIn>(_onAppLoggedIn);
+    on<AppLoggedOut>(_onAppLoggedOut);
   }
 
   /// Handle aplikasi pertama kali dimulai
@@ -71,16 +74,22 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         return;
       }
 
-      emit(AppReady(
-        isConnected: isConnected,
-        offlineModeEnabled: offlineModeEnabled,
-      ));
-
-      debugPrint(
-          'AppBloc: App ready. Connected: $isConnected, Offline mode: $offlineModeEnabled');
+      // Check if user is already authenticated
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      if (currentUser != null) {
+        emit(AppReady(
+          isConnected: isConnected,
+          offlineModeEnabled: offlineModeEnabled,
+        ));
+        debugPrint(
+            'AppBloc: App ready. Connected: $isConnected, Offline mode: $offlineModeEnabled');
+      } else {
+        emit(AppLogin());
+        debugPrint('AppBloc: No authenticated user, showing login screen.');
+      }
     } catch (e) {
       debugPrint('AppBloc Error: $e');
-      emit(const AppReady(isConnected: true, offlineModeEnabled: false));
+      emit(AppError(message: e.toString()));
     }
   }
 
@@ -89,6 +98,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     ConnectivityChanged event,
     Emitter<AppState> emit,
   ) {
+    // Always keep cache fresh so AppReady gets correct value on next enter
+    _cacheService.setOfflineMode(!event.isConnected);
+
     final currentState = state;
     if (currentState is AppReady) {
       emit(currentState.copyWith(isConnected: event.isConnected));
@@ -115,15 +127,32 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     Emitter<AppState> emit,
   ) async {
     await _cacheService.setFirstTime(false);
+    emit(AppLogin());
+    debugPrint('AppBloc: Onboarding complete, showing login screen.');
+  }
 
-    // We can re-check connectivity or use existing state logic
+  /// Handle user successfully logged in
+  Future<void> _onAppLoggedIn(
+    AppLoggedIn event,
+    Emitter<AppState> emit,
+  ) async {
     final offlineModeEnabled = _cacheService.getOfflineMode();
-    final isConnected = !offlineModeEnabled;
+    final isConnected = !_cacheService.getOfflineMode();
 
     emit(AppReady(
       isConnected: isConnected,
       offlineModeEnabled: offlineModeEnabled,
     ));
+    debugPrint('AppBloc: User logged in, app ready.');
+  }
+
+  /// Handle user logout
+  FutureOr<void> _onAppLoggedOut(
+    AppLoggedOut event,
+    Emitter<AppState> emit,
+  ) {
+    emit(AppLogin());
+    debugPrint('AppBloc: User logged out, showing login screen.');
   }
 
   @override

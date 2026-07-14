@@ -26,6 +26,7 @@ import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 import 'package:petani_maju/core/constants/env_config.dart';
 
 // Repositories
+import 'package:petani_maju/data/repositories/auth_repository.dart';
 import 'package:petani_maju/data/repositories/weather_repository.dart';
 import 'package:petani_maju/data/repositories/pest_repository.dart';
 import 'package:petani_maju/data/repositories/tips_repository.dart';
@@ -38,6 +39,7 @@ import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
 
 // UI
 import 'package:petani_maju/features/onboarding/screens/onboarding_screen.dart';
+import 'package:petani_maju/features/auth/screens/login_screen.dart';
 import 'package:petani_maju/widgets/navbaar.dart';
 
 bool appStartedOffline = false;
@@ -64,7 +66,7 @@ Future<void> main() async {
   try {
     await Supabase.initialize(
       url: dotenv.env['SUPABASE_URL'] ?? '',
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+      publishableKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
     ).timeout(const Duration(seconds: 10));
     appStartedOffline = false;
   } on TimeoutException {
@@ -143,6 +145,9 @@ class MainApp extends StatelessWidget {
             cacheService: cacheService,
           ),
         ),
+        RepositoryProvider<AuthRepository>(
+          create: (_) => AuthRepository(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -175,6 +180,20 @@ class MainApp extends StatelessWidget {
 
               if (state is AppOnboarding) {
                 return const OnboardingScreen();
+              }
+
+              if (state is AppLogin) {
+                return const LoginScreen();
+              }
+
+              if (state is AppError) {
+                return Scaffold(
+                  body: Center(
+                    child: Text(state.message.isNotEmpty
+                        ? state.message
+                        : 'Terjadi kesalahan, silakan restart aplikasi.'),
+                  ),
+                );
               }
 
               return BlocListener<AppBloc, AppState>(
