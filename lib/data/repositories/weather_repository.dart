@@ -18,61 +18,68 @@ class WeatherRepository {
         _locationService = locationService,
         _cacheService = cacheService;
 
-  /// Dummy data cuaca saat ini untuk fallback
-  static final Map<String, dynamic> _dummyCurrentWeather = {
-    'temp': 28.5,
-    'feels_like': 30.2,
-    'temp_min': 25.0,
-    'temp_max': 31.0,
-    'pressure': 1013,
-    'humidity': 72,
+  /// Dummy data cuaca saat ini untuk fallback — struktur mengikuti OpenWeatherMap API
+  static Map<String, dynamic> _buildDummyCurrentWeather() => {
+    'main': {
+      'temp': 28.5,
+      'feels_like': 30.2,
+      'temp_min': 25.0,
+      'temp_max': 31.0,
+      'pressure': 1013,
+      'humidity': 72,
+    },
     'weather': [
       {
+        'id': 803,
         'main': 'Clouds',
         'description': 'Berawan',
         'icon': '04d',
       }
     ],
-    'clouds': 60,
+    'clouds': {'all': 60},
     'wind': {
       'speed': 3.5,
       'deg': 230,
     },
     'visibility': 9000,
     'dt': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    'name': 'Lokasi Anda',
   };
 
-  /// Dummy forecast cuaca untuk fallback
-  static final List<dynamic> _dummyForecast = [
-    {
-      'dt': DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
-      'temp': 28.0,
-      'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
-      'pop': 0.0,
-      'dt_txt': '2026-06-16 13:00:00'
-    },
-    {
-      'dt': DateTime.now().add(const Duration(hours: 7)).millisecondsSinceEpoch ~/ 1000,
-      'temp': 27.5,
-      'weather': [{'main': 'Rain', 'description': 'Hujan ringan'}],
-      'pop': 0.3,
-      'dt_txt': '2026-06-16 19:00:00'
-    },
-    {
-      'dt': DateTime.now().add(const Duration(hours: 13)).millisecondsSinceEpoch ~/ 1000,
-      'temp': 25.0,
-      'weather': [{'main': 'Rain', 'description': 'Hujan'}],
-      'pop': 0.8,
-      'dt_txt': '2026-06-17 01:00:00'
-    },
-    {
-      'dt': DateTime.now().add(const Duration(hours: 19)).millisecondsSinceEpoch ~/ 1000,
-      'temp': 24.5,
-      'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
-      'pop': 0.2,
-      'dt_txt': '2026-06-17 07:00:00'
-    },
-  ];
+  /// Dummy forecast cuaca untuk fallback — dibangun fresh setiap dipanggil
+  static List<dynamic> _buildDummyForecast() {
+    final now = DateTime.now();
+    return [
+      {
+        'dt': now.add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
+        'temp': 28.0,
+        'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
+        'pop': 0.0,
+        'dt_txt': now.add(const Duration(hours: 1)).toIso8601String(),
+      },
+      {
+        'dt': now.add(const Duration(hours: 7)).millisecondsSinceEpoch ~/ 1000,
+        'temp': 27.5,
+        'weather': [{'main': 'Rain', 'description': 'Hujan ringan'}],
+        'pop': 0.3,
+        'dt_txt': now.add(const Duration(hours: 7)).toIso8601String(),
+      },
+      {
+        'dt': now.add(const Duration(hours: 13)).millisecondsSinceEpoch ~/ 1000,
+        'temp': 25.0,
+        'weather': [{'main': 'Rain', 'description': 'Hujan'}],
+        'pop': 0.8,
+        'dt_txt': now.add(const Duration(hours: 13)).toIso8601String(),
+      },
+      {
+        'dt': now.add(const Duration(hours: 19)).millisecondsSinceEpoch ~/ 1000,
+        'temp': 24.5,
+        'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
+        'pop': 0.2,
+        'dt_txt': now.add(const Duration(hours: 19)).toIso8601String(),
+      },
+    ];
+  }
 
   /// Fetch cuaca saat ini
   /// Fallback: cache → dummy data lokal
@@ -108,7 +115,7 @@ class WeatherRepository {
 
       // Fallback terakhir: gunakan dummy data lokal
       debugPrint('WeatherRepository: Using dummy weather data as fallback');
-      return _dummyCurrentWeather;
+      return _buildDummyCurrentWeather();
     }
   }
 
@@ -145,7 +152,7 @@ class WeatherRepository {
 
       // Fallback terakhir: gunakan dummy forecast lokal
       debugPrint('WeatherRepository: Using dummy forecast data as fallback');
-      return _dummyForecast;
+      return _buildDummyForecast();
     }
   }
 

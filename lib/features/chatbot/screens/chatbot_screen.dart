@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:petani_maju/core/constants/colors.dart';
+import 'package:petani_maju/data/models/chat_message.dart';
 import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_bubble.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_input_bar.dart';
+import 'package:petani_maju/widgets/app_toast.dart';
 
 class ChatbotScreen extends StatelessWidget {
   final Map<String, dynamic>? currentWeather;
@@ -117,12 +119,10 @@ class _ChatbotViewState extends State<_ChatbotView> {
                 _scrollToBottom();
                 if (state is ChatbotError) {
                   final errorMsg = _friendlyError(state.error);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(errorMsg),
-                      backgroundColor: Colors.red.shade700,
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  AppToast.show(
+                    context,
+                    message: errorMsg,
+                    type: ToastType.error,
                   );
                 }
               },
@@ -133,7 +133,9 @@ class _ChatbotViewState extends State<_ChatbotView> {
 
                 final messages = state is ChatbotLoaded
                     ? state.messages
-                    : (state as ChatbotError).messages;
+                    : state is ChatbotError
+                        ? state.messages
+                        : const <ChatMessage>[];
 
                 return ListView.builder(
                   controller: _scrollController,
@@ -167,48 +169,60 @@ class _ChatbotViewState extends State<_ChatbotView> {
   }
 
   Widget _buildWelcomeScreen() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.primaryGreen.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.eco, size: 48, color: AppColors.primaryGreen),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
             ),
-            const SizedBox(height: 20),
-            const Text(
-              'Asisten Tani',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.eco, size: 48, color: AppColors.primaryGreen),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Asisten Tani',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Tanyakan apa saja seputar pertanian, tanaman, hama, pupuk, atau jadwal tanam.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildSuggestionChip('Cara mengatasi hama wereng?'),
+                    const SizedBox(height: 8),
+                    _buildSuggestionChip('Kapan waktu terbaik tanam padi?'),
+                    const SizedBox(height: 8),
+                    _buildSuggestionChip('Pupuk apa untuk tanaman cabai?'),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              'Tanyakan apa saja seputar pertanian, tanaman, hama, pupuk, atau jadwal tanam.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 32),
-            _buildSuggestionChip('Cara mengatasi hama wereng?'),
-            const SizedBox(height: 8),
-            _buildSuggestionChip('Kapan waktu terbaik tanam padi?'),
-            const SizedBox(height: 8),
-            _buildSuggestionChip('Pupuk apa untuk tanaman cabai?'),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

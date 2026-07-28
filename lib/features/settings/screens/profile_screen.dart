@@ -114,8 +114,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ImageProvider? imageProvider;
     if (_imagePath != null && _imagePath!.isNotEmpty) {
       final file = File(_imagePath!);
-      // We check existence only for rendering logic, avoiding crash if missing
-      imageProvider = FileImage(file);
+      if (file.existsSync()) {
+        imageProvider = FileImage(file);
+      }
     }
 
     return Scaffold(

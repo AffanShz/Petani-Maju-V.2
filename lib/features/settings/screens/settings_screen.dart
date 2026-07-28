@@ -12,6 +12,7 @@ import 'package:petani_maju/features/settings/screens/notification_settings_scre
 import 'package:petani_maju/features/settings/screens/help_support_screen.dart';
 import 'package:petani_maju/features/settings/screens/about_app_screen.dart';
 import 'package:petani_maju/core/services/connectivity_service.dart';
+import 'package:petani_maju/widgets/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:async';
 
@@ -28,7 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   StreamSubscription<bool>? _offlineSubscription;
   StreamSubscription<Map<String, String?>>? _profileSubscription;
   bool _offlineMode = false;
-  String _userName = 'Pak Tani';
+  String _userName = '';
   String? _userImagePath;
 
   @override
@@ -51,7 +52,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _profileSubscription = _cacheService.profileUpdateStream.listen((profile) {
       if (mounted) {
         setState(() {
-          _userName = profile['name'] ?? 'Pak Tani';
+          _userName = profile['name']?.isNotEmpty == true
+              ? profile['name']!
+              : 'profile.default_name'.tr();
           _userImagePath = profile['imagePath'];
         });
       }
@@ -69,7 +72,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _offlineMode = _cacheService.getOfflineMode();
       final profile = _cacheService.getUserProfile();
-      _userName = profile['name'] ?? 'Pak Tani';
+      _userName = profile['name']?.isNotEmpty == true
+          ? profile['name']!
+          : 'profile.default_name'.tr();
       _userImagePath = profile['imagePath'];
     });
   }
@@ -81,13 +86,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(value
-              ? 'settings.offline_active'.tr()
-              : 'settings.online_active'.tr()),
-          duration: const Duration(seconds: 2),
-        ),
+      AppToast.show(
+        context,
+        message: value
+            ? 'settings.offline_active'.tr()
+            : 'settings.online_active'.tr(),
+        type: value ? ToastType.warning : ToastType.success,
+        icon: value ? Icons.cloud_off : Icons.cloud_done,
       );
     }
   }
@@ -213,9 +218,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsCard([
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text(
-                    'Keluar',
-                    style: TextStyle(color: Colors.red),
+                  title: Text(
+                    'settings.logout'.tr(),
+                    style: const TextStyle(color: Colors.red),
                   ),
                   onTap: () async {
                     try {
@@ -239,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildProfileSection() {
     ImageProvider? imageProvider;
-    if (_userImagePath != null && _userImagePath!.isNotEmpty) {
+    if (_userImagePath != null && _userImagePath!.isNotEmpty && File(_userImagePath!).existsSync()) {
       imageProvider = FileImage(File(_userImagePath!));
     }
 
