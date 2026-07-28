@@ -18,7 +18,7 @@ class PestService {
 
   Future<List<Map<String, dynamic>>> fetchPests({String? query}) async {
     try {
-      debugPrint('PestService: Fetching pests from Supabase...');
+      if (kDebugMode) debugPrint('PestService: Fetching pests from Supabase...');
 
       var dbQuery = _supabase.from('hama').select();
 
@@ -29,10 +29,10 @@ class PestService {
       final response =
           await dbQuery.order('nama', ascending: true).timeout(_timeout);
 
-      debugPrint('PestService: Successfully fetched ${response.length} pests');
+      if (kDebugMode) debugPrint('PestService: Successfully fetched ${response.length} pests');
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      debugPrint('PestService Error: $e');
+      if (kDebugMode) debugPrint('PestService Error: $e');
       rethrow;
     }
   }
@@ -49,7 +49,7 @@ class PestService {
 
       return response;
     } catch (e) {
-      debugPrint('PestService Error fetching pest by ID: $e');
+      if (kDebugMode) debugPrint('PestService Error fetching pest by ID: $e');
       rethrow;
     }
   }
@@ -66,7 +66,7 @@ class PestService {
 
       return response;
     } catch (e) {
-      debugPrint('PestService Error fetching pest by name: $e');
+      if (kDebugMode) debugPrint('PestService Error fetching pest by name: $e');
       return null;
     }
   }
@@ -86,7 +86,7 @@ class PestService {
   }) async {
     final table = _diseaseTableByPlant[plantType];
     if (table == null) {
-      debugPrint('PestService: No disease table for plant "$plantType"');
+      if (kDebugMode) debugPrint('PestService: No disease table for plant "$plantType"');
       return null;
     }
 
@@ -100,7 +100,7 @@ class PestService {
 
       return response;
     } catch (e) {
-      debugPrint('PestService Error fetching disease from $table: $e');
+      if (kDebugMode) debugPrint('PestService Error fetching disease from $table: $e');
       return null;
     }
   }
@@ -136,7 +136,7 @@ class PestService {
           _supabase.storage.from('images').getPublicUrl(path);
       return publicUrl;
     } catch (e) {
-      debugPrint('PestService Error uploading image: $e');
+      if (kDebugMode) debugPrint('PestService Error uploading image: $e');
       rethrow;
     }
   }
@@ -144,19 +144,19 @@ class PestService {
   /// Save prediction result to history
   Future<void> savePredictionHistory(Map<String, dynamic> data) async {
     try {
-      debugPrint('PestService: Saving prediction history to Supabase...');
+      if (kDebugMode) debugPrint('PestService: Saving prediction history to Supabase...');
       // Ensure column names match schema: created_at is handled by DB default or passed here
       await _supabase.from('prediction_history').insert(data).timeout(_timeout);
-      debugPrint('PestService: Successfully saved prediction history');
+      if (kDebugMode) debugPrint('PestService: Successfully saved prediction history');
     } catch (e) {
-      debugPrint('PestService Error saving history: $e');
+      if (kDebugMode) debugPrint('PestService Error saving history: $e');
     }
   }
 
   /// Fetch all prediction history ordered by newest first
   Future<List<Map<String, dynamic>>> fetchPredictionHistory() async {
     try {
-      debugPrint('PestService: Fetching prediction history from Supabase...');
+      if (kDebugMode) debugPrint('PestService: Fetching prediction history from Supabase...');
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) throw Exception('Sesi tidak ditemukan. Silakan masuk kembali.');
       final response = await _supabase
@@ -165,10 +165,10 @@ class PestService {
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .timeout(_timeout);
-      debugPrint('PestService: Fetched ${response.length} history items');
+      if (kDebugMode) debugPrint('PestService: Fetched ${response.length} history items');
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      debugPrint('PestService Error fetching history: $e');
+      if (kDebugMode) debugPrint('PestService Error fetching history: $e');
       rethrow;
     }
   }
@@ -176,15 +176,18 @@ class PestService {
   /// Delete a single prediction history item by its ID
   Future<void> deletePredictionHistory(String id) async {
     try {
-      debugPrint('PestService: Deleting history item $id...');
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('Sesi tidak ditemukan. Silakan masuk kembali.');
+      if (kDebugMode) debugPrint('PestService: Deleting history item $id...');
       await _supabase
           .from('prediction_history')
           .delete()
           .eq('id', id)
+          .eq('user_id', userId)
           .timeout(_timeout);
-      debugPrint('PestService: Successfully deleted history item $id');
+      if (kDebugMode) debugPrint('PestService: Successfully deleted history item $id');
     } catch (e) {
-      debugPrint('PestService Error deleting history: $e');
+      if (kDebugMode) debugPrint('PestService Error deleting history: $e');
       rethrow;
     }
   }
@@ -192,7 +195,7 @@ class PestService {
   /// Delete all prediction history records
   Future<void> deleteAllPredictionHistory() async {
     try {
-      debugPrint('PestService: Deleting all history...');
+      if (kDebugMode) debugPrint('PestService: Deleting all history...');
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) throw Exception('Sesi tidak ditemukan. Silakan masuk kembali.');
       await _supabase
@@ -200,9 +203,9 @@ class PestService {
           .delete()
           .eq('user_id', userId)
           .timeout(_timeout);
-      debugPrint('PestService: Successfully deleted all history');
+      if (kDebugMode) debugPrint('PestService: Successfully deleted all history');
     } catch (e) {
-      debugPrint('PestService Error deleting all history: $e');
+      if (kDebugMode) debugPrint('PestService Error deleting all history: $e');
       rethrow;
     }
   }
