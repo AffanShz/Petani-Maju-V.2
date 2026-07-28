@@ -200,6 +200,24 @@ class CacheService {
     return null;
   }
 
+  // ==================== DRUGS CACHE ====================
+
+  /// Save drugs list to cache
+  Future<void> saveDrugsData(List<Map<String, dynamic>> drugs) async {
+    await _tipsBox.put('drugs', drugs);
+    await _tipsBox.put('drugsLastUpdated', DateTime.now().toIso8601String());
+  }
+
+  /// Get cached drugs list
+  List<Map<String, dynamic>>? getCachedDrugs() {
+    final data = _tipsBox.get('drugs');
+    if (data != null) {
+      return List<Map<String, dynamic>>.from(
+          (data as List).map((item) => Map<String, dynamic>.from(item)));
+    }
+    return null;
+  }
+
   // ==================== UTILITY ====================
 
   /// Clear all cached data
