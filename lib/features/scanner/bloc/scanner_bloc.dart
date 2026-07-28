@@ -102,13 +102,18 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     emit(const ScannerLoading(message: 'Menganalisis penyakit... (mungkin perlu beberapa saat)'));
 
     try {
-      // 1. Upload gambar ke Supabase Storage (untuk histori + dibutuhkan model Tomat)
-      String cloudImageUrl;
+      // 1. Upload gambar ke Supabase Storage.
+      // Tomat: wajib (model membutuhkan cloud URL).
+      // Padi/Teh: best-effort (hanya untuk histori; model pakai file lokal).
+      String cloudImageUrl = '';
       try {
         cloudImageUrl = await _pestService.uploadImage(imagePath);
         debugPrint('PestScanner: Image uploaded to $cloudImageUrl');
       } catch (e) {
-        throw Exception('Gagal mengunggah gambar ke cloud storage: $e');
+        if (plantType == 'Tomat') {
+          throw Exception('Gagal mengunggah gambar ke cloud storage: $e');
+        }
+        debugPrint('PestScanner: Upload gagal (non-fatal untuk $plantType): $e');
       }
 
       // 2. Jalankan model penyakit sesuai jenis tanaman
@@ -116,7 +121,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
           await _runDiseaseModel(plantType, imagePath, cloudImageUrl);
 
       final rawLabel = (result['label'] ?? 'Tidak Terdeteksi').toString();
-      final confidence = (result['confidence'] ?? 0.0) as double;
+      final confidence = (result['confidence'] ?? 0.0).toDouble();
 
       // 3. Map label model -> nama penyakit di DB
       final searchName = _mapLabelToSearchName(plantType, rawLabel);
@@ -199,16 +204,19 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
         }
       }
 
-      // 6. Simpan histori
-      await _pestService.savePredictionHistory({
-        'user_id': Supabase.instance.client.auth.currentUser?.id,
-        'image_url': cloudImageUrl,
-        'plant_type': plantType,
-        'disease': finalLabel,
-        'confidence': confidence,
-        'severity': 'Pending',
-        'status': 'Success',
-      });
+      // 6. Simpan histori (hanya jika ada URL gambar dan user login)
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (cloudImageUrl.isNotEmpty && userId != null) {
+        await _pestService.savePredictionHistory({
+          'user_id': userId,
+          'image_url': cloudImageUrl,
+          'plant_type': plantType,
+          'disease': finalLabel,
+          'confidence': confidence,
+          'severity': 'Pending',
+          'status': 'Success',
+        });
+      }
 
       emit(ScannerSuccess(
         imagePath: imagePath,
@@ -256,6 +264,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       case 'Tomat':
       default:
         return _tomatoMapping[label] ??
+            _tomatoMapping[label.toLowerCase()] ??
             label.replaceAll('Tomato_', '').replaceAll('_', ' ');
     }
   }

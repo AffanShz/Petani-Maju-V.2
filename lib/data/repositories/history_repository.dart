@@ -38,10 +38,12 @@ class HistoryRepository {
   /// Delete a single history item by ID
   Future<void> deleteHistoryItem(String id) async {
     await _pestService.deletePredictionHistory(id);
-    // Update local cache
+    // Only update cache if it already exists — avoids wiping cache with empty list
     final cached = _loadFromCache();
-    final updated = cached.where((item) => item.id != id).toList();
-    await _saveToCache(updated);
+    if (cached.isNotEmpty) {
+      final updated = cached.where((item) => item.id != id).toList();
+      await _saveToCache(updated);
+    }
   }
 
   /// Delete all history

@@ -207,6 +207,8 @@ class CacheService {
     await _weatherBox.clear();
     await _tipsBox.clear();
     await _locationBox.clear();
+    await Hive.box(_plantingScheduleBoxName).clear();
+    await _notificationHistoryBox.clear();
   }
 
   // ==================== SETTINGS ====================

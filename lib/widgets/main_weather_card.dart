@@ -21,8 +21,15 @@ class MainWeatherCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (weatherData == null) return const SizedBox();
-    var main = weatherData!['main'];
-    var weather = weatherData!['weather'][0];
+    final main = weatherData!['main'];
+    final weatherList = weatherData!['weather'];
+    final weather = (weatherList is List && weatherList.isNotEmpty)
+        ? weatherList[0] as Map<String, dynamic>?
+        : null;
+
+    if (main == null || weather == null) return const SizedBox();
+
+    final temp = (main['temp'] as num?)?.toStringAsFixed(0) ?? '--';
 
     // Use detailed location if available, otherwise fall back to API name
     String locationText = detailedLocation?.isNotEmpty == true
@@ -72,13 +79,13 @@ class MainWeatherCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text('${main['temp'].toStringAsFixed(0)}°',
+                    Text('$temp°',
                         style: const TextStyle(
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
                             color: Colors.white)),
                     Text(
-                      WeatherUtils.translateWeather(weather['description']),
+                      WeatherUtils.translateWeather(weather['description']?.toString() ?? ''),
                       style:
                           const TextStyle(color: Colors.white70, fontSize: 16),
                       overflow: TextOverflow.ellipsis,
@@ -90,7 +97,7 @@ class MainWeatherCard extends StatelessWidget {
               Column(
                 children: [
                   CachedNetworkImage(
-                    imageUrl: getIconUrl(weather['icon']),
+                    imageUrl: getIconUrl(weather['icon']?.toString() ?? '01d'),
                     width: 80,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => const SizedBox(

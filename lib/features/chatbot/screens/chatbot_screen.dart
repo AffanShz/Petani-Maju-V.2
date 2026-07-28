@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:petani_maju/core/constants/colors.dart';
+import 'package:petani_maju/data/models/chat_message.dart';
 import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_bubble.dart';
@@ -133,7 +134,9 @@ class _ChatbotViewState extends State<_ChatbotView> {
 
                 final messages = state is ChatbotLoaded
                     ? state.messages
-                    : (state as ChatbotError).messages;
+                    : state is ChatbotError
+                        ? (state as ChatbotError).messages
+                        : const <ChatMessage>[];
 
                 return ListView.builder(
                   controller: _scrollController,

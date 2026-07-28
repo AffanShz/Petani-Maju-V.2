@@ -38,7 +38,8 @@
         "offline_mode": "Mode Offline",
         "offline_active": "Mode Offline aktif - Menggunakan data cache",
         "online_active": "Mode Online aktif - Mengambil data terbaru",
-        "about_section": "Tentang"
+        "about_section": "Tentang",
+        "logout": "Keluar"
     },
     "common": {
         "loading": "Memuat...",

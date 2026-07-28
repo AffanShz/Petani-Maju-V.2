@@ -84,37 +84,41 @@ ATURAN WAJIB:
     final buffer = StringBuffer();
 
     if (currentWeather != null && currentWeather.isNotEmpty) {
-      final cityName = currentWeather['name']?.toString() ?? 'lokasi kamu';
-      final mainRaw = currentWeather['main'];
-      final main = mainRaw != null ? Map<String, dynamic>.from(mainRaw as Map) : null;
-      final temp = main?['temp'];
-      final humidity = main?['humidity'];
-      final weatherListRaw = currentWeather['weather'];
-      final weatherList = weatherListRaw != null ? List<dynamic>.from(weatherListRaw as List) : null;
-      final condition = weatherList?.isNotEmpty == true
-          ? Map<String, dynamic>.from(weatherList![0] as Map)['description']
-          : null;
+      try {
+        final cityName = currentWeather['name']?.toString() ?? 'lokasi kamu';
+        final mainRaw = currentWeather['main'];
+        final main = mainRaw is Map ? Map<String, dynamic>.from(mainRaw) : null;
+        final temp = main?['temp'];
+        final humidity = main?['humidity'];
+        final weatherListRaw = currentWeather['weather'];
+        final weatherList = weatherListRaw is List ? List<dynamic>.from(weatherListRaw) : null;
+        final condition = weatherList?.isNotEmpty == true
+            ? (weatherList![0] is Map ? Map<String, dynamic>.from(weatherList[0] as Map)['description'] : null)
+            : null;
 
-      buffer.writeln('[Konteks App saat ini]');
-      buffer.write('Cuaca di $cityName: ');
-      if (temp != null) buffer.write('${(temp as num).toStringAsFixed(1)}°C, ');
-      if (condition != null) buffer.write('$condition, ');
-      if (humidity != null) buffer.write('kelembaban $humidity%');
-      buffer.writeln();
+        buffer.writeln('[Konteks App saat ini]');
+        buffer.write('Cuaca di $cityName: ');
+        if (temp != null) buffer.write('${(temp as num).toStringAsFixed(1)}°C, ');
+        if (condition != null) buffer.write('$condition, ');
+        if (humidity != null) buffer.write('kelembaban $humidity%');
+        buffer.writeln();
 
-      final cachedPests = _cacheService.getCachedPests();
-      if (cachedPests != null && cachedPests.isNotEmpty) {
-        final pestNames = cachedPests
-            .take(5)
-            .map((p) => p['nama']?.toString() ?? '')
-            .where((n) => n.isNotEmpty)
-            .join(', ');
-        if (pestNames.isNotEmpty) {
-          buffer.writeln('Hama aktif dalam database: $pestNames');
+        final cachedPests = _cacheService.getCachedPests();
+        if (cachedPests != null && cachedPests.isNotEmpty) {
+          final pestNames = cachedPests
+              .take(5)
+              .map((p) => p['nama']?.toString() ?? '')
+              .where((n) => n.isNotEmpty)
+              .join(', ');
+          if (pestNames.isNotEmpty) {
+            buffer.writeln('Hama aktif dalam database: $pestNames');
+          }
         }
-      }
 
-      buffer.writeln('---');
+        buffer.writeln('---');
+      } catch (_) {
+        // Weather context gagal — lanjutkan tanpa konteks cuaca
+      }
     }
 
     buffer.write(userText);

@@ -157,10 +157,12 @@ class PestService {
   Future<List<Map<String, dynamic>>> fetchPredictionHistory() async {
     try {
       debugPrint('PestService: Fetching prediction history from Supabase...');
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('Sesi tidak ditemukan. Silakan masuk kembali.');
       final response = await _supabase
           .from('prediction_history')
           .select()
-          .eq('user_id', _supabase.auth.currentUser!.id)
+          .eq('user_id', userId)
           .order('created_at', ascending: false)
           .timeout(_timeout);
       debugPrint('PestService: Fetched ${response.length} history items');
@@ -191,10 +193,12 @@ class PestService {
   Future<void> deleteAllPredictionHistory() async {
     try {
       debugPrint('PestService: Deleting all history...');
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('Sesi tidak ditemukan. Silakan masuk kembali.');
       await _supabase
           .from('prediction_history')
           .delete()
-          .eq('user_id', _supabase.auth.currentUser!.id)
+          .eq('user_id', userId)
           .timeout(_timeout);
       debugPrint('PestService: Successfully deleted all history');
     } catch (e) {

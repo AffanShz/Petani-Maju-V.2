@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ChatbotService {
@@ -34,6 +35,8 @@ class ChatbotService {
     initSession(systemPrompt: systemPrompt);
   }
 
+  static const int _maxHistoryTurns = 20; // user+model pairs
+
   Stream<String> sendMessageStream(String prompt) async* {
     _history.add({
       'role': 'user',
@@ -41,6 +44,11 @@ class ChatbotService {
         {'text': prompt}
       ]
     });
+
+    // Keep system seed (2 entries) + last N turns to avoid context overflow
+    if (_history.length > 2 + _maxHistoryTurns * 2) {
+      _history.removeRange(2, _history.length - _maxHistoryTurns * 2);
+    }
 
     final url = Uri.parse(
       '$_apiBase/models/$_model:streamGenerateContent?alt=sse&key=$apiKey',
@@ -81,8 +89,10 @@ class ChatbotService {
               }
             }
           }
-        } catch (_) {}
-      }
+        } catch (e) {
+          // Log parse error tapi lanjutkan stream
+          debugPrint('ChatbotService: SSE parse error: $e, data: $data');
+        }      }
 
       if (accumulatedText.isNotEmpty) {
         _history.add({
