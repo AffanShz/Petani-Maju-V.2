@@ -49,8 +49,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
-  // Load environment variables from .env file
-  await dotenv.load(fileName: ".env");
+  // Load environment variables from .env file if available
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('Dotenv load skipped or asset not present: $e');
+  }
+
+  assert(EnvConfig.validateHttpsUrls(), 'Security Warning: All base URLs must use HTTPS scheme');
 
   await CacheService.init();
   await NotificationService().init();
@@ -66,8 +72,8 @@ Future<void> main() async {
 
   try {
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL'] ?? '',
-      publishableKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+      url: EnvConfig.supabaseUrl,
+      publishableKey: EnvConfig.supabaseAnonKey,
     ).timeout(const Duration(seconds: 10));
     appStartedOffline = false;
   } on TimeoutException {
