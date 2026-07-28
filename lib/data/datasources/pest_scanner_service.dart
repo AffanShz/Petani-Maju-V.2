@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -61,6 +62,8 @@ class PestScannerService {
         };
       }
       throw _handleError(response);
+    } on TimeoutException {
+      throw Exception('Koneksi timeout. Server mungkin sedang inisialisasi, coba lagi.');
     } on SocketException {
       throw Exception('Masalah koneksi internet. Silakan periksa jaringan Anda.');
     } on http.ClientException catch (e) {
@@ -119,7 +122,7 @@ class PestScannerService {
 
       final streamed = await request.send().timeout(_timeout);
       final response =
-          await http.Response.fromStream(streamed).timeout(_timeout);
+          await http.Response.fromStream(streamed).timeout(const Duration(seconds: 30));
 
       debugPrint(
           'PestScannerService[$tag]: ${response.statusCode} ${response.body}');
@@ -128,6 +131,8 @@ class PestScannerService {
         return jsonDecode(response.body) as Map<String, dynamic>;
       }
       throw _handleError(response);
+    } on TimeoutException {
+      throw Exception('Koneksi timeout. Server mungkin sedang inisialisasi, coba lagi.');
     } on SocketException {
       throw Exception('Masalah koneksi internet. Silakan periksa jaringan Anda.');
     } on http.ClientException catch (e) {

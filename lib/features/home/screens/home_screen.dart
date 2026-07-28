@@ -24,8 +24,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Flag untuk mencegah notifikasi muncul berulang kali
   bool _hasShownNotification = false;
+  bool _hasShownOfflineSnackbar = false;
+  HomeLoaded? _lastLoadedState;
 
   @override
   void initState() {
@@ -91,15 +92,16 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
 
-            // Tampilkan snackbar saat offline
-            if (state is HomeLoaded && !state.isOnline) {
+            // Tampilkan snackbar saat offline — hanya sekali per sesi offline
+            if (state is HomeLoaded && !state.isOnline && !_hasShownOfflineSnackbar) {
+              _hasShownOfflineSnackbar = true;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Row(
+                  content: Row(
                     children: [
-                      Icon(Icons.wifi_off, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Text('Menampilkan data dari cache'),
+                      const Icon(Icons.wifi_off, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Text('home.cache_message'.tr()),
                     ],
                   ),
                   backgroundColor: Colors.orange.shade700,
@@ -107,6 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
+            }
+            if (state is HomeLoaded && state.isOnline) {
+              _hasShownOfflineSnackbar = false;
             }
           },
           builder: (context, state) {
@@ -133,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           context.read<HomeBloc>().add(LoadHomeData());
                         },
-                        child: const Text('Coba Lagi'),
+                        child: Text('common.retry'.tr()),
                       ),
                     ],
                   ),
@@ -141,15 +146,18 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
 
-            // State: Loaded (dengan data)
-            if (state is HomeLoaded) {
-              return _buildContent(context, state);
+            // State: Loading saat refresh — tetap tampilkan konten terakhir
+            if (state is HomeLoading && state.isRefreshing) {
+              if (_lastLoadedState != null) {
+                return _buildContent(context, _lastLoadedState!);
+              }
+              return const HomeSkeleton();
             }
 
-            // State: Loading saat refresh (sudah ada data sebelumnya)
-            if (state is HomeLoading && state.isRefreshing) {
-              // Ambil state sebelumnya jika ada
-              return const HomeSkeleton();
+            // State: Loaded (dengan data)
+            if (state is HomeLoaded) {
+              _lastLoadedState = state;
+              return _buildContent(context, state);
             }
 
             // Fallback
@@ -166,8 +174,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: RefreshIndicator(
         onRefresh: () async {
           context.read<HomeBloc>().add(RefreshHomeData());
-          // Tunggu state berubah dari loading
-          await Future.delayed(const Duration(milliseconds: 500));
+          // Tunggu sampai state bukan loading lagi
+          await context.read<HomeBloc>().stream
+              .firstWhere((s) => s is! HomeLoading)
+              .timeout(const Duration(seconds: 15), onTimeout: () => state);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

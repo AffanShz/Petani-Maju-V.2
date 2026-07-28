@@ -23,8 +23,8 @@ class PlantingScheduleService {
       }).toList();
 
       schedules.sort((a, b) {
-        final dateA = DateTime.parse(a['tanggal_tanam']);
-        final dateB = DateTime.parse(b['tanggal_tanam']);
+        final dateA = DateTime.tryParse(a['tanggal_tanam'] ?? '') ?? DateTime(2000);
+        final dateB = DateTime.tryParse(b['tanggal_tanam'] ?? '') ?? DateTime(2000);
         return dateA.compareTo(dateB);
       });
 

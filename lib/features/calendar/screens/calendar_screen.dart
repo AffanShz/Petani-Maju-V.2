@@ -30,6 +30,15 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   final CalendarFormat _calendarFormat = CalendarFormat.month;
   bool _hasRescheduledNotifications = false;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
 
   /// Reschedule notifications for all existing schedules
   Future<void> _rescheduleAllNotifications(
@@ -82,7 +91,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.primaryGreen,
               ),
             );
           }
@@ -584,14 +593,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _showScheduleDialog(BuildContext scaffoldContext,
       {required bool isEdit, Map<String, dynamic>? event}) {
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController noteController = TextEditingController();
+    _nameController.clear();
+    _noteController.clear();
 
     TimeOfDay selectedTime = const TimeOfDay(hour: 7, minute: 0);
 
     if (isEdit && event != null) {
-      nameController.text = event['nama_tanaman'];
-      noteController.text = event['catatan'] ?? '';
+      _nameController.text = event['nama_tanaman'];
+      _noteController.text = event['catatan'] ?? '';
       try {
         DateTime dt = DateTime.parse(event['tanggal_tanam']);
         selectedTime = TimeOfDay(hour: dt.hour, minute: dt.minute);
@@ -647,14 +656,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                     const SizedBox(height: 24),
                     _buildModernInput(
-                      controller: nameController,
+                      controller: _nameController,
                       label: 'calendar.plant_name_label'.tr(),
                       icon: Icons.eco_outlined,
                       hint: 'calendar.plant_name_hint'.tr(),
                     ),
                     const SizedBox(height: 16),
                     _buildModernInput(
-                      controller: noteController,
+                      controller: _noteController,
                       label: 'calendar.note_label'.tr(),
                       icon: Icons.note_alt_outlined,
                       hint: 'calendar.note_hint'.tr(),
@@ -704,7 +713,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           flex: 2,
                           child: ElevatedButton(
                             onPressed: () async {
-                              if (nameController.text.isNotEmpty) {
+                              if (_nameController.text.trim().isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('calendar.plant_name_label'.tr() + ' tidak boleh kosong'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
                                 // Get selected date from BLoC state
                                 final blocState =
                                     scaffoldContext.read<CalendarBloc>().state;
@@ -728,9 +745,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   scaffoldContext.read<CalendarBloc>().add(
                                         UpdateSchedule(
                                           id: scheduleId,
-                                          namaTanaman: nameController.text,
+                                          namaTanaman: _nameController.text,
                                           tanggalTanam: finalDateTime,
-                                          catatan: noteController.text,
+                                          catatan: _noteController.text,
                                         ),
                                       );
 
@@ -746,7 +763,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   // Schedule new notifications
                                   await _scheduleNotifications(
                                     scheduleId,
-                                    nameController.text,
+                                    _nameController.text,
                                     finalDateTime,
                                     selectedTime,
                                   );
@@ -754,9 +771,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   // Add via BLoC
                                   scaffoldContext.read<CalendarBloc>().add(
                                         AddSchedule(
-                                          namaTanaman: nameController.text,
+                                          namaTanaman: _nameController.text,
                                           tanggalTanam: finalDateTime,
-                                          catatan: noteController.text,
+                                          catatan: _noteController.text,
                                         ),
                                       );
 
@@ -766,7 +783,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                                 if (!context.mounted) return;
                                 Navigator.pop(context);
-                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryGreen,

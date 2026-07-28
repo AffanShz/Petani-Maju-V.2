@@ -24,6 +24,11 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
     final sanitized = _chatbotRepository.sanitizeInput(event.text);
 
     if (sanitized.isEmpty) {
+      // Input ditolak karena kosong atau mengandung pola berbahaya
+      final currentMessages = state is ChatbotLoaded
+          ? List<ChatMessage>.from((state as ChatbotLoaded).messages)
+          : <ChatMessage>[];
+      emit(ChatbotLoaded(messages: currentMessages, isStreaming: false));
       return;
     }
 

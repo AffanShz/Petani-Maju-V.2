@@ -230,7 +230,7 @@ class _PestScreenState extends State<PestScreen> {
           if (selected) {
             context
                 .read<PestBloc>()
-                .add(FilterPestsByCategory(category: label));
+                .add(FilterPestsByCategory(category: value));
           }
         },
       ),

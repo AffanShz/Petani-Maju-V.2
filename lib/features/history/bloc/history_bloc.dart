@@ -31,9 +31,14 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
       DeleteHistoryItem event, Emitter<HistoryState> emit) async {
     try {
       await _historyRepository.deleteHistoryItem(event.id);
-      // Reload after delete
-      final items = await _historyRepository.getHistory();
-      emit(HistoryLoaded(items));
+      // Filter in-memory instead of re-fetching to avoid network round-trip
+      if (state is HistoryLoaded) {
+        final updated = (state as HistoryLoaded)
+            .items
+            .where((i) => i.id != event.id)
+            .toList();
+        emit(HistoryLoaded(updated));
+      }
     } catch (e) {
       debugPrint('HistoryBloc Delete Error: $e');
       emit(const HistoryError('Gagal menghapus riwayat.'));

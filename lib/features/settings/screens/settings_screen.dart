@@ -28,7 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   StreamSubscription<bool>? _offlineSubscription;
   StreamSubscription<Map<String, String?>>? _profileSubscription;
   bool _offlineMode = false;
-  String _userName = 'Pak Tani';
+  String _userName = '';
   String? _userImagePath;
 
   @override
@@ -51,7 +51,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _profileSubscription = _cacheService.profileUpdateStream.listen((profile) {
       if (mounted) {
         setState(() {
-          _userName = profile['name'] ?? 'Pak Tani';
+          _userName = profile['name']?.isNotEmpty == true
+              ? profile['name']!
+              : 'profile.default_name'.tr();
           _userImagePath = profile['imagePath'];
         });
       }
@@ -69,7 +71,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _offlineMode = _cacheService.getOfflineMode();
       final profile = _cacheService.getUserProfile();
-      _userName = profile['name'] ?? 'Pak Tani';
+      _userName = profile['name']?.isNotEmpty == true
+          ? profile['name']!
+          : 'profile.default_name'.tr();
       _userImagePath = profile['imagePath'];
     });
   }
@@ -213,9 +217,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsCard([
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
-                  title: const Text(
-                    'Keluar',
-                    style: TextStyle(color: Colors.red),
+                  title: Text(
+                    'settings.logout'.tr(),
+                    style: const TextStyle(color: Colors.red),
                   ),
                   onTap: () async {
                     try {
