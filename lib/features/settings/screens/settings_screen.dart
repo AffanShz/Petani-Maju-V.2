@@ -12,6 +12,7 @@ import 'package:petani_maju/features/settings/screens/notification_settings_scre
 import 'package:petani_maju/features/settings/screens/help_support_screen.dart';
 import 'package:petani_maju/features/settings/screens/about_app_screen.dart';
 import 'package:petani_maju/core/services/connectivity_service.dart';
+import 'package:petani_maju/widgets/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:async';
 
@@ -85,13 +86,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(value
-              ? 'settings.offline_active'.tr()
-              : 'settings.online_active'.tr()),
-          duration: const Duration(seconds: 2),
-        ),
+      AppToast.show(
+        context,
+        message: value
+            ? 'settings.offline_active'.tr()
+            : 'settings.online_active'.tr(),
+        type: value ? ToastType.warning : ToastType.success,
+        icon: value ? Icons.cloud_off : Icons.cloud_done,
       );
     }
   }
@@ -243,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildProfileSection() {
     ImageProvider? imageProvider;
-    if (_userImagePath != null && _userImagePath!.isNotEmpty) {
+    if (_userImagePath != null && _userImagePath!.isNotEmpty && File(_userImagePath!).existsSync()) {
       imageProvider = FileImage(File(_userImagePath!));
     }
 
