@@ -14,6 +14,7 @@ import 'package:petani_maju/core/services/notification_service.dart';
 import 'package:petani_maju/features/home/widgets/home_skeleton.dart';
 import 'package:petani_maju/features/chatbot/screens/chatbot_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:petani_maju/widgets/app_toast.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onTabChange;
@@ -81,33 +82,23 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             }
 
-            // Tampilkan snackbar saat error
+            // Tampilkan toast saat error
             if (state is HomeError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red.shade700,
-                  behavior: SnackBarBehavior.floating,
-                ),
+              AppToast.show(
+                context,
+                message: state.message,
+                type: ToastType.error,
               );
             }
 
-            // Tampilkan snackbar saat offline — hanya sekali per sesi offline
+            // Tampilkan toast saat offline — hanya sekali per sesi offline
             if (state is HomeLoaded && !state.isOnline && !_hasShownOfflineSnackbar) {
               _hasShownOfflineSnackbar = true;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Row(
-                    children: [
-                      const Icon(Icons.wifi_off, color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
-                      Text('home.cache_message'.tr()),
-                    ],
-                  ),
-                  backgroundColor: Colors.orange.shade700,
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
+              AppToast.show(
+                context,
+                message: 'home.cache_message'.tr(),
+                type: ToastType.warning,
+                icon: Icons.wifi_off,
               );
             }
             if (state is HomeLoaded && state.isOnline) {
