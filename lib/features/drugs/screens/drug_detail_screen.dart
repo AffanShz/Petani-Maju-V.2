@@ -14,7 +14,6 @@ class DrugDetailScreen extends StatefulWidget {
 
 class _DrugDetailScreenState extends State<DrugDetailScreen> {
   int _selectedTabIndex = 0;
-  bool _isSaved = false;
 
   /// Nama obat — dukung dua bentuk data: 'nama' (katalog) & 'nama_obat' (rekomendasi scanner).
   String get _drugName =>
@@ -71,45 +70,20 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
       backgroundColor: const Color(0xFFF8F9FA),
       bottomNavigationBar: _purchaseUrl != null ? _buildBuyBar() : null,
       appBar: AppBar(
+        title: const Text(
+          'Detail Obat',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isSaved ? Icons.bookmark : Icons.bookmark_border,
-              color: AppColors.primaryGreen,
-              size: 24,
-            ),
-            onPressed: () {
-              setState(() {
-                _isSaved = !_isSaved;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(_isSaved ? 'Obat disimpan' : 'Obat dihapus dari simpanan'),
-                  duration: const Duration(seconds: 1),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: Colors.black),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fitur berbagi sedang dikembangkan'),
-                  duration: Duration(seconds: 1),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
