@@ -716,7 +716,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               if (_nameController.text.trim().isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('calendar.plant_name_label'.tr() + ' tidak boleh kosong'),
+                                    content: Text('${'calendar.plant_name_label'.tr()} tidak boleh kosong'),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
