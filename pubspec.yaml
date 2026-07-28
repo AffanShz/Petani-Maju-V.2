@@ -49,7 +49,6 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   assets:
-    - .env
     - katalog_obat_tanaman.json
     - assets/images/
     - assets/translations/
