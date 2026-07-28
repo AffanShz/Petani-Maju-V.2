@@ -23,8 +23,8 @@ class MainWeatherCard extends StatelessWidget {
     if (weatherData == null) return const SizedBox();
     final main = weatherData!['main'];
     final weatherList = weatherData!['weather'];
-    final weather = (weatherList is List && weatherList.isNotEmpty)
-        ? weatherList[0] as Map<String, dynamic>?
+    final Map<String, dynamic>? weather = (weatherList is List && weatherList.isNotEmpty && weatherList[0] is Map)
+        ? Map<String, dynamic>.from(weatherList[0] as Map)
         : null;
 
     if (main == null || weather == null) return const SizedBox();
