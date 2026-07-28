@@ -94,12 +94,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   /// Handle perubahan status koneksi
-  void _onConnectivityChanged(
+  Future<void> _onConnectivityChanged(
     ConnectivityChanged event,
     Emitter<AppState> emit,
-  ) {
-    // Always keep cache fresh so AppReady gets correct value on next enter
-    _cacheService.setOfflineMode(!event.isConnected);
+  ) async {
+    await _cacheService.setOfflineMode(!event.isConnected);
 
     final currentState = state;
     if (currentState is AppReady) {

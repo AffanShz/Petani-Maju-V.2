@@ -41,6 +41,7 @@ import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
 import 'package:petani_maju/features/onboarding/screens/onboarding_screen.dart';
 import 'package:petani_maju/features/auth/screens/login_screen.dart';
 import 'package:petani_maju/widgets/navbaar.dart';
+import 'package:petani_maju/widgets/app_toast.dart';
 
 bool appStartedOffline = false;
 
@@ -135,7 +136,9 @@ class MainApp extends StatelessWidget {
           ),
         ),
         RepositoryProvider<DrugRepository>(
-          create: (_) => DrugRepository(),
+          create: (_) => DrugRepository(
+            cacheService: cacheService,
+          ),
         ),
         RepositoryProvider<ChatbotRepository>(
           create: (_) => ChatbotRepository(
@@ -199,24 +202,11 @@ class MainApp extends StatelessWidget {
               return BlocListener<AppBloc, AppState>(
                 listener: (context, state) {
                   if (state is AppReady && !state.isConnected) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Row(
-                          children: [
-                            Icon(Icons.wifi_off, color: Colors.white),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Tidak ada koneksi internet. Menggunakan data tersimpan.',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                        backgroundColor: Colors.orange.shade700,
-                        duration: const Duration(seconds: 4),
-                        behavior: SnackBarBehavior.floating,
-                      ),
+                    AppToast.show(
+                      context,
+                      message: 'Tidak ada koneksi internet. Menggunakan data tersimpan.',
+                      type: ToastType.warning,
+                      icon: Icons.wifi_off,
                     );
                   }
                 },

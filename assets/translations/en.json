@@ -38,7 +38,8 @@
         "offline_mode": "Offline Mode",
         "offline_active": "Offline mode active - Using cached data",
         "online_active": "Online mode active - Fetching latest data",
-        "about_section": "About"
+        "about_section": "About",
+        "logout": "Logout"
     },
     "common": {
         "loading": "Loading...",
