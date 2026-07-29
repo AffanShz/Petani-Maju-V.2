@@ -54,8 +54,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
         final qDisease = item.disease.toLowerCase();
 
         for (final entry in data) {
-          final drug =
-              Map<String, dynamic>.from(entry as Map<String, dynamic>);
+          final drug = Map<String, dynamic>.from(entry as Map<String, dynamic>);
           final tanamanRaw = drug['tanaman'];
           final sasaranRaw = drug['sasaran'];
 
@@ -64,8 +63,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
             matchPlant = tanamanRaw
                 .any((t) => t.toString().toLowerCase().contains(qPlant));
           } else if (tanamanRaw != null) {
-            matchPlant =
-                tanamanRaw.toString().toLowerCase().contains(qPlant);
+            matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
           }
 
           bool matchDisease = false;
@@ -76,9 +74,8 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
           if (sStr.contains(qDisease) || qDisease.contains(sStr)) {
             matchDisease = true;
           } else {
-            final sTokens = sStr
-                .split(RegExp(r'[^a-z0-9]'))
-                .where((e) => e.length > 4);
+            final sTokens =
+                sStr.split(RegExp(r'[^a-z0-9]')).where((e) => e.length > 4);
             for (final t in sTokens) {
               if (qDisease.contains(t)) {
                 matchDisease = true;
@@ -100,8 +97,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
               matchPlant = tanamanRaw
                   .any((t) => t.toString().toLowerCase().contains(qPlant));
             } else if (tanamanRaw != null) {
-              matchPlant =
-                  tanamanRaw.toString().toLowerCase().contains(qPlant);
+              matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
             }
             if (matchPlant) drugs.add(drug);
           }
@@ -132,8 +128,8 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
       appBar: AppBar(
         title: const Text(
           'Detail Deteksi',
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
+          style:
+              TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A)),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -210,8 +206,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         ),
                         const SizedBox(height: 12),
                         const Text('Hasil Analisis',
-                            style:
-                                TextStyle(fontSize: 13, color: Colors.grey)),
+                            style: TextStyle(fontSize: 13, color: Colors.grey)),
                         const SizedBox(height: 6),
                         Text(
                           item.disease,
@@ -226,8 +221,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         Column(
                           children: [
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text('Tingkat Kepercayaan',
                                     style: TextStyle(
@@ -293,92 +287,94 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                     ],
 
                     // Contoh visual
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Contoh Visual Penyakit',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2E7D32),
+                    if (_pestData!['image'] != null &&
+                        _pestData!['image'].toString().trim().isNotEmpty) ...[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Contoh Visual Penyakit',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2E7D32),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 120,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: 3,
-                            itemBuilder: (context, index) {
-                              final placeholders = [
-                                'https://images.unsplash.com/photo-1590680695028-d7607cb3ccb7?auto=format&fit=crop&q=80&w=400',
-                                'https://images.unsplash.com/photo-1530836369250-ef71a3f5e481?auto=format&fit=crop&q=80&w=400',
-                                'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&q=80&w=400',
-                              ];
-                              return Container(
-                                width: 160,
-                                margin: const EdgeInsets.only(right: 12),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color: Colors.grey.shade200),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      Image.network(
-                                        placeholders[index],
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Container(
-                                          color: Colors.grey.shade200,
-                                          child: const Icon(
-                                              Icons.image_not_supported,
-                                              color: Colors.grey),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        child: Container(
-                                          padding:
-                                              const EdgeInsets.symmetric(
-                                                  vertical: 4, horizontal: 8),
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                Colors.black
-                                                    .withValues(alpha: 0.7),
-                                                Colors.transparent
-                                              ],
-                                              begin: Alignment.bottomCenter,
-                                              end: Alignment.topCenter,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Contoh ${index + 1}',
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: CachedNetworkImage(
+                                imageUrl: _pestData!['image'].toString().trim(),
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: Colors.grey.shade100,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Color(0xFF2E7D32),
+                                    ),
                                   ),
                                 ),
-                              );
-                            },
+                                errorWidget: (context, error, stackTrace) =>
+                                    Container(
+                                  color: Colors.grey.shade100,
+                                  child: const Center(
+                                    child: Icon(Icons.broken_image_outlined,
+                                        color: Colors.grey, size: 40),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ] else ...[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Contoh Visual Penyakit',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2E7D32),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image_not_supported_outlined,
+                                      color: Colors.grey, size: 40),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Gambar visual tidak tersedia',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ],
 
                     if (_pestData!['penanganan'] != null) ...[
                       _buildInfoSection(
@@ -392,8 +388,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryGreen
-                              .withValues(alpha: 0.1),
+                          color: AppColors.primaryGreen.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                               color: AppColors.primaryGreen
@@ -420,8 +415,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                             Text(
                               _pestData!['obat'],
                               style: const TextStyle(
-                                  color: AppColors.primaryGreen,
-                                  height: 1.5),
+                                  color: AppColors.primaryGreen, height: 1.5),
                             ),
                           ],
                         ),
@@ -475,8 +469,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         itemCount: _recommendedDrugs.length,
                         itemBuilder: (context, index) {
                           final drug = _recommendedDrugs[index];
-                          final name =
-                              drug['nama'] ?? drug['nama_obat'] ?? '-';
+                          final name = drug['nama'] ?? drug['nama_obat'] ?? '-';
                           final category = drug['kategori'] ?? '-';
                           String imageUrl = drug['gambar_url'] ?? '';
                           if (imageUrl.isEmpty) {
@@ -489,24 +482,21 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      DrugDetailScreen(drug: drug),
+                                  builder: (_) => DrugDetailScreen(drug: drug),
                                 ),
                               );
                             },
                             child: Container(
                               width: 220,
-                              margin: const EdgeInsets.only(
-                                  right: 12, bottom: 8),
+                              margin:
+                                  const EdgeInsets.only(right: 12, bottom: 8),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border:
-                                    Border.all(color: Colors.grey.shade200),
+                                border: Border.all(color: Colors.grey.shade200),
                                 boxShadow: [
                                   BoxShadow(
-                                    color:
-                                        Colors.black.withValues(alpha: 0.04),
+                                    color: Colors.black.withValues(alpha: 0.04),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -515,9 +505,8 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                               child: Row(
                                 children: [
                                   ClipRRect(
-                                    borderRadius:
-                                        const BorderRadius.horizontal(
-                                            left: Radius.circular(16)),
+                                    borderRadius: const BorderRadius.horizontal(
+                                        left: Radius.circular(16)),
                                     child: Image.network(
                                       imageUrl,
                                       width: 90,
@@ -529,8 +518,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                         width: 90,
                                         color: Colors.grey.shade200,
                                         child: Icon(
-                                            Icons
-                                                .image_not_supported_outlined,
+                                            Icons.image_not_supported_outlined,
                                             color: Colors.grey[400]),
                                       ),
                                     ),
@@ -555,13 +543,10 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                                           ),
                                           const SizedBox(height: 6),
                                           Container(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color:
-                                                  const Color(0xFFE8F5E9),
+                                              color: const Color(0xFFE8F5E9),
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
@@ -599,8 +584,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
