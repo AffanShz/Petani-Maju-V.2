@@ -38,7 +38,7 @@ class PestScannerService {
   Future<Map<String, dynamic>> predictTomato(String imageUrl) async {
     try {
       final Uri url = Uri.parse('${EnvConfig.modelTomatoUrl}/predict');
-      debugPrint('PestScannerService[MODEL_TOMATO]: POST to $url');
+      if (kDebugMode) debugPrint('PestScannerService[MODEL_TOMATO]: POST to $url');
 
       final response = await http
           .post(
@@ -51,8 +51,10 @@ class PestScannerService {
           )
           .timeout(_timeout);
 
-      debugPrint(
-          'PestScannerService[MODEL_TOMATO]: ${response.statusCode} ${response.body}');
+      if (kDebugMode) {
+        debugPrint(
+            'PestScannerService[MODEL_TOMATO]: ${response.statusCode} ${response.body}');
+      }
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -69,7 +71,7 @@ class PestScannerService {
     } on http.ClientException catch (e) {
       throw Exception('Kesalahan pada client HTTP: ${e.message}');
     } catch (e) {
-      debugPrint('PestScannerService[MODEL_TOMATO] Exception: $e');
+      if (kDebugMode) debugPrint('PestScannerService[MODEL_TOMATO] Exception: $e');
       rethrow;
     }
   }
@@ -115,7 +117,7 @@ class PestScannerService {
   }) async {
     try {
       final Uri url = Uri.parse('$baseUrl$path');
-      debugPrint('PestScannerService[$tag]: POST (multipart) to $url');
+      if (kDebugMode) debugPrint('PestScannerService[$tag]: POST (multipart) to $url');
 
       final request = http.MultipartRequest('POST', url)
         ..files.add(await http.MultipartFile.fromPath('file', image.path));
@@ -124,8 +126,10 @@ class PestScannerService {
       final response =
           await http.Response.fromStream(streamed).timeout(const Duration(seconds: 30));
 
-      debugPrint(
-          'PestScannerService[$tag]: ${response.statusCode} ${response.body}');
+      if (kDebugMode) {
+        debugPrint(
+            'PestScannerService[$tag]: ${response.statusCode} ${response.body}');
+      }
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
@@ -138,7 +142,7 @@ class PestScannerService {
     } on http.ClientException catch (e) {
       throw Exception('Kesalahan pada client HTTP: ${e.message}');
     } catch (e) {
-      debugPrint('PestScannerService[$tag] Exception: $e');
+      if (kDebugMode) debugPrint('PestScannerService[$tag] Exception: $e');
       rethrow;
     }
   }
