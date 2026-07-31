@@ -16,13 +16,13 @@ class NotificationScheduler {
   final NotificationService _notificationService = NotificationService();
   final CacheService _cacheService = CacheService();
 
-  // Notification IDs
-  static const int _morningBriefingId = 1000;
-  static const int _heavyRainAlertId = 1001;
-  static const int _strongWindAlertId = 1002;
-  static const int _thunderstormAlertId = 1003;
-  static const int _smartWateringId = 1004;
-  static const int _pestWarningId = 1005;
+  // Notification IDs (90000+ for system alerts to avoid collision with calendar IDs 100000+)
+  static const int _morningBriefingId = 90000;
+  static const int _heavyRainAlertId = 90001;
+  static const int _strongWindAlertId = 90002;
+  static const int _thunderstormAlertId = 90003;
+  static const int _smartWateringId = 90004;
+  static const int _pestWarningId = 90005;
 
   /// Get current notification settings
   NotificationSettings getSettings() {
@@ -108,6 +108,17 @@ class NotificationScheduler {
     await _notificationService.cancelNotification(_morningBriefingId);
   }
 
+  bool _isAlertOnCooldown(String alertType, {int cooldownHours = 3}) {
+    final lastTime = _cacheService.getCachedData<int>('last_alert_$alertType');
+    if (lastTime == null) return false;
+    final elapsed = DateTime.now().millisecondsSinceEpoch - lastTime;
+    return elapsed < (cooldownHours * 3600 * 1000);
+  }
+
+  void _recordAlertTime(String alertType) {
+    _cacheService.saveCachedData('last_alert_$alertType', DateTime.now().millisecondsSinceEpoch);
+  }
+
   /// Check weather conditions and trigger alerts if necessary
   Future<void> checkWeatherAlerts(Map<String, dynamic> weatherData) async {
     final settings = getSettings();
@@ -120,7 +131,8 @@ class NotificationScheduler {
     // Heavy Rain Alert (500-531)
     if (settings.heavyRainAlertEnabled &&
         conditionId >= 500 &&
-        conditionId < 532) {
+        conditionId < 532 &&
+        !_isAlertOnCooldown('heavy_rain')) {
       final severity = conditionId >= 502 ? 'DERAS' : 'RINGAN';
       await _notificationService.showNotification(
         id: _heavyRainAlertId,
@@ -129,12 +141,14 @@ class NotificationScheduler {
             'Hujan terdeteksi di $cityName.\n💡 Segera lindungi tanaman dan siapkan drainase!',
         payload: 'rain_alert',
       );
+      _recordAlertTime('heavy_rain');
     }
 
     // Thunderstorm Alert (200-232)
     if (settings.thunderstormAlertEnabled &&
         conditionId >= 200 &&
-        conditionId < 233) {
+        conditionId < 233 &&
+        !_isAlertOnCooldown('thunderstorm')) {
       await _notificationService.showNotification(
         id: _thunderstormAlertId,
         title: '⛈️ PERINGATAN PETIR!',
@@ -142,10 +156,13 @@ class NotificationScheduler {
             'Hujan petir di $cityName.\n💡 Hindari kegiatan di luar ruangan dan tempat terbuka!',
         payload: 'thunderstorm_alert',
       );
+      _recordAlertTime('thunderstorm');
     }
 
     // Strong Wind Alert (wind speed > 10 m/s)
-    if (settings.strongWindAlertEnabled && windSpeed > 10) {
+    if (settings.strongWindAlertEnabled &&
+        windSpeed > 10 &&
+        !_isAlertOnCooldown('strong_wind')) {
       await _notificationService.showNotification(
         id: _strongWindAlertId,
         title: '💨 PERINGATAN ANGIN KENCANG!',
@@ -153,6 +170,7 @@ class NotificationScheduler {
             'Angin ${windSpeed.toStringAsFixed(1)} m/s di $cityName.\n💡 Amankan tanaman dan peralatan!',
         payload: 'wind_alert',
       );
+      _recordAlertTime('strong_wind');
     }
   }
 
@@ -245,7 +263,7 @@ class NotificationScheduler {
       final reminderTime = scheduledDateTime.subtract(const Duration(days: 1));
       if (reminderTime.isAfter(DateTime.now())) {
         await notif.scheduleNotification(
-          id: scheduleId * 10 + 0,
+          id: 100000 + scheduleId * 10 + 0,
           title: '📅 Pengingat Besok',
           body: 'Besok: $plantName',
           scheduledDate: reminderTime,
@@ -258,7 +276,7 @@ class NotificationScheduler {
       final reminderTime = scheduledDateTime.subtract(const Duration(hours: 1));
       if (reminderTime.isAfter(DateTime.now())) {
         await notif.scheduleNotification(
-          id: scheduleId * 10 + 1,
+          id: 100000 + scheduleId * 10 + 1,
           title: '⏰ 1 Jam Lagi!',
           body: '$plantName dalam 1 jam',
           scheduledDate: reminderTime,
@@ -270,7 +288,7 @@ class NotificationScheduler {
     if (settings.reminderAtTime) {
       if (scheduledDateTime.isAfter(DateTime.now())) {
         await notif.scheduleNotification(
-          id: scheduleId * 10 + 2,
+          id: 100000 + scheduleId * 10 + 2,
           title: '🌱 Waktunya Kegiatan!',
           body: 'Sekarang: $plantName',
           scheduledDate: scheduledDateTime,
@@ -281,8 +299,8 @@ class NotificationScheduler {
 
   /// Cancel all calendar reminders for a schedule
   Future<void> cancelCalendarReminders(int scheduleId) async {
-    await _notificationService.cancelNotification(scheduleId * 10 + 0);
-    await _notificationService.cancelNotification(scheduleId * 10 + 1);
-    await _notificationService.cancelNotification(scheduleId * 10 + 2);
+    await _notificationService.cancelNotification(100000 + scheduleId * 10 + 0);
+    await _notificationService.cancelNotification(100000 + scheduleId * 10 + 1);
+    await _notificationService.cancelNotification(100000 + scheduleId * 10 + 2);
   }
 }
