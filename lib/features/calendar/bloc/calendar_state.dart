@@ -37,7 +37,10 @@ class CalendarLoaded extends CalendarState {
   /// Get events untuk tanggal tertentu
   List<Map<String, dynamic>> getEventsForDay(DateTime day) {
     return schedules.where((schedule) {
-      final scheduleDate = DateTime.parse(schedule['tanggal_tanam']);
+      final raw = schedule['tanggal_tanam'];
+      if (raw == null) return false;
+      final scheduleDate = DateTime.tryParse(raw.toString());
+      if (scheduleDate == null) return false;
       return scheduleDate.year == day.year &&
           scheduleDate.month == day.month &&
           scheduleDate.day == day.day;
