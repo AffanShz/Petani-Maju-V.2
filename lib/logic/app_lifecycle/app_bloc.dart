@@ -90,7 +90,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         debugPrint(
             'AppBloc: App ready. Connected: $isConnected, Offline mode: $offlineModeEnabled');
       } else {
-        emit(const AppLogin());
+        emit(AppLogin());
         debugPrint('AppBloc: No authenticated user, showing login screen.');
       }
     } catch (e) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
 import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/data/repositories/auth_repository.dart';
 import 'package:petani_maju/features/auth/bloc/auth_bloc.dart';
