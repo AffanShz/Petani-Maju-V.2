@@ -74,8 +74,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         return;
       }
 
-      // Check if user is already authenticated
-      final currentUser = Supabase.instance.client.auth.currentUser;
+      // Check if user is already authenticated (safely handle uninitialized Supabase)
+      User? currentUser;
+      try {
+        currentUser = Supabase.instance.client.auth.currentUser;
+      } catch (e) {
+        debugPrint('AppBloc: Supabase not initialized or offline ($e)');
+      }
+
       if (currentUser != null) {
         emit(AppReady(
           isConnected: isConnected,
@@ -84,7 +90,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         debugPrint(
             'AppBloc: App ready. Connected: $isConnected, Offline mode: $offlineModeEnabled');
       } else {
-        emit(AppLogin());
+        emit(const AppLogin());
         debugPrint('AppBloc: No authenticated user, showing login screen.');
       }
     } catch (e) {
