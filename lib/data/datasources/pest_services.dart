@@ -154,6 +154,7 @@ class PestService {
       if (kDebugMode) debugPrint('PestService: Successfully saved prediction history');
     } catch (e) {
       if (kDebugMode) debugPrint('PestService Error saving history: $e');
+      rethrow;
     }
   }
 
