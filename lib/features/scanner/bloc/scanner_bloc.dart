@@ -82,7 +82,12 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
   Future<String?> _pickImage(
       ImageSource source, Emitter<ScannerState> emit) async {
     try {
-      final XFile? image = await _picker.pickImage(source: source);
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        imageQuality: 50,
+        maxWidth: 1080,
+        maxHeight: 1080,
+      );
       if (image == null) return null;
       emit(ScannerImagePicked(image.path));
       return image.path;
