@@ -1,19 +1,18 @@
 class WeatherUtils {
   static String translateWeather(String description) {
-    description = description.toLowerCase();
-    if (description.contains('thunderstorm')) return 'Hujan Petir';
-    if (description.contains('drizzle')) return 'Gerimis';
-    if (description.contains('rain')) {
-      if (description.contains('heavy')) return 'Hujan Deras';
-      if (description.contains('light')) return 'Hujan Ringan';
+    if (description.isEmpty) return description;
+    final lower = description.toLowerCase();
+    if (lower.contains('thunderstorm') || lower.contains('petir')) return 'Hujan Petir';
+    if (lower.contains('drizzle') || lower.contains('gerimis')) return 'Gerimis';
+    if (lower.contains('rain') || lower.contains('hujan')) {
+      if (lower.contains('heavy') || lower.contains('deras')) return 'Hujan Deras';
+      if (lower.contains('light') || lower.contains('ringan')) return 'Hujan Ringan';
       return 'Hujan';
     }
-    if (description.contains('cloud')) return 'Berawan';
-    if (description.contains('clear')) return 'Cerah';
-    if (description.contains('mist') || description.contains('fog')) {
-      return 'Berkabut';
-    }
-    return description;
+    if (lower.contains('cloud') || lower.contains('berawan') || lower.contains('awan')) return 'Berawan';
+    if (lower.contains('clear') || lower.contains('cerah')) return 'Cerah';
+    if (lower.contains('mist') || lower.contains('fog') || lower.contains('kabut')) return 'Berkabut';
+    return '${lower[0].toUpperCase()}${lower.substring(1)}';
   }
 
   static String? getRecommendation(int conditionId) {
