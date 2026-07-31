@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,6 +17,7 @@ class DrugScreen extends StatefulWidget {
 
 class _DrugScreenState extends State<DrugScreen> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounceTimer;
 
   static const List<String> _categories = [
     'Semua',
@@ -28,6 +30,7 @@ class _DrugScreenState extends State<DrugScreen> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -71,11 +74,9 @@ class _DrugScreenState extends State<DrugScreen> {
                       return TextField(
                         controller: _searchController,
                         onChanged: (value) {
-                          // Debounce search
-                          Future.delayed(const Duration(milliseconds: 500),
-                              () {
-                            if (_searchController.text == value &&
-                                context.mounted) {
+                          _debounceTimer?.cancel();
+                          _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+                            if (_searchController.text == value && mounted) {
                               context
                                   .read<DrugBloc>()
                                   .add(SearchDrugs(query: value));
