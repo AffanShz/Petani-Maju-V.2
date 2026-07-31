@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Petani Maju membutuhkan akses lokasi untuk menampilkan prakiraan cuaca setempat.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Petani Maju membutuhkan akses kamera untuk memindai penyakit tanaman.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Petani Maju membutuhkan akses galeri untuk memilih foto tanaman.</string>
 </dict>
 </plist>
