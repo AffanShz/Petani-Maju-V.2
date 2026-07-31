@@ -227,6 +227,7 @@ class CacheService {
     await _locationBox.clear();
     await Hive.box(_plantingScheduleBoxName).clear();
     await _notificationHistoryBox.clear();
+    await _settingsBox.clear();
   }
 
   Box get _settingsBox => Hive.box(_settingsBoxName);

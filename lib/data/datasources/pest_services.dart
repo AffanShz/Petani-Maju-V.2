@@ -126,7 +126,20 @@ class PestService {
       }
 
       final file = File(filePath);
+      if (!await file.exists()) {
+        throw Exception('File tidak ditemukan.');
+      }
+
+      final length = await file.length();
+      if (length > 10 * 1024 * 1024) {
+        throw Exception('Ukuran file terlalu besar (maksimal 10MB).');
+      }
+
       final extension = filePath.split('.').last.toLowerCase();
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+      if (!allowedExtensions.contains(extension)) {
+        throw Exception('Format file tidak didukung. Harap unggah gambar JPG, PNG, atau WEBP.');
+      }
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.$extension';
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) {
