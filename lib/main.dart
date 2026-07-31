@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Core Services
 import 'package:petani_maju/core/services/cache_service.dart';
@@ -48,13 +47,6 @@ bool appStartedOffline = false;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-
-  // Load environment variables from .env file if available
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    debugPrint('Dotenv load skipped or asset not present: $e');
-  }
 
   assert(EnvConfig.validateHttpsUrls(), 'Security Warning: All base URLs must use HTTPS scheme');
 
