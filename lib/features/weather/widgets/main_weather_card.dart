@@ -17,7 +17,12 @@ class MainWeatherCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final main = currentWeather['main'];
-    final weather = currentWeather['weather'][0];
+    final weatherList = currentWeather['weather'];
+    final weather = (weatherList is List && weatherList.isNotEmpty && weatherList[0] is Map)
+        ? Map<String, dynamic>.from(weatherList[0] as Map)
+        : null;
+
+    if (main == null || weather == null) return const SizedBox();
     final weatherMain = weather['main'] as String?;
     final gradientColors = _getWeatherGradient(weatherMain);
     final now = DateTime.now();
