@@ -81,20 +81,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _toggleOfflineMode(bool value) async {
     await _cacheService.setOfflineMode(value);
+    if (!mounted) return;
     setState(() {
       _offlineMode = value;
     });
 
-    if (mounted) {
-      AppToast.show(
-        context,
-        message: value
-            ? 'settings.offline_active'.tr()
-            : 'settings.online_active'.tr(),
-        type: value ? ToastType.warning : ToastType.success,
-        icon: value ? Icons.cloud_off : Icons.cloud_done,
-      );
-    }
+    AppToast.show(
+      context,
+      message: value
+          ? 'settings.offline_active'.tr()
+          : 'settings.online_active'.tr(),
+      type: value ? ToastType.warning : ToastType.success,
+      icon: value ? Icons.cloud_off : Icons.cloud_done,
+    );
   }
 
   @override
@@ -225,6 +224,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () async {
                     try {
                       await Supabase.instance.client.auth.signOut();
+                      await CacheService().clearAllCache();
                     } catch (e) {
                       if (kDebugMode) print('Sign out error: $e');
                     }
