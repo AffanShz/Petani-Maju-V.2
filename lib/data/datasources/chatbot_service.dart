@@ -62,7 +62,7 @@ class ChatbotService {
     String accumulatedText = '';
 
     try {
-      final response = await client.send(request);
+      final response = await client.send(request).timeout(const Duration(seconds: 15));
 
       if (response.statusCode != 200) {
         final body = await response.stream.bytesToString();
