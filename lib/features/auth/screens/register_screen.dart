@@ -109,10 +109,13 @@ class _RegisterViewState extends State<_RegisterView> {
         if (state is AuthSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Registrasi berhasil! Silakan masuk.'),
+              content: Text('Registrasi berhasil! Selamat datang.'),
               backgroundColor: AppColors.primaryGreen,
             ),
           );
+          if (Supabase.instance.client.auth.currentSession != null) {
+            context.read<AppBloc>().add(AppLoggedIn());
+          }
           Navigator.of(context).pop();
         } else if (state is AuthFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
