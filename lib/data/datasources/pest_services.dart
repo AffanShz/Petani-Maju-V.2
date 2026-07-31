@@ -128,7 +128,11 @@ class PestService {
       final file = File(filePath);
       final extension = filePath.split('.').last.toLowerCase();
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.$extension';
-      final path = 'history/$fileName';
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User belum login. Tidak dapat mengunggah gambar.');
+      }
+      final path = 'history/$userId/$fileName';
 
       await _supabase.storage.from('images').upload(path, file);
 
