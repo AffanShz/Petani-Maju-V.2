@@ -18,20 +18,23 @@ class AppToast {
     final overlayState = Overlay.maybeOf(context);
     if (overlayState == null) return;
 
-    _currentEntry = OverlayEntry(
+    late OverlayEntry entry;
+    entry = OverlayEntry(
       builder: (context) => _ToastWidget(
         message: message,
         type: type,
         duration: duration,
         icon: icon,
-        onDismiss: dismiss,
+        onDismiss: () => dismiss(entry),
       ),
     );
 
+    _currentEntry = entry;
     overlayState.insert(_currentEntry!);
   }
 
-  static void dismiss() {
+  static void dismiss([OverlayEntry? entry]) {
+    if (entry != null && _currentEntry != entry) return;
     _currentEntry?.remove();
     _currentEntry = null;
   }
