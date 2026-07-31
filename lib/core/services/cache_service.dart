@@ -229,9 +229,17 @@ class CacheService {
     await _notificationHistoryBox.clear();
   }
 
-  // ==================== SETTINGS ====================
-
   Box get _settingsBox => Hive.box(_settingsBoxName);
+
+  /// Generic helper to get cached data from settings box
+  T? getCachedData<T>(String key) {
+    return _settingsBox.get(key) as T?;
+  }
+
+  /// Generic helper to save cached data to settings box
+  Future<void> saveCachedData(String key, dynamic value) async {
+    await _settingsBox.put(key, value);
+  }
 
   /// Set offline mode preference
   Future<void> setOfflineMode(bool value) async {
