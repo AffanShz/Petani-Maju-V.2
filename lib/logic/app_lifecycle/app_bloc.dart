@@ -28,6 +28,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     on<CompleteOnboarding>(_onCompleteOnboarding);
     on<AppLoggedIn>(_onAppLoggedIn);
     on<AppLoggedOut>(_onAppLoggedOut);
+    on<AppResumed>(_onAppResumed);
   }
 
   /// Handle aplikasi pertama kali dimulai
@@ -141,6 +142,33 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   ) {
     emit(AppLogin());
     debugPrint('AppBloc: User logged out, showing login screen.');
+  }
+
+  /// Revalidasi sesi saat aplikasi kembali ke foreground.
+  /// Mendeteksi sesi yang dicabut dari server (logout jarak jauh,
+  /// ganti password, token kedaluwarsa) dan menandai app offline.
+  Future<void> _onAppResumed(
+    AppResumed event,
+    Emitter<AppState> emit,
+  ) async {
+    if (state is! AppReady) return;
+
+    try {
+      // Coba refresh token untuk revalidasi ke server. Jika refresh token
+      // sudah tidak valid (sesi dicabut), server menolak -> AuthException.
+      final refreshed = await Supabase.instance.client.auth.refreshSession();
+      if (refreshed.session == null) {
+        debugPrint('AppBloc: Session revoked, showing login screen.');
+        emit(AppLogin());
+      }
+    } on AuthException catch (e) {
+      // Refresh token ditolak server -> sesi dicabut / kedaluwarsa permanen
+      debugPrint('AppBloc: Session revoked ($e), showing login screen.');
+      emit(AppLogin());
+    } catch (e) {
+      // Offline / jaringan gagal -> tetap di AppReady dan andalkan cache
+      debugPrint('AppBloc: Session revalidation failed ($e)');
+    }
   }
 
   @override

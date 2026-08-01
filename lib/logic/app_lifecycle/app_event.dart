@@ -38,3 +38,6 @@ class AppLoggedIn extends AppEvent {}
 
 /// Event saat user logout
 class AppLoggedOut extends AppEvent {}
+
+/// Event saat aplikasi kembali ke foreground (resume)
+class AppResumed extends AppEvent {}
