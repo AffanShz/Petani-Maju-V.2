@@ -137,12 +137,7 @@ class CacheService {
 
   /// Get cached tips list
   List<Map<String, dynamic>>? getCachedTips() {
-    final data = _tipsBox.get('tips');
-    if (data != null) {
-      return List<Map<String, dynamic>>.from(
-          (data as List).map((item) => Map<String, dynamic>.from(item)));
-    }
-    return null;
+    return _safeListOfMap(_tipsBox.get('tips'));
   }
 
   /// Get tips cache timestamp
@@ -192,12 +187,7 @@ class CacheService {
 
   /// Get cached pests list
   List<Map<String, dynamic>>? getCachedPests() {
-    final data = _tipsBox.get('pests');
-    if (data != null) {
-      return List<Map<String, dynamic>>.from(
-          (data as List).map((item) => Map<String, dynamic>.from(item)));
-    }
-    return null;
+    return _safeListOfMap(_tipsBox.get('pests'));
   }
 
   // ==================== DRUGS CACHE ====================
@@ -210,12 +200,24 @@ class CacheService {
 
   /// Get cached drugs list
   List<Map<String, dynamic>>? getCachedDrugs() {
-    final data = _tipsBox.get('drugs');
-    if (data != null) {
-      return List<Map<String, dynamic>>.from(
-          (data as List).map((item) => Map<String, dynamic>.from(item)));
+    return _safeListOfMap(_tipsBox.get('drugs'));
+  }
+
+  /// Safe-convert nilai Hive ke List<Map<String, dynamic>>.
+  /// Return null jika tipe tidak sesuai (data korup/legacy) sehingga
+  /// pemanggil bisa fallback ke API tanpa crash.
+  static List<Map<String, dynamic>>? _safeListOfMap(dynamic data) {
+    if (data is! List) return null;
+    final result = <Map<String, dynamic>>[];
+    for (final item in data) {
+      if (item is! Map) return null;
+      try {
+        result.add(Map<String, dynamic>.from(item));
+      } catch (_) {
+        return null;
+      }
     }
-    return null;
+    return result;
   }
 
   // ==================== UTILITY ====================
