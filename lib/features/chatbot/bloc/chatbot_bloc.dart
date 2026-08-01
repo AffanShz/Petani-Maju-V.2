@@ -62,6 +62,7 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
       );
 
       await for (final token in stream) {
+        if (isClosed) return;
         accumulatedText += token;
         currentMessages[botIndex] = ChatMessage(
           role: MessageRole.bot,
@@ -75,6 +76,7 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
         ));
       }
 
+      if (isClosed) return;
       currentMessages[botIndex] = ChatMessage(
         role: MessageRole.bot,
         content: accumulatedText,
@@ -86,6 +88,7 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
         isStreaming: false,
       ));
     } catch (e) {
+      if (isClosed) return;
       debugPrint('ChatbotBloc Error: $e');
       currentMessages[botIndex] = ChatMessage(
         role: MessageRole.bot,

@@ -47,6 +47,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 50,
+        maxWidth: 1080,
+        maxHeight: 1080,
       );
 
       if (image != null) {

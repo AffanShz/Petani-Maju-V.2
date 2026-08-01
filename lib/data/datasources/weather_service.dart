@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:petani_maju/core/constants/env_config.dart';
 
 class WeatherService {
-  String get apiKey => dotenv.env['OPENWEATHER_API_KEY'] ?? '';
+  String get apiKey => EnvConfig.openWeatherApiKey;
 
   final double lat = -6.5716;
   final double lon = 107.7587;
@@ -17,7 +17,7 @@ class WeatherService {
     final longitude = lon ?? this.lon;
 
     if (apiKey.isEmpty) {
-      throw Exception('API Key not found in .env');
+      throw Exception('API Key not configured. Build with --dart-define-from-file=secrets.json');
     }
 
     final url = Uri.parse(
@@ -36,7 +36,7 @@ class WeatherService {
     final longitude = lon ?? this.lon;
 
     if (apiKey.isEmpty) {
-      throw Exception('API Key not found in .env');
+      throw Exception('API Key not configured. Build with --dart-define-from-file=secrets.json');
     }
 
     final url = Uri.parse(

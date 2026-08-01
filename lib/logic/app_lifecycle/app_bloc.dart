@@ -28,6 +28,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     on<CompleteOnboarding>(_onCompleteOnboarding);
     on<AppLoggedIn>(_onAppLoggedIn);
     on<AppLoggedOut>(_onAppLoggedOut);
+    on<AppResumed>(_onAppResumed);
   }
 
   /// Handle aplikasi pertama kali dimulai
@@ -45,28 +46,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         add(ConnectivityChanged(isConnected: !isOffline));
       });
 
-      // Check initial connectivity from CacheService (set by ConnectivityService.init)
-      final offlineModeEnabled = _cacheService.getOfflineMode();
-      // Since ConnectivityService.init run before this, getOfflineMode reflects actual connectivity status initially
-      // But we generally separate "System Connectivity" (isConnected) from "User Preference" (offlineModeEnabled)
-      // For now, let's assume if CacheService says we are offline, we are offline unless user toggled it?
-      // Actually, CacheService stores the user preference for offline mode in 'offlineMode'.
-      // Wait, ConnectivityService.init updates 'offlineMode' in cache automatically?
-      // Yes: _cacheService.setOfflineMode(isOffline); in ConnectivityService.dart
-
-      // So getOfflineMode() returns the actual connectivity status or the user forced blocking?
-      // Looking at ConnectivityService: it calls setOfflineMode(isOffline).
-      // So 'offlineMode' in cache effectively tracks "is the app currently offline due to net or user?".
-      // But AppBloc separates isConnected vs offlineModeEnabled.
-
-      // Let's rely on ConnectivityService for 'isConnected'.
-      // Effectively, we can just assume we are connected initially if we want,
-      // or we trust that the stream will emit immediately if we listen? Streams don't emit current value on listen usually unless BehaviourSubject.
-
-      // Since we don't want to await checkConnectivity again, let's assume true and let the stream correct us,
-      // OR better, checking CacheService is safe.
-      final isConnected = !_cacheService
-          .getOfflineMode(); // Use the cache as a proxy for initial state
+      // Check initial connectivity & offline pref dari cache.
+      // offlineMode = preferensi manual user; isConnected = status sistem
+      // (ditulis oleh ConnectivityService / startup).
+      final offlineModeEnabled = _cacheService.getUserPrefOfflineMode();
+      final isConnected = _cacheService.isConnected();
 
       // Check for first time launch for Onboarding
       if (_cacheService.isFirstTime()) {
@@ -74,8 +58,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         return;
       }
 
-      // Check if user is already authenticated
-      final currentUser = Supabase.instance.client.auth.currentUser;
+      // Check if user is already authenticated (safely handle uninitialized Supabase)
+      User? currentUser;
+      try {
+        currentUser = Supabase.instance.client.auth.currentUser;
+      } catch (e) {
+        debugPrint('AppBloc: Supabase not initialized or offline ($e)');
+      }
+
       if (currentUser != null) {
         emit(AppReady(
           isConnected: isConnected,
@@ -98,7 +88,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     ConnectivityChanged event,
     Emitter<AppState> emit,
   ) async {
-    await _cacheService.setOfflineMode(!event.isConnected);
+    await _cacheService.setConnected(event.isConnected);
 
     final currentState = state;
     if (currentState is AppReady) {
@@ -135,8 +125,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     AppLoggedIn event,
     Emitter<AppState> emit,
   ) async {
-    final offlineModeEnabled = _cacheService.getOfflineMode();
-    final isConnected = !_cacheService.getOfflineMode();
+    final offlineModeEnabled = _cacheService.getUserPrefOfflineMode();
+    final isConnected = _cacheService.isConnected();
 
     emit(AppReady(
       isConnected: isConnected,
@@ -152,6 +142,33 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   ) {
     emit(AppLogin());
     debugPrint('AppBloc: User logged out, showing login screen.');
+  }
+
+  /// Revalidasi sesi saat aplikasi kembali ke foreground.
+  /// Mendeteksi sesi yang dicabut dari server (logout jarak jauh,
+  /// ganti password, token kedaluwarsa) dan menandai app offline.
+  Future<void> _onAppResumed(
+    AppResumed event,
+    Emitter<AppState> emit,
+  ) async {
+    if (state is! AppReady) return;
+
+    try {
+      // Coba refresh token untuk revalidasi ke server. Jika refresh token
+      // sudah tidak valid (sesi dicabut), server menolak -> AuthException.
+      final refreshed = await Supabase.instance.client.auth.refreshSession();
+      if (refreshed.session == null) {
+        debugPrint('AppBloc: Session revoked, showing login screen.');
+        emit(AppLogin());
+      }
+    } on AuthException catch (e) {
+      // Refresh token ditolak server -> sesi dicabut / kedaluwarsa permanen
+      debugPrint('AppBloc: Session revoked ($e), showing login screen.');
+      emit(AppLogin());
+    } catch (e) {
+      // Offline / jaringan gagal -> tetap di AppReady dan andalkan cache
+      debugPrint('AppBloc: Session revalidation failed ($e)');
+    }
   }
 
   @override

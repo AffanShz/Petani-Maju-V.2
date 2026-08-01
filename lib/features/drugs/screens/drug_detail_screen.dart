@@ -256,7 +256,9 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
                         child: _buildInfoCard(
                           icon: Icons.local_pharmacy_outlined,
                           title: 'Bahan Aktif',
-                          value: drug['bahan_aktif'].toString().split(',')[0],
+                          value: (drug['bahan_aktif'] != null && drug['bahan_aktif'].toString().isNotEmpty)
+                              ? drug['bahan_aktif'].toString().split(',')[0].trim()
+                              : '-',
                           color: Colors.blue,
                         ),
                       ),
@@ -265,7 +267,9 @@ class _DrugDetailScreenState extends State<DrugDetailScreen> {
                         child: _buildInfoCard(
                           icon: Icons.format_list_bulleted,
                           title: 'Dosis',
-                          value: drug['dosis'].toString().split('per')[0].trim(),
+                          value: (drug['dosis'] != null && drug['dosis'].toString().isNotEmpty)
+                              ? drug['dosis'].toString().split('per')[0].trim()
+                              : '-',
                           color: Colors.orange,
                         ),
                       ),

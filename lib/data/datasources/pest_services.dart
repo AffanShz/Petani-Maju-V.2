@@ -126,9 +126,26 @@ class PestService {
       }
 
       final file = File(filePath);
+      if (!await file.exists()) {
+        throw Exception('File tidak ditemukan.');
+      }
+
+      final length = await file.length();
+      if (length > 10 * 1024 * 1024) {
+        throw Exception('Ukuran file terlalu besar (maksimal 10MB).');
+      }
+
       final extension = filePath.split('.').last.toLowerCase();
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+      if (!allowedExtensions.contains(extension)) {
+        throw Exception('Format file tidak didukung. Harap unggah gambar JPG, PNG, atau WEBP.');
+      }
       final fileName = '${DateTime.now().millisecondsSinceEpoch}.$extension';
-      final path = 'history/$fileName';
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User belum login. Tidak dapat mengunggah gambar.');
+      }
+      final path = 'history/$userId/$fileName';
 
       await _supabase.storage.from('images').upload(path, file);
 
@@ -150,6 +167,7 @@ class PestService {
       if (kDebugMode) debugPrint('PestService: Successfully saved prediction history');
     } catch (e) {
       if (kDebugMode) debugPrint('PestService Error saving history: $e');
+      rethrow;
     }
   }
 
