@@ -49,8 +49,8 @@ class ConnectivityService {
       print('Connectivity changed: $results -> Offline: $isOffline');
     }
 
-    // Update CacheService
-    _cacheService.setOfflineMode(isOffline);
+    // Catat status koneksi sistem (terpisah dari preferensi offline user)
+    _cacheService.setConnected(isConnected);
 
     // Notify UI listeners
     _offlineStatusController.add(isOffline);

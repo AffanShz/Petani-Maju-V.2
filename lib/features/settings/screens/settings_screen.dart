@@ -11,7 +11,6 @@ import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
 import 'package:petani_maju/features/settings/screens/notification_settings_screen.dart';
 import 'package:petani_maju/features/settings/screens/help_support_screen.dart';
 import 'package:petani_maju/features/settings/screens/about_app_screen.dart';
-import 'package:petani_maju/core/services/connectivity_service.dart';
 import 'package:petani_maju/widgets/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:async';
@@ -25,8 +24,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final CacheService _cacheService = CacheService();
-  final ConnectivityService _connectivityService = ConnectivityService();
-  StreamSubscription<bool>? _offlineSubscription;
   StreamSubscription<Map<String, String?>>? _profileSubscription;
   bool _offlineMode = false;
   String _userName = '';
@@ -36,19 +33,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _loadOfflineMode();
-    _listenToConnectivity();
+    _listenToProfileChanges();
   }
 
-  void _listenToConnectivity() {
-    _offlineSubscription =
-        _connectivityService.offlineStatusStream.listen((isOffline) {
-      if (mounted) {
-        setState(() {
-          _offlineMode = isOffline;
-        });
-      }
-    });
-
+  void _listenToProfileChanges() {
     _profileSubscription = _cacheService.profileUpdateStream.listen((profile) {
       if (mounted) {
         setState(() {
@@ -63,14 +51,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
-    _offlineSubscription?.cancel();
     _profileSubscription?.cancel();
     super.dispose();
   }
 
   void _loadOfflineMode() {
     setState(() {
-      _offlineMode = _cacheService.getOfflineMode();
+      _offlineMode = _cacheService.getUserPrefOfflineMode();
       final profile = _cacheService.getUserProfile();
       _userName = profile['name']?.isNotEmpty == true
           ? profile['name']!
