@@ -356,12 +356,13 @@ class CacheService {
     return history;
   }
 
-  /// Remove notification by ID
+  /// Remove semua history dengan ID tertentu
   Future<void> removeNotification(int id) async {
     final history = _notificationHistoryBox.values.toList();
-    final index = history.indexWhere((element) => element['id'] == id);
-    if (index != -1) {
-      await _notificationHistoryBox.deleteAt(index);
+    for (int i = history.length - 1; i >= 0; i--) {
+      if (history[i]['id'] == id) {
+        await _notificationHistoryBox.deleteAt(i);
+      }
     }
   }
 
