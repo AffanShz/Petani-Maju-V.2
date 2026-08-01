@@ -10,6 +10,7 @@ import 'package:easy_localization/easy_localization.dart';
 // Core Services
 import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/core/services/notification_service.dart';
+import 'package:petani_maju/core/services/secure_local_storage.dart';
 
 import 'package:petani_maju/core/services/background_service.dart';
 import 'package:petani_maju/core/services/connectivity_service.dart';
@@ -35,6 +36,7 @@ import 'package:petani_maju/data/repositories/drug_repository.dart';
 
 // Global BLoC
 import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
+import 'package:petani_maju/logic/app_lifecycle/app_lifecycle_observer.dart';
 
 // UI
 import 'package:petani_maju/features/onboarding/screens/onboarding_screen.dart';
@@ -66,6 +68,11 @@ Future<void> main() async {
     await Supabase.initialize(
       url: EnvConfig.supabaseUrl,
       publishableKey: EnvConfig.supabaseAnonKey,
+      // Simpan session (JWT + refresh token) di secure storage,
+      // bukan plaintext SharedPreferences.
+      authOptions: FlutterAuthClientOptions(
+        localStorage: SecureLocalStorage(),
+      ),
     ).timeout(const Duration(seconds: 10));
     appStartedOffline = false;
   } on TimeoutException {
@@ -158,59 +165,61 @@ class MainApp extends StatelessWidget {
             )..add(AppStarted()),
           ),
         ],
-        child: MaterialApp(
-          title: 'Petani Maju',
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: context.localizationDelegates,
-          supportedLocales: context.supportedLocales,
-          locale: context.locale,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-            scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-            useMaterial3: true,
-          ),
-          home: BlocBuilder<AppBloc, AppState>(
-            builder: (context, state) {
-              if (state is AppLoading) {
-                return const Scaffold(
-                  body: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+        child: AppLifecycleObserver(
+          child: MaterialApp(
+            title: 'Petani Maju',
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: context.localizationDelegates,
+            supportedLocales: context.supportedLocales,
+            locale: context.locale,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+              scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+              useMaterial3: true,
+            ),
+            home: BlocBuilder<AppBloc, AppState>(
+              builder: (context, state) {
+                if (state is AppLoading) {
+                  return const Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                if (state is AppOnboarding) {
+                  return const OnboardingScreen();
+                }
+
+                if (state is AppLogin) {
+                  return const LoginScreen();
+                }
+
+                if (state is AppError) {
+                  return Scaffold(
+                    body: Center(
+                      child: Text(state.message.isNotEmpty
+                          ? state.message
+                          : 'Terjadi kesalahan, silakan restart aplikasi.'),
+                    ),
+                  );
+                }
+
+                return BlocListener<AppBloc, AppState>(
+                  listener: (context, state) {
+                    if (state is AppReady && !state.isConnected) {
+                      AppToast.show(
+                        context,
+                        message: 'Tidak ada koneksi internet. Menggunakan data tersimpan.',
+                        type: ToastType.warning,
+                        icon: Icons.wifi_off,
+                      );
+                    }
+                  },
+                  child: const MainScreen(),
                 );
-              }
-
-              if (state is AppOnboarding) {
-                return const OnboardingScreen();
-              }
-
-              if (state is AppLogin) {
-                return const LoginScreen();
-              }
-
-              if (state is AppError) {
-                return Scaffold(
-                  body: Center(
-                    child: Text(state.message.isNotEmpty
-                        ? state.message
-                        : 'Terjadi kesalahan, silakan restart aplikasi.'),
-                  ),
-                );
-              }
-
-              return BlocListener<AppBloc, AppState>(
-                listener: (context, state) {
-                  if (state is AppReady && !state.isConnected) {
-                    AppToast.show(
-                      context,
-                      message: 'Tidak ada koneksi internet. Menggunakan data tersimpan.',
-                      type: ToastType.warning,
-                      icon: Icons.wifi_off,
-                    );
-                  }
-                },
-                child: const MainScreen(),
-              );
-            },
+              },
+            ),
           ),
         ),
       ),
