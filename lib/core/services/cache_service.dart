@@ -242,14 +242,31 @@ class CacheService {
     await _settingsBox.put(key, value);
   }
 
-  /// Set offline mode preference
+  /// Set offline mode preference (toggle manual oleh user)
   Future<void> setOfflineMode(bool value) async {
     await _settingsBox.put('offlineMode', value);
   }
 
-  /// Get offline mode preference (default: false = online)
+  /// Get offline mode preference user (default: false = online)
+  bool getUserPrefOfflineMode() {
+    final v = _settingsBox.get('offlineMode');
+    return v is bool ? v : false;
+  }
+
+  /// Catat status koneksi sistem (ditulis oleh ConnectivityService)
+  Future<void> setConnected(bool value) async {
+    await _settingsBox.put('connected', value);
+  }
+
+  /// Status koneksi sistem (default: true hingga ConnectivityService menulis status)
+  bool isConnected() {
+    final v = _settingsBox.get('connected');
+    return v is bool ? v : true;
+  }
+
+  /// Offline efektif: preferensi user ATAU tidak ada koneksi internet
   bool getOfflineMode() {
-    return _settingsBox.get('offlineMode', defaultValue: false) as bool;
+    return getUserPrefOfflineMode() || !isConnected();
   }
 
   /// Save user profile

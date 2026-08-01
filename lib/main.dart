@@ -71,11 +71,11 @@ Future<void> main() async {
   } on TimeoutException {
     debugPrint('Supabase initialization timeout - continuing offline');
     appStartedOffline = true;
-    CacheService().setOfflineMode(true);
+    CacheService().setConnected(false);
   } catch (e) {
     debugPrint('Supabase initialization error: $e - continuing offline');
     appStartedOffline = true;
-    CacheService().setOfflineMode(true);
+    CacheService().setConnected(false);
   }
 
   runApp(
