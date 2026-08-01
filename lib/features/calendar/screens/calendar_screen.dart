@@ -754,11 +754,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   // Cancel old notifications
                                   final notif = NotificationService();
                                   await notif
-                                      .cancelNotification(scheduleId * 10 + 0);
+                                      .cancelNotification(100000 + scheduleId * 10 + 0);
                                   await notif
-                                      .cancelNotification(scheduleId * 10 + 1);
+                                      .cancelNotification(100000 + scheduleId * 10 + 1);
                                   await notif
-                                      .cancelNotification(scheduleId * 10 + 2);
+                                      .cancelNotification(100000 + scheduleId * 10 + 2);
 
                                   // Schedule new notifications
                                   await _scheduleNotifications(
@@ -836,7 +836,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       debugPrint('   ⏰ At time: $atTimeDate');
       if (atTimeDate.isAfter(DateTime.now())) {
         await notif.scheduleNotification(
-          id: scheduleId * 10 + 0,
+          id: 100000 + scheduleId * 10 + 0,
           title: '🌱 Waktunya: $plantName',
           body: 'Sekarang saatnya kegiatan $plantName.',
           scheduledDate: atTimeDate,
@@ -851,7 +851,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       debugPrint('   📆 1 day before: $oneDayBefore');
       if (oneDayBefore.isAfter(DateTime.now())) {
         await notif.scheduleNotification(
-          id: scheduleId * 10 + 1,
+          id: 100000 + scheduleId * 10 + 1,
           title: '📅 Pengingat Besok',
           body: 'Besok jam $timeFormatted ada kegiatan: $plantName',
           scheduledDate: oneDayBefore,
@@ -863,12 +863,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
       // 3. Notifikasi 1 jam sebelum
       final oneHourBefore = dateTime.subtract(const Duration(hours: 1));
-      debugPrint('   ⏱️ 1 hour before: $oneHourBefore');
+      debugPrint('   ⏰ 1 hour before: $oneHourBefore');
       if (oneHourBefore.isAfter(DateTime.now())) {
         await notif.scheduleNotification(
-          id: scheduleId * 10 + 2,
+          id: 100000 + scheduleId * 10 + 2,
           title: '⏰ 1 Jam Lagi!',
-          body: 'Jam $timeFormatted ada kegiatan: $plantName',
+          body: '1 jam lagi jam $timeFormatted ada kegiatan: $plantName',
           scheduledDate: oneHourBefore,
         );
         debugPrint('   ✅ 1-hour-before notification scheduled');

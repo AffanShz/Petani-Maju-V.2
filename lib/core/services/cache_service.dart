@@ -137,12 +137,7 @@ class CacheService {
 
   /// Get cached tips list
   List<Map<String, dynamic>>? getCachedTips() {
-    final data = _tipsBox.get('tips');
-    if (data != null) {
-      return List<Map<String, dynamic>>.from(
-          (data as List).map((item) => Map<String, dynamic>.from(item)));
-    }
-    return null;
+    return _safeListOfMap(_tipsBox.get('tips'));
   }
 
   /// Get tips cache timestamp
@@ -192,12 +187,7 @@ class CacheService {
 
   /// Get cached pests list
   List<Map<String, dynamic>>? getCachedPests() {
-    final data = _tipsBox.get('pests');
-    if (data != null) {
-      return List<Map<String, dynamic>>.from(
-          (data as List).map((item) => Map<String, dynamic>.from(item)));
-    }
-    return null;
+    return _safeListOfMap(_tipsBox.get('pests'));
   }
 
   // ==================== DRUGS CACHE ====================
@@ -210,12 +200,24 @@ class CacheService {
 
   /// Get cached drugs list
   List<Map<String, dynamic>>? getCachedDrugs() {
-    final data = _tipsBox.get('drugs');
-    if (data != null) {
-      return List<Map<String, dynamic>>.from(
-          (data as List).map((item) => Map<String, dynamic>.from(item)));
+    return _safeListOfMap(_tipsBox.get('drugs'));
+  }
+
+  /// Safe-convert nilai Hive ke List<Map<String, dynamic>>.
+  /// Return null jika tipe tidak sesuai (data korup/legacy) sehingga
+  /// pemanggil bisa fallback ke API tanpa crash.
+  static List<Map<String, dynamic>>? _safeListOfMap(dynamic data) {
+    if (data is! List) return null;
+    final result = <Map<String, dynamic>>[];
+    for (final item in data) {
+      if (item is! Map) return null;
+      try {
+        result.add(Map<String, dynamic>.from(item));
+      } catch (_) {
+        return null;
+      }
     }
-    return null;
+    return result;
   }
 
   // ==================== UTILITY ====================
@@ -227,20 +229,46 @@ class CacheService {
     await _locationBox.clear();
     await Hive.box(_plantingScheduleBoxName).clear();
     await _notificationHistoryBox.clear();
+    await _settingsBox.clear();
   }
-
-  // ==================== SETTINGS ====================
 
   Box get _settingsBox => Hive.box(_settingsBoxName);
 
-  /// Set offline mode preference
+  /// Generic helper to get cached data from settings box
+  T? getCachedData<T>(String key) {
+    return _settingsBox.get(key) as T?;
+  }
+
+  /// Generic helper to save cached data to settings box
+  Future<void> saveCachedData(String key, dynamic value) async {
+    await _settingsBox.put(key, value);
+  }
+
+  /// Set offline mode preference (toggle manual oleh user)
   Future<void> setOfflineMode(bool value) async {
     await _settingsBox.put('offlineMode', value);
   }
 
-  /// Get offline mode preference (default: false = online)
+  /// Get offline mode preference user (default: false = online)
+  bool getUserPrefOfflineMode() {
+    final v = _settingsBox.get('offlineMode');
+    return v is bool ? v : false;
+  }
+
+  /// Catat status koneksi sistem (ditulis oleh ConnectivityService)
+  Future<void> setConnected(bool value) async {
+    await _settingsBox.put('connected', value);
+  }
+
+  /// Status koneksi sistem (default: true hingga ConnectivityService menulis status)
+  bool isConnected() {
+    final v = _settingsBox.get('connected');
+    return v is bool ? v : true;
+  }
+
+  /// Offline efektif: preferensi user ATAU tidak ada koneksi internet
   bool getOfflineMode() {
-    return _settingsBox.get('offlineMode', defaultValue: false) as bool;
+    return getUserPrefOfflineMode() || !isConnected();
   }
 
   /// Save user profile
@@ -328,12 +356,13 @@ class CacheService {
     return history;
   }
 
-  /// Remove notification by ID
+  /// Remove semua history dengan ID tertentu
   Future<void> removeNotification(int id) async {
     final history = _notificationHistoryBox.values.toList();
-    final index = history.indexWhere((element) => element['id'] == id);
-    if (index != -1) {
-      await _notificationHistoryBox.deleteAt(index);
+    for (int i = history.length - 1; i >= 0; i--) {
+      if (history[i]['id'] == id) {
+        await _notificationHistoryBox.deleteAt(i);
+      }
     }
   }
 

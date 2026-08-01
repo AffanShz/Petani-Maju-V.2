@@ -46,36 +46,43 @@ class WeatherRepository {
     'name': 'Lokasi Anda',
   };
 
-  /// Dummy forecast cuaca untuk fallback — dibangun fresh setiap dipanggil
+  /// Dummy forecast cuaca untuk fallback — dibangun fresh setiap dipanggil.
+  /// Schema harus persis mengikuti OpenWeatherMap 5-day/3-hour forecast API
+  /// agar konsumen (forecast_list, hourly_forecast_widget, weather_detail_screen)
+  /// tidak crash saat membaca item['main']['temp'] & item['weather'][0]['icon'].
   static List<dynamic> _buildDummyForecast() {
     final now = DateTime.now();
     return [
       {
         'dt': now.add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
-        'temp': 28.0,
-        'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
+        'main': {'temp': 28.0, 'temp_min': 27.0, 'temp_max': 29.0, 'humidity': 70, 'pressure': 1013},
+        'weather': [{'id': 803, 'main': 'Clouds', 'description': 'Berawan', 'icon': '04d'}],
         'pop': 0.0,
+        'wind': {'speed': 3.0, 'deg': 200},
         'dt_txt': now.add(const Duration(hours: 1)).toIso8601String(),
       },
       {
         'dt': now.add(const Duration(hours: 7)).millisecondsSinceEpoch ~/ 1000,
-        'temp': 27.5,
-        'weather': [{'main': 'Rain', 'description': 'Hujan ringan'}],
+        'main': {'temp': 27.5, 'temp_min': 26.0, 'temp_max': 28.5, 'humidity': 75, 'pressure': 1012},
+        'weather': [{'id': 500, 'main': 'Rain', 'description': 'Hujan ringan', 'icon': '10d'}],
         'pop': 0.3,
+        'wind': {'speed': 4.0, 'deg': 210},
         'dt_txt': now.add(const Duration(hours: 7)).toIso8601String(),
       },
       {
         'dt': now.add(const Duration(hours: 13)).millisecondsSinceEpoch ~/ 1000,
-        'temp': 25.0,
-        'weather': [{'main': 'Rain', 'description': 'Hujan'}],
+        'main': {'temp': 25.0, 'temp_min': 24.0, 'temp_max': 26.0, 'humidity': 85, 'pressure': 1011},
+        'weather': [{'id': 501, 'main': 'Rain', 'description': 'Hujan', 'icon': '10n'}],
         'pop': 0.8,
+        'wind': {'speed': 5.0, 'deg': 220},
         'dt_txt': now.add(const Duration(hours: 13)).toIso8601String(),
       },
       {
         'dt': now.add(const Duration(hours: 19)).millisecondsSinceEpoch ~/ 1000,
-        'temp': 24.5,
-        'weather': [{'main': 'Clouds', 'description': 'Berawan'}],
+        'main': {'temp': 24.5, 'temp_min': 23.5, 'temp_max': 25.5, 'humidity': 72, 'pressure': 1012},
+        'weather': [{'id': 802, 'main': 'Clouds', 'description': 'Berawan', 'icon': '03n'}],
         'pop': 0.2,
+        'wind': {'speed': 3.5, 'deg': 230},
         'dt_txt': now.add(const Duration(hours: 19)).toIso8601String(),
       },
     ];

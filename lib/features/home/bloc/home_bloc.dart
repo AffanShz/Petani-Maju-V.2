@@ -206,11 +206,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         locationStr = await _weatherRepository.fetchDetailedLocation(lat, lon);
       }
 
-      // Save to cache via Repository
-      await _weatherRepository.saveWeatherToCache(
-        currentWeather: current,
-        forecastList: forecastList,
-      );
+      // Save to cache via Repository — hanya jika data benar-benar dari API,
+      // bukan dari dummy fallback. Dummy data di-persist akan menyebabkan
+      // crash berulang karena schema tidak lengkap.
+      final isRealApiData = current.containsKey('coord') || current.containsKey('sys');
+      if (isRealApiData) {
+        await _weatherRepository.saveWeatherToCache(
+          currentWeather: current,
+          forecastList: forecastList,
+        );
+      }
 
       // Generate rekomendasi tanaman
       final alertMessage = _generateRecommendation(current);

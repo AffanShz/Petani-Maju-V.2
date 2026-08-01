@@ -59,6 +59,9 @@ android/app/google-services.json
 
 # Local properties & API Keys
 local.properties
+key.properties
+*.keystore
+*.jks
 *.key
 *.pem
 *.p12

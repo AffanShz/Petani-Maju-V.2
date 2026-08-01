@@ -14,57 +14,58 @@ class TipsRepository {
   })  : _tipsService = tipsService,
         _cacheService = cacheService;
 
-  /// Dummy data tips lokal untuk fallback
+  /// Dummy data tips lokal untuk fallback.
+  /// Keys mengikuti schema yang dipakai UI & DB (title/category/content/image_url).
   static final List<Map<String, dynamic>> _dummyTips = [
     {
       'id': 1,
-      'judul': 'Cara Menanam Padi yang Benar',
-      'kategori': 'Padi',
-      'konten':
+      'title': 'Cara Menanam Padi yang Benar',
+      'category': 'Padi',
+      'content':
           'Padi adalah tanaman pangan utama. Berikut langkah menanam padi:\n1. Persiapan lahan selama 2 minggu\n2. Penyemaian benih berkualitas\n3. Penanaman dengan jarak 25x25cm\n4. Pemeliharaan rutin selama pertumbuhan\n5. Panen saat padi sudah masak kuning',
-      'gambar_url':
+      'image_url':
           'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=500',
       'tips_ekstra': 'Gunakan benih yang telah disertifikasi untuk hasil optimal.'
     },
     {
       'id': 2,
-      'judul': 'Budidaya Jagung untuk Pemula',
-      'kategori': 'Jagung',
-      'konten':
+      'title': 'Budidaya Jagung untuk Pemula',
+      'category': 'Jagung',
+      'content':
           'Jagung adalah komoditas bernilai tinggi. Tips budidaya jagung:\n1. Pilih varietas yang sesuai iklim\n2. Olah tanah hingga subur\n3. Tanam dengan jarak 75x25cm\n4. Berikan pupuk NPK saat berumur 3 minggu\n5. Rawat hingga panen (±4 bulan)',
-      'gambar_url':
+      'image_url':
           'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=500',
       'tips_ekstra': 'Jagung membutuhkan sinar matahari penuh untuk pertumbuhan optimal.'
     },
     {
       'id': 3,
-      'judul': 'Nutrisi Tanaman & Pemupukan Tepat',
-      'kategori': 'Nutrisi Tanaman',
-      'konten':
+      'title': 'Nutrisi Tanaman & Pemupukan Tepat',
+      'category': 'Nutrisi Tanaman',
+      'content':
           'Pemupukan yang tepat meningkatkan hasil panen hingga 40%.\nMacam nutrisi utama:\n- N (Nitrogen): untuk pertumbuhan daun dan batang\n- P (Fosfor): untuk pembentukan akar dan buah\n- K (Kalium): untuk ketahanan tanaman\nBerikan pupuk sesuai kebutuhan tanaman di setiap fase pertumbuhan.',
-      'gambar_url':
+      'image_url':
           'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=500',
       'tips_ekstra':
           'Gunakan pupuk organik sebagai dasar, tambah pupuk kimia sesuai kebutuhan.'
     },
     {
       'id': 4,
-      'judul': 'Pencegahan & Pengendalian Hama Tanaman',
-      'kategori': 'Hama & Penyakit',
-      'konten':
+      'title': 'Pencegahan & Pengendalian Hama Tanaman',
+      'category': 'Hama & Penyakit',
+      'content':
           'Hama dapat merusak hasil panen hingga 50%. Cara pencegahan:\n1. Gunakan bibit sehat\n2. Lakukan rotasi tanaman\n3. Pantau kehadiran hama secara berkala\n4. Gunakan pestisida nabati sebagai alternatif ramah lingkungan\n5. Aplikasi pestisida kimia jika diperlukan',
-      'gambar_url':
+      'image_url':
           'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=500',
       'tips_ekstra':
           'Panen hama secara manual pada tahap awal lebih efektif dan aman.'
     },
     {
       'id': 5,
-      'judul': 'Manajemen Irigasi di Musim Kering',
-      'kategori': 'Teknik Pertanian',
-      'konten':
+      'title': 'Manajemen Irigasi di Musim Kering',
+      'category': 'Teknik Pertanian',
+      'content':
           'Irigasi yang tepat sangat penting saat musim kering:\n1. Siram pada pagi atau sore hari untuk meminimalkan penguapan\n2. Berikan air secara konsisten, jangan hingga kering total\n3. Gunakan mulsa untuk menjaga kelembaban tanah\n4. Manfaatkan teknologi tetes (drip irrigation) jika memungkinkan',
-      'gambar_url':
+      'image_url':
           'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=500',
       'tips_ekstra':
           'Monitor curah hujan dan sesuaikan jadwal irigasi untuk efisiensi air.'

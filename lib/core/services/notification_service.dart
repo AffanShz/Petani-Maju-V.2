@@ -137,7 +137,9 @@ class NotificationService {
         payload: payload,
       );
 
-      // Save to history
+      // Save to history, dedupe per ID agar tidak menumpuk saat alert
+      // dire-schedule atau re-fire.
+      await CacheService().removeNotification(id);
       await CacheService().saveNotification({
         'id': id,
         'title': title,
@@ -225,7 +227,9 @@ class NotificationService {
             UILocalNotificationDateInterpretation.absoluteTime,
       );
 
-      // Save to history (with future timestamp)
+      // Save to history (with future timestamp), dedupe per ID agar tidak
+      // menumpuk saat jadwal yang sama dire-schedule (mis. briefing harian).
+      await CacheService().removeNotification(id);
       await CacheService().saveNotification({
         'id': id,
         'title': title,
