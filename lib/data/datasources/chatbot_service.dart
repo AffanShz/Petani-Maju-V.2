@@ -50,12 +50,15 @@ class ChatbotService {
       _history.removeRange(2, _history.length - _maxHistoryTurns * 2);
     }
 
+    // API key dikirim via header x-goog-api-key, bukan di query string,
+    // agar tidak bocor ke access-log server/CDN/proxy.
     final url = Uri.parse(
-      '$_apiBase/models/$_model:streamGenerateContent?alt=sse&key=$apiKey',
+      '$_apiBase/models/$_model:streamGenerateContent?alt=sse',
     );
 
     final request = http.Request('POST', url)
       ..headers['Content-Type'] = 'application/json'
+      ..headers['x-goog-api-key'] = apiKey
       ..body = json.encode({'contents': _history});
 
     final client = http.Client();
