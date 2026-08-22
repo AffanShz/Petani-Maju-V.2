@@ -4,14 +4,24 @@ import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/data/models/chat_message.dart';
 import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
+import 'package:petani_maju/features/chatbot/screens/chat_history_screen.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_bubble.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_input_bar.dart';
 import 'package:petani_maju/widgets/app_toast.dart';
 
 class ChatbotScreen extends StatelessWidget {
   final Map<String, dynamic>? currentWeather;
+  final String? initialPrompt;
+  final String? initialImagePath;
+  final bool autoSend;
 
-  const ChatbotScreen({super.key, this.currentWeather});
+  const ChatbotScreen({
+    super.key,
+    this.currentWeather,
+    this.initialPrompt,
+    this.initialImagePath,
+    this.autoSend = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,15 +29,28 @@ class ChatbotScreen extends StatelessWidget {
       create: (context) => ChatbotBloc(
         chatbotRepository: context.read<ChatbotRepository>(),
       ),
-      child: _ChatbotView(currentWeather: currentWeather),
+      child: _ChatbotView(
+        currentWeather: currentWeather,
+        initialPrompt: initialPrompt,
+        initialImagePath: initialImagePath,
+        autoSend: autoSend,
+      ),
     );
   }
 }
 
 class _ChatbotView extends StatefulWidget {
   final Map<String, dynamic>? currentWeather;
+  final String? initialPrompt;
+  final String? initialImagePath;
+  final bool autoSend;
 
-  const _ChatbotView({this.currentWeather});
+  const _ChatbotView({
+    this.currentWeather,
+    this.initialPrompt,
+    this.initialImagePath,
+    this.autoSend = false,
+  });
 
   @override
   State<_ChatbotView> createState() => _ChatbotViewState();
@@ -35,6 +58,22 @@ class _ChatbotView extends StatefulWidget {
 
 class _ChatbotViewState extends State<_ChatbotView> {
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autoSend &&
+        (widget.initialPrompt != null || widget.initialImagePath != null)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<ChatbotBloc>().add(const StartNewChat());
+        context.read<ChatbotBloc>().add(SendMessage(
+              text: widget.initialPrompt ?? '',
+              imagePath: widget.initialImagePath,
+              currentWeather: widget.currentWeather,
+            ));
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -59,10 +98,12 @@ class _ChatbotViewState extends State<_ChatbotView> {
         lower.contains('connect')) {
       return 'Tidak ada koneksi internet.';
     }
-    if (lower.contains('quota') || lower.contains('rate limit') || lower.contains('429')) {
+    if (lower.contains('quota') ||
+        lower.contains('rate limit') ||
+        lower.contains('429')) {
       return 'Terlalu banyak permintaan, coba lagi nanti.';
     }
-    return 'Error: $raw';
+    return raw;
   }
 
   void _scrollToBottom() {
@@ -77,6 +118,19 @@ class _ChatbotViewState extends State<_ChatbotView> {
     });
   }
 
+  void _openHistory(BuildContext context) {
+    final bloc = context.read<ChatbotBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: bloc,
+          child: const ChatHistoryScreen(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +140,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
         elevation: 1,
         title: const Row(
           children: [
-            Icon(Icons.eco, color: AppColors.primaryGreen, size: 22),
+            Icon(Icons.eco_rounded, color: AppColors.primaryGreen, size: 22),
             SizedBox(width: 8),
             Text(
               'Asisten Tani',
@@ -99,15 +153,21 @@ class _ChatbotViewState extends State<_ChatbotView> {
           ],
         ),
         actions: [
-          BlocBuilder<ChatbotBloc, ChatbotState>(
-            builder: (context, state) {
-              final hasMessages =
-                  state is ChatbotLoaded && state.messages.isNotEmpty;
-              return _AnimatedRefreshButton(
-                enabled: hasMessages,
-                onTap: () => context.read<ChatbotBloc>().add(const ResetChat()),
-              );
-            },
+          IconButton(
+            onPressed: () => _openHistory(context),
+            tooltip: 'Riwayat Konsultasi',
+            icon: const Icon(
+              Icons.history_rounded,
+              color: AppColors.primaryGreen,
+            ),
+          ),
+          IconButton(
+            onPressed: () => context.read<ChatbotBloc>().add(const StartNewChat()),
+            tooltip: 'Chat Baru',
+            icon: const Icon(
+              Icons.add_comment_outlined,
+              color: AppColors.primaryGreen,
+            ),
           ),
         ],
       ),
@@ -137,6 +197,10 @@ class _ChatbotViewState extends State<_ChatbotView> {
                         ? state.messages
                         : const <ChatMessage>[];
 
+                if (messages.isEmpty) {
+                  return _buildWelcomeScreen();
+                }
+
                 return ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -154,9 +218,10 @@ class _ChatbotViewState extends State<_ChatbotView> {
                   state is ChatbotLoaded && state.isStreaming;
               return ChatInputBar(
                 isStreaming: isStreaming,
-                onSend: (text) {
+                onSend: (text, imagePath) {
                   context.read<ChatbotBloc>().add(SendMessage(
                         text: text,
+                        imagePath: imagePath,
                         currentWeather: widget.currentWeather,
                       ));
                 },
@@ -179,7 +244,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
             ),
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -189,33 +254,39 @@ class _ChatbotViewState extends State<_ChatbotView> {
                         color: AppColors.primaryGreen.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.eco, size: 48, color: AppColors.primaryGreen),
+                      child: const Icon(
+                        Icons.eco_rounded,
+                        size: 48,
+                        color: AppColors.primaryGreen,
+                      ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
                     const Text(
-                      'Asisten Tani',
+                      'Asisten Tani & Kebun',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Text(
-                      'Tanyakan apa saja seputar pertanian, tanaman, hama, pupuk, atau jadwal tanam.',
+                      'Tanyakan seputar pertanian & perkebunan: tanaman, hama, penyakit, pupuk, atau lampirkan foto tanaman Anda.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         color: Colors.grey.shade600,
-                        height: 1.5,
+                        height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    _buildSuggestionChip('Cara mengatasi hama wereng?'),
+                    const SizedBox(height: 20),
+                    _buildSuggestionChip('Cara mengatasi hama wereng cokelat pada padi?'),
                     const SizedBox(height: 8),
-                    _buildSuggestionChip('Kapan waktu terbaik tanam padi?'),
+                    _buildSuggestionChip('Rekomendasi pemupukan kelapa sawit TM?'),
                     const SizedBox(height: 8),
-                    _buildSuggestionChip('Pupuk apa untuk tanaman cabai?'),
+                    _buildSuggestionChip('Mengapa daun cabai saya keriting dan menguning?'),
+                    const SizedBox(height: 8),
+                    _buildSuggestionChip('Kapan waktu ideal pemupukan kopi & kakao?'),
                   ],
                 ),
               ),
@@ -236,72 +307,42 @@ class _ChatbotViewState extends State<_ChatbotView> {
               ));
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: AppColors.primaryGreen,
-              fontSize: 13,
-            ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.lightbulb_outline_rounded,
+                size: 16,
+                color: AppColors.primaryGreen,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
     });
-  }
-}
-
-class _AnimatedRefreshButton extends StatefulWidget {
-  final bool enabled;
-  final VoidCallback onTap;
-
-  const _AnimatedRefreshButton({required this.enabled, required this.onTap});
-
-  @override
-  State<_AnimatedRefreshButton> createState() => _AnimatedRefreshButtonState();
-}
-
-class _AnimatedRefreshButtonState extends State<_AnimatedRefreshButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() {
-    if (!widget.enabled) return;
-    _controller.forward(from: 0);
-    widget.onTap();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: widget.enabled ? _handleTap : null,
-      tooltip: 'Reset chat',
-      icon: RotationTransition(
-        turns: _controller,
-        child: Icon(
-          Icons.refresh_outlined,
-          color: widget.enabled ? AppColors.primaryGreen : Colors.grey,
-        ),
-      ),
-    );
   }
 }
