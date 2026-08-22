@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,6 +7,7 @@ import 'package:petani_maju/core/constants/colors.dart';
 import '../../../data/models/prediction_history.dart';
 import '../../../data/datasources/pest_services.dart';
 import '../../drugs/screens/drug_detail_screen.dart';
+import '../../chatbot/screens/chatbot_screen.dart';
 
 class HistoryDetailScreen extends StatefulWidget {
   final PredictionHistory item;
@@ -570,11 +572,66 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
                   ],
                 ],
               ),
             ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              final isHealthy = widget.item.disease.toLowerCase().contains('sehat') ||
+                  widget.item.disease.toLowerCase().contains('healthy');
+              final prompt = isHealthy
+                  ? 'Saya melihat kembali riwayat analisis tanaman ${widget.item.plantType} yang berstatus Sehat (${(widget.item.confidence * 100).toStringAsFixed(1)}%). '
+                      'Tolong berikan rekomendasi perawatan tanaman dan pemupukan yang ideal agar tanaman tetap prima.'
+                  : 'Saya melihat kembali riwayat analisis penyakit tanaman ${widget.item.plantType}. '
+                      'Hasil deteksi menunjukkan "${widget.item.disease}" (${(widget.item.confidence * 100).toStringAsFixed(1)}%). '
+                      'Bisakah Anda memberikan rekomendasi penanganan dan langkah pencegahan terkini?';
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChatbotScreen(
+                    initialPrompt: prompt,
+                    initialImagePath:
+                        File(widget.item.imageUrl).existsSync()
+                            ? widget.item.imageUrl
+                            : null,
+                    autoSend: true,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.forum_outlined, size: 20),
+            label: const Text(
+              'Konsultasikan ke Asisten Tani',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryGreen,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

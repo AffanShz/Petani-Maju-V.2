@@ -13,6 +13,7 @@ import '../../../data/repositories/history_repository.dart';
 import '../../../data/datasources/pest_services.dart';
 import '../../../core/services/cache_service.dart';
 import '../../drugs/screens/drug_detail_screen.dart';
+import '../../chatbot/screens/chatbot_screen.dart';
 
 // Jenis tanaman yang didukung model penyakit
 const List<String> _plantTypes = [
@@ -801,6 +802,67 @@ class ScannerView extends StatelessWidget {
             ),
             const SizedBox(height: 24),
           ],
+
+          // Tombol Konsultasi ke Chatbot AI Asisten Tani
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                final isHealthy = state.label.toLowerCase().contains('sehat') ||
+                    state.label.toLowerCase().contains('healthy');
+                final prompt = isHealthy
+                    ? 'Saya baru saja memindai tanaman ${state.plantType} dan hasilnya menunjukkan kondisi Sehat (${(state.confidence * 100).toStringAsFixed(1)}%). '
+                        'Tolong berikan tips perawatan harian dan pemupukan yang ideal agar tanaman tetap sehat dan panen maksimal.'
+                    : 'Saya baru saja melakukan pemindaian pada tanaman ${state.plantType}. '
+                        'Hasil deteksi menunjukkan penyakit "${state.label}" dengan tingkat kepercayaan ${(state.confidence * 100).toStringAsFixed(1)}%. '
+                        'Tolong berikan penjelasan lengkap tentang cara penanganan ramah lingkungan, obat/fungisida yang tepat, dan langkah pencegahan agar tidak menular ke tanaman lain.';
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChatbotScreen(
+                      initialPrompt: prompt,
+                      initialImagePath: state.imagePath,
+                      autoSend: true,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.forum_outlined, size: 20),
+              label: const Text(
+                'Konsultasikan ke Asisten Tani',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
 
           // Action buttons
           Row(
