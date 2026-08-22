@@ -5,6 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:petani_maju/data/models/notification_settings.dart';
 
+import 'package:petani_maju/data/models/chat_session.dart';
+
 /// Service for caching API data locally using Hive
 /// Supports offline-first approach: load cache first, then fetch API
 class CacheService {
@@ -24,6 +26,7 @@ class CacheService {
   static const String _locationBoxName = 'locationCache';
   static const String _settingsBoxName = 'settingsCache';
   static const String _notificationHistoryBoxName = 'notificationHistory';
+  static const String _chatSessionsBoxName = 'chatSessionsCache';
 
   /// Initialize Hive and open all boxes with encryption
   /// Call this in main() before runApp()
@@ -43,6 +46,8 @@ class CacheService {
     await Hive.openBox(_plantingScheduleBoxName,
         encryptionCipher: HiveAesCipher(encryptionKey));
     await Hive.openBox(_notificationHistoryBoxName,
+        encryptionCipher: HiveAesCipher(encryptionKey));
+    await Hive.openBox(_chatSessionsBoxName,
         encryptionCipher: HiveAesCipher(encryptionKey));
   }
 
@@ -229,6 +234,7 @@ class CacheService {
     await _locationBox.clear();
     await Hive.box(_plantingScheduleBoxName).clear();
     await _notificationHistoryBox.clear();
+    await _chatSessionsBox.clear();
     await _settingsBox.clear();
   }
 
@@ -383,4 +389,70 @@ class CacheService {
     final v = _settingsBox.get(key);
     return v?.toString();
   }
+
+  // ==================== CHAT SESSIONS ====================
+
+  Box get _chatSessionsBox => Hive.box(_chatSessionsBoxName);
+
+  /// Save or update a chat session
+  Future<void> saveChatSession(ChatSession session) async {
+    await _chatSessionsBox.put(session.id, session.toJson());
+  }
+
+  /// Get all chat sessions, sorted by newest updated first
+  List<ChatSession> getChatSessions() {
+    final values = _chatSessionsBox.values.toList();
+    final List<ChatSession> sessions = [];
+
+    for (final item in values) {
+      if (item is Map) {
+        try {
+          sessions.add(ChatSession.fromJson(Map<String, dynamic>.from(item)));
+        } catch (e) {
+          debugPrint('CacheService: Error parsing chat session: $e');
+        }
+      }
+    }
+
+    sessions.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return sessions;
+  }
+
+  /// Get a single chat session by ID
+  ChatSession? getChatSession(String id) {
+    final data = _chatSessionsBox.get(id);
+    if (data != null && data is Map) {
+      try {
+        return ChatSession.fromJson(Map<String, dynamic>.from(data));
+      } catch (e) {
+        debugPrint('CacheService: Error parsing chat session $id: $e');
+      }
+    }
+    return null;
+  }
+
+  /// Delete a chat session by ID
+  Future<void> deleteChatSession(String id) async {
+    await _chatSessionsBox.delete(id);
+  }
+
+  /// Clear all chat sessions
+  Future<void> clearAllChatSessions() async {
+    await _chatSessionsBox.clear();
+  }
+
+  /// Save last active chat session ID
+  Future<void> setLastActiveChatSessionId(String? id) async {
+    if (id == null) {
+      await _settingsBox.delete('lastActiveChatSessionId');
+    } else {
+      await _settingsBox.put('lastActiveChatSessionId', id);
+    }
+  }
+
+  /// Get last active chat session ID
+  String? getLastActiveChatSessionId() {
+    return _settingsBox.get('lastActiveChatSessionId') as String?;
+  }
 }
+
