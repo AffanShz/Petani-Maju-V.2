@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:petani_maju/data/models/chat_message.dart';
 
 class ChatbotService {
   final String apiKey;
   final List<Map<String, dynamic>> _history = [];
 
   static const String _model = 'gemini-3.5-flash';
-  static const String _apiBase = 'https://generativelanguage.googleapis.com/v1';
+  static const String _apiBase =
+      'https://generativelanguage.googleapis.com/v1beta';
 
   ChatbotService({required this.apiKey});
 
@@ -25,7 +28,7 @@ class ChatbotService {
       'parts': [
         {
           'text':
-              'Mengerti. Saya Asisten Tani, siap membantu pertanyaan seputar pertanian.'
+              'Mengerti. Saya Asisten Tani, siap membantu seluruh pertanyaan dan analisis seputar pertanian dan perkebunan.'
         }
       ]
     });
@@ -35,14 +38,65 @@ class ChatbotService {
     initSession(systemPrompt: systemPrompt);
   }
 
-  static const int _maxHistoryTurns = 20; // user+model pairs
+  void loadSessionHistory(List<ChatMessage> messages,
+      {required String systemPrompt}) {
+    initSession(systemPrompt: systemPrompt);
+    for (final message in messages) {
+      if (message.content.isEmpty) continue;
+      _history.add({
+        'role': message.role == MessageRole.user ? 'user' : 'model',
+        'parts': [
+          {'text': message.content}
+        ]
+      });
+    }
+  }
 
-  Stream<String> sendMessageStream(String prompt) async* {
+  static const int _maxHistoryTurns = 15; // user+model pairs
+
+  String _getMimeType(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.heic')) return 'image/heic';
+    if (lower.endsWith('.heif')) return 'image/heif';
+    return 'image/jpeg';
+  }
+
+  Stream<String> sendMessageStream({
+    required String prompt,
+    File? imageFile,
+  }) async* {
+    final List<Map<String, dynamic>> userParts = [];
+
+    final textPrompt = prompt.isNotEmpty
+        ? prompt
+        : (imageFile != null
+            ? 'Tolong analisis gambar ini terkait pertanian atau perkebunan (nama tanaman, kondisi, hama/penyakit, atau rekomendasi perawatannya).'
+            : 'Halo Asisten Tani.');
+
+    userParts.add({'text': textPrompt});
+
+    if (imageFile != null && await imageFile.exists()) {
+      try {
+        final bytes = await imageFile.readAsBytes();
+        final mimeType = _getMimeType(imageFile.path);
+        final base64Image = base64Encode(bytes);
+
+        userParts.add({
+          'inline_data': {
+            'mime_type': mimeType,
+            'data': base64Image,
+          }
+        });
+      } catch (e) {
+        debugPrint('ChatbotService: Failed to read image bytes: $e');
+      }
+    }
+
     _history.add({
       'role': 'user',
-      'parts': [
-        {'text': prompt}
-      ]
+      'parts': userParts,
     });
 
     // Keep system seed (2 entries) + last N turns to avoid context overflow
@@ -65,7 +119,8 @@ class ChatbotService {
     String accumulatedText = '';
 
     try {
-      final response = await client.send(request).timeout(const Duration(seconds: 15));
+      final response =
+          await client.send(request).timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
         final body = await response.stream.bytesToString();
@@ -95,7 +150,8 @@ class ChatbotService {
         } catch (e) {
           // Log parse error tapi lanjutkan stream
           debugPrint('ChatbotService: SSE parse error: $e, data: $data');
-        }      }
+        }
+      }
 
       if (accumulatedText.isNotEmpty) {
         _history.add({
