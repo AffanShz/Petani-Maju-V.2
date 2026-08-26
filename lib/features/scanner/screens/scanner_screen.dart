@@ -824,20 +824,11 @@ class ScannerView extends StatelessWidget {
             ),
             child: ElevatedButton.icon(
               onPressed: () {
-                final isHealthy = state.label.toLowerCase().contains('sehat') ||
-                    state.label.toLowerCase().contains('healthy');
-                final prompt = isHealthy
-                    ? 'Saya baru saja memindai tanaman ${state.plantType} dan hasilnya menunjukkan kondisi Sehat (${(state.confidence * 100).toStringAsFixed(1)}%). '
-                        'Tolong berikan tips perawatan harian dan pemupukan yang ideal agar tanaman tetap sehat dan panen maksimal.'
-                    : 'Saya baru saja melakukan pemindaian pada tanaman ${state.plantType}. '
-                        'Hasil deteksi menunjukkan penyakit "${state.label}" dengan tingkat kepercayaan ${(state.confidence * 100).toStringAsFixed(1)}%. '
-                        'Tolong berikan penjelasan lengkap tentang cara penanganan ramah lingkungan, obat/fungisida yang tepat, dan langkah pencegahan agar tidak menular ke tanaman lain.';
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => ChatbotScreen(
-                      initialPrompt: prompt,
+                      initialPrompt: '',
                       initialImagePath: state.imagePath,
                       autoSend: true,
                     ),

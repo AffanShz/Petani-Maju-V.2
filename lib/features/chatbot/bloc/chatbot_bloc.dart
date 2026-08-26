@@ -150,6 +150,8 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
         userText: sanitized,
         imagePath: event.imagePath,
         currentWeather: event.currentWeather,
+        plantingSchedules: event.plantingSchedules,
+        recentScanHistory: event.recentScanHistory,
       );
 
       await for (final token in stream) {
