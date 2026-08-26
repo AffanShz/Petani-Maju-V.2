@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/data/models/chat_message.dart';
+import 'package:petani_maju/data/repositories/calendar_repository.dart';
 import 'package:petani_maju/data/repositories/chatbot_repository.dart';
+import 'package:petani_maju/data/repositories/history_repository.dart';
 import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
 import 'package:petani_maju/features/chatbot/screens/chat_history_screen.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_bubble.dart';
@@ -58,21 +60,57 @@ class _ChatbotView extends StatefulWidget {
 
 class _ChatbotViewState extends State<_ChatbotView> {
   final ScrollController _scrollController = ScrollController();
+  List<dynamic>? _plantingSchedules;
+  List<dynamic>? _recentScanHistory;
 
   @override
   void initState() {
     super.initState();
+    _loadExtraContext();
+
     if (widget.autoSend &&
         (widget.initialPrompt != null || widget.initialImagePath != null)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<ChatbotBloc>().add(const StartNewChat());
-        context.read<ChatbotBloc>().add(SendMessage(
-              text: widget.initialPrompt ?? '',
-              imagePath: widget.initialImagePath,
-              currentWeather: widget.currentWeather,
-            ));
+        _dispatchSendMessage(
+          text: widget.initialPrompt ?? '',
+          imagePath: widget.initialImagePath,
+        );
       });
     }
+  }
+
+  Future<void> _loadExtraContext() async {
+    final calendarRepo = context.read<CalendarRepository>();
+    final historyRepo = context.read<HistoryRepository>();
+
+    try {
+      final schedules = await calendarRepo.fetchSchedules();
+      if (mounted) {
+        setState(() {
+          _plantingSchedules = schedules;
+        });
+      }
+    } catch (_) {}
+
+    try {
+      final history = await historyRepo.getHistory();
+      if (mounted) {
+        setState(() {
+          _recentScanHistory = history.map((e) => e.toMap()).toList();
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _dispatchSendMessage({required String text, String? imagePath}) {
+    context.read<ChatbotBloc>().add(SendMessage(
+          text: text,
+          imagePath: imagePath,
+          currentWeather: widget.currentWeather,
+          plantingSchedules: _plantingSchedules,
+          recentScanHistory: _recentScanHistory,
+        ));
   }
 
   @override
@@ -97,6 +135,12 @@ class _ChatbotViewState extends State<_ChatbotView> {
         lower.contains('host') ||
         lower.contains('connect')) {
       return 'Tidak ada koneksi internet.';
+    }
+    if (lower.contains('503') ||
+        lower.contains('high demand') ||
+        lower.contains('unavailable') ||
+        lower.contains('overloaded')) {
+      return 'Server Gemini AI sedang mengalami lonjakan trafik (503). Sistem telah mencoba model cadangan, silakan coba kirim ulang pesan.';
     }
     if (lower.contains('quota') ||
         lower.contains('rate limit') ||
@@ -219,11 +263,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
               return ChatInputBar(
                 isStreaming: isStreaming,
                 onSend: (text, imagePath) {
-                  context.read<ChatbotBloc>().add(SendMessage(
-                        text: text,
-                        imagePath: imagePath,
-                        currentWeather: widget.currentWeather,
-                      ));
+                  _dispatchSendMessage(text: text, imagePath: imagePath);
                 },
               );
             },
@@ -271,7 +311,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Tanyakan seputar pertanian & perkebunan: tanaman, hama, penyakit, pupuk, atau lampirkan foto tanaman Anda.',
+                      'Tanyakan seputar pertanian & perkebunan: kondisi kebun, analisis foto, pupuk, jadwal panen, atau konsultasi penyakit tanaman.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -280,13 +320,13 @@ class _ChatbotViewState extends State<_ChatbotView> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    _buildSuggestionChip('Cara mengatasi hama wereng cokelat pada padi?'),
+                    _buildSuggestionChip('🌱 Bagaimanakah ringkasan kondisi kebun dan cuaca saat ini?'),
                     const SizedBox(height: 8),
-                    _buildSuggestionChip('Rekomendasi pemupukan kelapa sawit TM?'),
+                    _buildSuggestionChip('🐛 Cara mengatasi hama wereng cokelat pada tanaman padi?'),
                     const SizedBox(height: 8),
-                    _buildSuggestionChip('Mengapa daun cabai saya keriting dan menguning?'),
+                    _buildSuggestionChip('💊 Rekomendasi obat fungisida untuk daun cabai keriting menguning?'),
                     const SizedBox(height: 8),
-                    _buildSuggestionChip('Kapan waktu ideal pemupukan kopi & kakao?'),
+                    _buildSuggestionChip('📅 Kapan jadwal ideal pemupukan & perkiraan panen komoditas saya?'),
                   ],
                 ),
               ),
@@ -301,10 +341,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
     return Builder(builder: (context) {
       return GestureDetector(
         onTap: () {
-          context.read<ChatbotBloc>().add(SendMessage(
-                text: text,
-                currentWeather: widget.currentWeather,
-              ));
+          _dispatchSendMessage(text: text);
         },
         child: Container(
           width: double.infinity,
