@@ -18,6 +18,16 @@ class EnvConfig {
   static String get geminiApiKey =>
       const String.fromEnvironment('GEMINI_API_KEY');
 
+  static String get midtransServerKey =>
+      const String.fromEnvironment('MIDTRANS_SERVER_KEY');
+  static String get midtransClientKey =>
+      const String.fromEnvironment('MIDTRANS_CLIENT_KEY');
+
+  static String get supabaseEdgeUrl =>
+      const String.fromEnvironment('SUPABASE_EDGE_URL');
+  static String get supabaseEdgeKey =>
+      const String.fromEnvironment('SUPABASE_EDGE_KEY');
+
   /// Assert or validate that all base URLs use HTTPS for security
   static bool validateHttpsUrls() {
     final urls = [

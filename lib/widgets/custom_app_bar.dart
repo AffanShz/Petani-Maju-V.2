@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/features/notifications/screens/notification_history_screen.dart';
+import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dart';
 
 class CustomAppBar extends StatefulWidget {
   final DateTime? lastSyncTime;
@@ -24,18 +25,33 @@ class CustomAppBar extends StatefulWidget {
 class _CustomAppBarState extends State<CustomAppBar> {
   final CacheService _cacheService = CacheService();
   StreamSubscription<Map<String, String?>>? _profileSubscription;
+  StreamSubscription<Map<String, dynamic>>? _subscriptionSubscription;
   String _userName = 'Pak Tani';
   String? _userImagePath;
+  bool _isPremiumActive = false;
+  String _planName = 'Gratis';
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadSubscription();
+
     _profileSubscription = _cacheService.profileUpdateStream.listen((profile) {
       if (mounted) {
         setState(() {
           _userName = profile['name'] ?? 'profile.default_name'.tr();
           _userImagePath = profile['imagePath'];
+        });
+      }
+    });
+
+    _subscriptionSubscription =
+        _cacheService.subscriptionUpdateStream.listen((sub) {
+      if (mounted) {
+        setState(() {
+          _isPremiumActive = sub['isActive'] as bool;
+          _planName = sub['planName'] as String;
         });
       }
     });
@@ -49,9 +65,18 @@ class _CustomAppBarState extends State<CustomAppBar> {
     });
   }
 
+  void _loadSubscription() {
+    final sub = _cacheService.getSubscriptionDetails();
+    setState(() {
+      _isPremiumActive = sub['isActive'] as bool;
+      _planName = sub['planName'] as String;
+    });
+  }
+
   @override
   void dispose() {
     _profileSubscription?.cancel();
+    _subscriptionSubscription?.cancel();
     super.dispose();
   }
 
@@ -106,19 +131,65 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _userName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            _userName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _isPremiumActive
+                                  ? const Color(0xFFFFF8E1)
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: _isPremiumActive
+                                    ? const Color(0xFFFFB300)
+                                    : Colors.grey[300]!,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_isPremiumActive) ...[
+                                  const Icon(
+                                    Icons.workspace_premium_rounded,
+                                    size: 11,
+                                    color: Color(0xFFE65100),
+                                  ),
+                                  const SizedBox(width: 2),
+                                ],
+                                Text(
+                                  _isPremiumActive ? 'PRO' : 'Gratis',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: _isPremiumActive
+                                        ? const Color(0xFFE65100)
+                                        : Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'app_name'.tr(),
+                        _isPremiumActive
+                            ? 'Member PRO ($_planName) — AI Bebas Limit'
+                            : 'app_name'.tr(),
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                          fontSize: 11,
+                          fontWeight: _isPremiumActive ? FontWeight.w500 : FontWeight.normal,
+                          color: _isPremiumActive ? AppColors.darkGreen : Colors.grey[600],
                         ),
                       ),
                     ],
@@ -127,6 +198,63 @@ class _CustomAppBarState extends State<CustomAppBar> {
               ),
               Row(
                 children: [
+                  // PRO Status / Upgrade Button
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PurchasePremiumScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        gradient: _isPremiumActive
+                            ? const LinearGradient(
+                                colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+                              )
+                            : const LinearGradient(
+                                colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],
+                              ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: _isPremiumActive
+                            ? Border.all(color: const Color(0xFFFFD700), width: 1)
+                            : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: _isPremiumActive
+                                ? Colors.green.withAlpha(50)
+                                : Colors.orange.withAlpha(60),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _isPremiumActive ? Icons.verified_rounded : Icons.workspace_premium_rounded,
+                            size: 14,
+                            color: _isPremiumActive ? const Color(0xFFFFD700) : Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _isPremiumActive ? 'PRO Aktif' : 'Upgrade PRO',
+                            style: TextStyle(
+                              color: _isPremiumActive ? const Color(0xFFFFD700) : Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   IconButton(
                     onPressed: () {
                       Navigator.push(
