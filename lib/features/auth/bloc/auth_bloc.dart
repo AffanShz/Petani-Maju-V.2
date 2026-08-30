@@ -28,6 +28,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
       );
+      // Restore subscription status dari Supabase metadata setelah login
+      await CacheService().restoreSubscriptionOnLogin();
       emit(AuthSuccess());
     } catch (e) {
       emit(AuthFailure(message: _parseError(e)));
