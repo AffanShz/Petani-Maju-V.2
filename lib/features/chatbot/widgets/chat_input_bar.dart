@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dart';
 import 'package:petani_maju/widgets/app_toast.dart';
 
 class ChatInputBar extends StatefulWidget {
@@ -23,7 +21,6 @@ class ChatInputBar extends StatefulWidget {
 class _ChatInputBarState extends State<ChatInputBar> {
   final TextEditingController _controller = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  final CacheService _cacheService = CacheService();
   String? _selectedImagePath;
 
   static const int _maxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
@@ -49,15 +46,6 @@ class _ChatInputBarState extends State<ChatInputBar> {
     }
 
     final imageToSend = _selectedImagePath;
-    if (imageToSend != null && !_cacheService.isPremiumActive()) {
-      final sub = _cacheService.getSubscriptionDetails();
-      final remaining = sub['remainingFreeUploads'] as int? ?? 0;
-      if (remaining <= 0) {
-        _showUpgradeToProDialog();
-        return;
-      }
-      _cacheService.incrementFreeImageUploadCount();
-    }
     _controller.clear();
     setState(() {
       _selectedImagePath = null;
@@ -130,16 +118,6 @@ class _ChatInputBarState extends State<ChatInputBar> {
   void _showImageSourcePicker() {
     if (widget.isStreaming) return;
 
-    final bool isPro = _cacheService.isPremiumActive();
-    if (!isPro) {
-      final sub = _cacheService.getSubscriptionDetails();
-      final remaining = sub['remainingFreeUploads'] as int? ?? 0;
-      if (remaining <= 0) {
-        _showUpgradeToProDialog();
-        return;
-      }
-    }
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -147,10 +125,6 @@ class _ChatInputBarState extends State<ChatInputBar> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        final sub = _cacheService.getSubscriptionDetails();
-        final isPro = _cacheService.isPremiumActive();
-        final remaining = isPro ? null : (sub['remainingFreeUploads'] as int? ?? 0);
-
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -158,41 +132,15 @@ class _ChatInputBarState extends State<ChatInputBar> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Lampirkan Foto Pertanian/Perkebunan',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      if (!isPro && remaining != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: remaining > 0
-                                ? const Color(0xFFE8F5E9)
-                                : const Color(0xFFFFEBEE),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'Sisa $remaining/3',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: remaining > 0
-                                  ? AppColors.primaryGreen
-                                  : Colors.red[700],
-                            ),
-                          ),
-                        ),
-                    ],
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Text(
+                    'Lampirkan Foto Pertanian/Perkebunan',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -430,93 +378,6 @@ class _ChatInputBarState extends State<ChatInputBar> {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _showUpgradeToProDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(22.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E1),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: Color(0xFFFFA000),
-                  size: 38,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Batas Upload Foto Gratis Tercapai',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Akun gratis dibatasi 3x upload foto untuk analisis hama/daun. Upgrade ke Petani Maju PRO untuk konsultasi foto AI sepuasnya tanpa batas kuota!',
-                style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PurchasePremiumScreen(),
-                      ),
-                    );
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.bolt_rounded, size: 18, color: Color(0xFFFFD700)),
-                      SizedBox(width: 6),
-                      Text(
-                        'Upgrade ke PRO Sekarang',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(
-                  'Nanti Saja',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

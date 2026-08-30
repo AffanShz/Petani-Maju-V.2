@@ -11,10 +11,8 @@ import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
 import 'package:petani_maju/features/settings/screens/notification_settings_screen.dart';
 import 'package:petani_maju/features/settings/screens/help_support_screen.dart';
 import 'package:petani_maju/features/settings/screens/about_app_screen.dart';
-import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dart';
 import 'package:petani_maju/widgets/app_toast.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart' as intl_pkg;
 import 'dart:async';
 
 class SettingsScreen extends StatefulWidget {
@@ -27,21 +25,15 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final CacheService _cacheService = CacheService();
   StreamSubscription<Map<String, String?>>? _profileSubscription;
-  StreamSubscription<Map<String, dynamic>>? _subscriptionSubscription;
   bool _offlineMode = false;
   String _userName = '';
   String? _userImagePath;
-  bool _isPremiumActive = false;
-  String _planName = 'Gratis';
-  DateTime? _expiryDate;
 
   @override
   void initState() {
     super.initState();
     _loadOfflineMode();
-    _loadSubscription();
     _listenToProfileChanges();
-    _listenToSubscriptionChanges();
   }
 
   void _listenToProfileChanges() {
@@ -57,32 +49,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  void _listenToSubscriptionChanges() {
-    _subscriptionSubscription =
-        _cacheService.subscriptionUpdateStream.listen((sub) {
-      if (mounted) {
-        setState(() {
-          _isPremiumActive = sub['isActive'] as bool;
-          _planName = sub['planName'] as String;
-          _expiryDate = sub['expiryDate'] as DateTime?;
-        });
-      }
-    });
-  }
-
-  void _loadSubscription() {
-    final sub = _cacheService.getSubscriptionDetails();
-    setState(() {
-      _isPremiumActive = sub['isActive'] as bool;
-      _planName = sub['planName'] as String;
-      _expiryDate = sub['expiryDate'] as DateTime?;
-    });
-  }
-
   @override
   void dispose() {
     _profileSubscription?.cancel();
-    _subscriptionSubscription?.cancel();
     super.dispose();
   }
 
@@ -137,11 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               // User Profile Section
               _buildProfileSection(),
-              const SizedBox(height: 16),
-
-              // Premium Promo Banner Card
-              _buildPremiumBanner(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // AKUN Section
               _buildSectionTitle('settings.account_section'.tr()),
@@ -159,27 +124,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     if (result == true) {
                       _loadOfflineMode();
                     }
-                  },
-                ),
-                _buildDivider(),
-                _buildSettingsTile(
-                  icon: _isPremiumActive
-                      ? Icons.verified_rounded
-                      : Icons.workspace_premium_outlined,
-                  iconColor: _isPremiumActive
-                      ? AppColors.primaryGreen
-                      : const Color(0xFFE65100),
-                  title: 'Paket & Langganan',
-                  subtitle: _isPremiumActive
-                      ? 'Member PRO ($_planName)'
-                      : 'Akun Gratis (Maks. 3x Upload Foto)',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PurchasePremiumScreen(),
-                      ),
-                    );
                   },
                 ),
               ]),
@@ -307,329 +251,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
               : null,
         ),
         const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      _userName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: _isPremiumActive
-                          ? const Color(0xFFFFF8E1)
-                          : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: _isPremiumActive
-                            ? const Color(0xFFFFB300)
-                            : Colors.grey[300]!,
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _isPremiumActive
-                              ? Icons.workspace_premium_rounded
-                              : Icons.eco_outlined,
-                          size: 12,
-                          color: _isPremiumActive
-                              ? const Color(0xFFE65100)
-                              : Colors.grey[600],
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          _isPremiumActive ? 'PRO' : 'Gratis',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: _isPremiumActive
-                                ? const Color(0xFFE65100)
-                                : Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _userName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 4),
-              Text(
-                _isPremiumActive
-                    ? 'Status: Member PRO Aktif'
-                    : 'Status: Akun Gratis (3x Upload Foto)',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: _isPremiumActive ? FontWeight.w500 : FontWeight.normal,
-                  color: _isPremiumActive ? AppColors.darkGreen : Colors.grey[600],
-                ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Petani Maju',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
-    );
-  }
-
-  Widget _buildPremiumBanner() {
-    if (_isPremiumActive) {
-      final expiryFormatted = _expiryDate != null
-          ? intl_pkg.DateFormat('d MMM yyyy, HH:mm:ss').format(_expiryDate!)
-          : 'Tanpa Batas Waktu';
-
-      return Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F3813),
-              Color(0xFF1B5E20),
-              Color(0xFF2E7D32),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF1B5E20).withAlpha(80),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PurchasePremiumScreen(),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700).withAlpha(40),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFFD700), width: 1),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 14),
-                            SizedBox(width: 4),
-                            Text(
-                              'STATUS: PRO AKTIF',
-                              style: TextStyle(
-                                color: Color(0xFFFFD700),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.white70,
-                        size: 14,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Paket $_planName ✨',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Fitur Chatbot & Upload Foto AI tanpa batas aktif sampai $expiryFormatted.',
-                    style: TextStyle(
-                      color: Colors.white.withAlpha(220),
-                      fontSize: 12,
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Kelola / Perpanjang Paket',
-                          style: TextStyle(
-                            color: Color(0xFF1B5E20),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Icon(Icons.chevron_right_rounded, color: Color(0xFF1B5E20), size: 16),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0D3E14),
-            Color(0xFF1B5E20),
-            Color(0xFF2E7D32),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1B5E20).withAlpha(60),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const PurchasePremiumScreen(),
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFD700).withAlpha(40),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFFFD700), width: 1),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 14),
-                          SizedBox(width: 4),
-                          Text(
-                            'PRO MEMBERSHIP',
-                            style: TextStyle(
-                              color: Color(0xFFFFD700),
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: Colors.white70,
-                      size: 14,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Konsultasi AI Tanpa Batas 🌾',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Upload gambar hama & daun sepuasnya tanpa batas limit 3x harian.',
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(220),
-                    fontSize: 12,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Mulai Dari Rp 23.000/bln',
-                        style: TextStyle(
-                          color: Color(0xFF1B5E20),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(Icons.chevron_right_rounded, color: Color(0xFF1B5E20), size: 16),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -661,7 +303,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSettingsTile({
     IconData? icon,
-    Color? iconColor,
     required String title,
     String? subtitle,
     required VoidCallback onTap,
@@ -676,35 +317,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (icon != null) ...[
               Icon(
                 icon,
-                color: iconColor ?? Colors.grey[700],
+                color: Colors.grey[700],
                 size: 24,
               ),
               const SizedBox(width: 16),
             ],
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                  ],
-                ],
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
+            if (subtitle != null)
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[500],
+                ),
+              ),
             const SizedBox(width: 8),
             Icon(
               Icons.chevron_right,
