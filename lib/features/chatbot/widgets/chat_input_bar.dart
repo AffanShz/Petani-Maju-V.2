@@ -49,12 +49,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
     }
 
     final imageToSend = _selectedImagePath;
-    // Pengecekan awal supaya user tidak terlanjur menulis pesan. Penghitungan
-    // kuota yang sebenarnya dilakukan ChatbotBloc, agar jalur lain (hasil scan,
-    // riwayat) ikut terhitung dan tidak ada penghitungan ganda di sini.
-    if (imageToSend != null && !_cacheService.isPremiumActive()) {
+    // Pengecekan awal supaya pesan tidak terlanjur terkirim dan terhapus dari
+    // kolom input. Penghitungan kuota yang sebenarnya dilakukan ChatbotBloc,
+    // agar jalur lain (tombol saran, hasil scan, riwayat) ikut terhitung dan
+    // tidak ada penghitungan ganda di sini.
+    if (!_cacheService.isPremiumActive()) {
       final sub = _cacheService.getSubscriptionDetails();
-      final remaining = sub['remainingFreeUploads'] as int? ?? 0;
+      final remaining = sub['remainingFreeChats'] as int? ?? 0;
       if (remaining <= 0) {
         showUpgradeToProDialog(context);
         return;
@@ -135,7 +136,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
     final bool isPro = _cacheService.isPremiumActive();
     if (!isPro) {
       final sub = _cacheService.getSubscriptionDetails();
-      final remaining = sub['remainingFreeUploads'] as int? ?? 0;
+      final remaining = sub['remainingFreeChats'] as int? ?? 0;
       if (remaining <= 0) {
         showUpgradeToProDialog(context);
         return;
@@ -151,7 +152,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
       builder: (ctx) {
         final sub = _cacheService.getSubscriptionDetails();
         final isPro = _cacheService.isPremiumActive();
-        final remaining = isPro ? null : (sub['remainingFreeUploads'] as int? ?? 0);
+        final remaining = isPro ? null : (sub['remainingFreeChats'] as int? ?? 0);
 
         return SafeArea(
           child: Padding(
@@ -184,7 +185,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            'Sisa $remaining/3',
+                            'Sisa $remaining/3 chat',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,

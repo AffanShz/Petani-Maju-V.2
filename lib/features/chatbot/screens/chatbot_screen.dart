@@ -230,7 +230,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
                     type: ToastType.error,
                   );
                 }
-                if (state is ChatbotImageQuotaExceeded) {
+                if (state is ChatbotQuotaExceeded) {
                   showUpgradeToProDialog(context);
                 }
               },
@@ -243,7 +243,7 @@ class _ChatbotViewState extends State<_ChatbotView> {
                     ? state.messages
                     : state is ChatbotError
                         ? state.messages
-                        : state is ChatbotImageQuotaExceeded
+                        : state is ChatbotQuotaExceeded
                             ? state.messages
                             : const <ChatMessage>[];
 

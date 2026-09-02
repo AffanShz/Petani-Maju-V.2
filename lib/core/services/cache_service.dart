@@ -452,32 +452,35 @@ class CacheService {
     }
   }
 
-  /// Penanda periode kuota upload gratis, dalam format 'YYYY-MM'.
+  /// Batas jawaban chatbot untuk akun gratis dalam satu bulan.
+  static const int freeChatLimit = 3;
+
+  /// Penanda periode kuota chat gratis, dalam format 'YYYY-MM'.
   ///
   /// Kuota gratis berlaku per bulan kalender. Alih-alih memakai timer yang
   /// bisa terlewat saat app tidak berjalan, periode disimpan bersama counter
   /// lalu dibandingkan setiap kali dibaca.
-  String _currentUploadPeriod() {
+  String _currentQuotaPeriod() {
     final now = DateTime.now();
     return '${now.year}-${now.month.toString().padLeft(2, '0')}';
   }
 
-  /// Jumlah upload gratis yang sudah terpakai pada periode berjalan.
+  /// Jumlah jawaban chatbot yang sudah terpakai pada periode berjalan.
   ///
   /// Sengaja tidak menulis apa pun supaya tetap sinkron dipanggil dari UI.
-  /// Penulisan periode baru dilakukan [incrementFreeImageUploadCount] saat
-  /// upload pertama di bulan berikutnya.
-  int _effectiveFreeImageUploadCount() {
-    final countKey = _getUserSubKey('freeImageUploadCount');
-    final periodKey = _getUserSubKey('freeImageUploadPeriod');
+  /// Penulisan periode baru dilakukan [incrementFreeChatCount] saat chat
+  /// pertama di bulan berikutnya.
+  int _effectiveFreeChatCount() {
+    final countKey = _getUserSubKey('freeChatCount');
+    final periodKey = _getUserSubKey('freeChatPeriod');
     final storedPeriod = _settingsBox.get(periodKey) as String?;
 
-    if (storedPeriod != _currentUploadPeriod()) return 0;
+    if (storedPeriod != _currentQuotaPeriod()) return 0;
     return _settingsBox.get(countKey, defaultValue: 0) as int;
   }
 
   /// Awal bulan berikutnya, saat kuota gratis terisi ulang.
-  DateTime _nextUploadQuotaReset() {
+  DateTime _nextQuotaReset() {
     final now = DateTime.now();
     return now.month == 12
         ? DateTime(now.year + 1, 1, 1)
@@ -492,16 +495,16 @@ class CacheService {
 
     final planName = _settingsBox.get(planKey, defaultValue: 'Gratis') as String;
     final expiryStr = _settingsBox.get(expiryKey) as String?;
-    final imageUploadCount = _effectiveFreeImageUploadCount();
+    final chatCount = _effectiveFreeChatCount();
 
     return {
       'isActive': active,
       'planName': active ? planName : 'Gratis',
       'expiryDate': expiryStr != null ? DateTime.tryParse(expiryStr) : null,
-      'freeUploadLimit': 3,
-      'freeUploadUsed': imageUploadCount,
-      'remainingFreeUploads': (3 - imageUploadCount).clamp(0, 3),
-      'freeUploadResetDate': _nextUploadQuotaReset(),
+      'freeChatLimit': freeChatLimit,
+      'freeChatUsed': chatCount,
+      'remainingFreeChats': (freeChatLimit - chatCount).clamp(0, freeChatLimit),
+      'freeChatResetDate': _nextQuotaReset(),
     };
   }
 
@@ -552,28 +555,43 @@ class CacheService {
     _subscriptionUpdateController.add(getSubscriptionDetails());
   }
 
-  /// Tambah counter penggunaan upload gambar gratis.
+  /// Tambah counter pemakaian chat gratis.
   ///
-  /// Upload pertama di bulan baru otomatis memulai periode baru dari nol.
-  Future<int> incrementFreeImageUploadCount() async {
-    final countKey = _getUserSubKey('freeImageUploadCount');
-    final periodKey = _getUserSubKey('freeImageUploadPeriod');
+  /// Chat pertama di bulan baru otomatis memulai periode baru dari nol.
+  Future<int> incrementFreeChatCount() async {
+    final countKey = _getUserSubKey('freeChatCount');
+    final periodKey = _getUserSubKey('freeChatPeriod');
 
-    final next = _effectiveFreeImageUploadCount() + 1;
+    final next = _effectiveFreeChatCount() + 1;
     await _settingsBox.put(countKey, next);
-    await _settingsBox.put(periodKey, _currentUploadPeriod());
+    await _settingsBox.put(periodKey, _currentQuotaPeriod());
 
     _subscriptionUpdateController.add(getSubscriptionDetails());
     return next;
   }
 
-  /// Reset counter penggunaan upload gambar sebelum periodenya habis
-  Future<void> resetFreeImageUploadCount() async {
-    final countKey = _getUserSubKey('freeImageUploadCount');
-    final periodKey = _getUserSubKey('freeImageUploadPeriod');
+  /// Kembalikan satu kuota yang terlanjur terpotong.
+  ///
+  /// Dipakai saat permintaan ke AI gagal tanpa menghasilkan jawaban sama
+  /// sekali, supaya user tidak kehilangan kuota untuk sesuatu yang tidak
+  /// pernah ia terima. Tidak berlaku lintas bulan: kalau periodenya sudah
+  /// berganti, counter-nya memang sudah nol.
+  Future<void> refundFreeChatCount() async {
+    final countKey = _getUserSubKey('freeChatCount');
+    final current = _effectiveFreeChatCount();
+    if (current <= 0) return;
+
+    await _settingsBox.put(countKey, current - 1);
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+  }
+
+  /// Reset counter chat gratis sebelum periodenya habis
+  Future<void> resetFreeChatCount() async {
+    final countKey = _getUserSubKey('freeChatCount');
+    final periodKey = _getUserSubKey('freeChatPeriod');
 
     await _settingsBox.put(countKey, 0);
-    await _settingsBox.put(periodKey, _currentUploadPeriod());
+    await _settingsBox.put(periodKey, _currentQuotaPeriod());
 
     _subscriptionUpdateController.add(getSubscriptionDetails());
   }

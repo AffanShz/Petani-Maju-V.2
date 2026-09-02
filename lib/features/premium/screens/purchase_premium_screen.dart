@@ -111,8 +111,8 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
   final List<Map<String, dynamic>> _benefits = [
     {
       'icon': Icons.image_search_rounded,
-      'title': 'Upload Foto Chatbot Tanpa Batas',
-      'desc': 'Akun gratis terbatas 3x upload. PRO bebas analisis foto hama & daun tanpa limit.',
+      'title': 'Chat Asisten Tani Tanpa Batas',
+      'desc': 'Akun gratis terbatas 3 jawaban per bulan, teks maupun foto. PRO bebas konsultasi tanpa limit.',
       'badge': 'Fitur Utama',
     },
     {

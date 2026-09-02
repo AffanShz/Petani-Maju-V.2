@@ -89,27 +89,6 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
     final sanitized = _chatbotRepository.sanitizeInput(event.text);
     final hasImage = event.imagePath != null && event.imagePath!.isNotEmpty;
 
-    // Kuota upload foto akun gratis dijaga di sini, bukan di UI, supaya semua
-    // jalur masuk ikut terhitung: input bar, hasil scan, dan riwayat scan.
-    if (hasImage && !_cacheService.isPremiumActive()) {
-      final remaining =
-          _cacheService.getSubscriptionDetails()['remainingFreeUploads']
-                  as int? ??
-              0;
-      if (remaining <= 0) {
-        emit(ChatbotImageQuotaExceeded(
-          sessionId:
-              state is ChatbotLoaded ? (state as ChatbotLoaded).sessionId : null,
-          messages: state is ChatbotLoaded
-              ? List<ChatMessage>.from((state as ChatbotLoaded).messages)
-              : <ChatMessage>[],
-          sessions: sessions,
-        ));
-        return;
-      }
-      await _cacheService.incrementFreeImageUploadCount();
-    }
-
     if (sanitized.isEmpty && !hasImage) {
       final currentMessages = state is ChatbotLoaded
           ? List<ChatMessage>.from((state as ChatbotLoaded).messages)
@@ -123,6 +102,30 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
         sessions: sessions,
       ));
       return;
+    }
+
+    // Kuota chat akun gratis dijaga di sini, bukan di UI, supaya semua jalur
+    // masuk ikut terhitung: input bar, tombol saran, hasil scan, dan riwayat
+    // scan. Diletakkan setelah pemeriksaan pesan kosong karena pesan kosong
+    // tidak menghasilkan jawaban, jadi tidak boleh memotong kuota.
+    var quotaCharged = false;
+    if (!_cacheService.isPremiumActive()) {
+      final remaining =
+          _cacheService.getSubscriptionDetails()['remainingFreeChats'] as int? ??
+              0;
+      if (remaining <= 0) {
+        emit(ChatbotQuotaExceeded(
+          sessionId:
+              state is ChatbotLoaded ? (state as ChatbotLoaded).sessionId : null,
+          messages: state is ChatbotLoaded
+              ? List<ChatMessage>.from((state as ChatbotLoaded).messages)
+              : <ChatMessage>[],
+          sessions: sessions,
+        ));
+        return;
+      }
+      await _cacheService.incrementFreeChatCount();
+      quotaCharged = true;
     }
 
     final sessionId = state is ChatbotLoaded && (state as ChatbotLoaded).sessionId.isNotEmpty
@@ -232,6 +235,11 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
         sessions: updatedSessions,
       ));
     } catch (e) {
+      // Kuota hanya dipotong untuk jawaban yang benar-benar diterima user.
+      // Kalau gagal sebelum satu token pun sampai, kembalikan kuotanya.
+      if (quotaCharged && accumulatedText.isEmpty) {
+        await _cacheService.refundFreeChatCount();
+      }
       if (isClosed) return;
       debugPrint('ChatbotBloc Error: $e');
       currentMessages[botIndex] = ChatMessage(
