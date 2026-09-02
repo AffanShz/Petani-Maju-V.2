@@ -5,31 +5,118 @@ import 'package:petani_maju/features/weather/screens/weather_detail_screen.dart'
 import 'package:petani_maju/features/pests/screens/pest_screen.dart';
 import 'package:petani_maju/features/drugs/screens/drug_screen.dart';
 
+/// Satu entri di grid akses cepat.
+class _QuickAccessEntry {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color iconColor;
+  final Color backgroundColor;
+  final WidgetBuilder destination;
+
+  const _QuickAccessEntry({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.iconColor,
+    required this.backgroundColor,
+    required this.destination,
+  });
+}
+
 class QuickAccess extends StatelessWidget {
   const QuickAccess({super.key});
 
-  /// Tinggi seragam untuk semua kartu akses cepat.
+  // Harus sama persis dengan yang dipakai QuickAccessItem, karena tinggi
+  // kartu dihitung dari gaya ini.
+  static const TextStyle _titleStyle =
+      TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
+  static const TextStyle _subtitleStyle =
+      TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
+
+  static const int _maxLines = 2;
+
+  // Bagian kartu yang tingginya tetap: ikon (padding 10*2 + ikon 24), jarak
+  // antar elemen (12 + 4), padding kartu (16 atas + 16 bawah), dan garis tepi
+  // 1px di atas & bawah. Border-nya mudah terlewat padahal ikut memakan
+  // tempat: selain 2px tinggi, ia juga menyempitkan lebar isi sehingga teks
+  // turun baris lebih cepat.
+  static const double _cardBorder = 1;
+  static const double _fixedChrome = 44 + 16 + 32 + _cardBorder * 2;
+
+  List<_QuickAccessEntry> _entries(BuildContext context) => [
+        _QuickAccessEntry(
+          icon: Icons.cloud_outlined,
+          title: 'home.menu_weather'.tr(),
+          subtitle: 'Prakiraan 7 hari',
+          iconColor: const Color(0xFF2196F3),
+          backgroundColor: const Color(0xFFE3F2FD),
+          destination: (_) => const WeatherDetailScreen(),
+        ),
+        _QuickAccessEntry(
+          icon: Icons.bug_report_outlined,
+          title: 'home.menu_pests'.tr(),
+          subtitle: 'Penyakit tanaman',
+          iconColor: Colors.red,
+          backgroundColor: Colors.red.shade50,
+          destination: (_) => const PestScreen(),
+        ),
+        _QuickAccessEntry(
+          icon: Icons.healing_outlined,
+          title: 'home.menu_drugs'.tr(),
+          subtitle: 'Pencegahan & resep',
+          iconColor: Colors.green.shade700,
+          backgroundColor: Colors.green.shade50,
+          destination: (_) => const DrugScreen(),
+        ),
+      ];
+
+  /// Tinggi sebenarnya sebuah teks pada lebar dan skala font yang berlaku.
   ///
-  /// Wrap menghitung tinggi tiap anak sendiri-sendiri, sehingga kartu yang
-  /// judulnya turun ke baris kedua ("Hama & Penyakit") jadi lebih jangkung
-  /// dari yang satu baris ("Info Cuaca"). Dikunci ke satu tinggi yang cukup
-  /// untuk kasus terpanjang, dan ikut skala font sistem supaya tetap seragam
-  /// saat ukuran teks diperbesar.
-  double _itemHeight(BuildContext context) {
-    final scale = MediaQuery.textScalerOf(context).scale(1.0);
-    const double iconBlock = 44; // padding 10*2 + ikon 24
-    const double gaps = 12 + 4;
-    const double cardPadding = 32; // 16 atas + 16 bawah
-    final double title = 16 * 1.25 * 2 * scale;
-    final double subtitle = 12 * 1.25 * 2 * scale;
-    return iconBlock + gaps + cardPadding + title + subtitle;
+  /// Diukur, bukan ditaksir. Menaksir tinggi baris dari ukuran font meleset:
+  /// metrik tiap font berbeda, dan Android memakai penskalaan teks non-linier
+  /// sehingga faktor untuk 12pt tidak sama dengan untuk 16pt.
+  double _measure(
+    BuildContext context,
+    String text,
+    TextStyle style,
+    double maxWidth,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: _maxLines,
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout(maxWidth: maxWidth);
+    return painter.height;
+  }
+
+  /// Tinggi seragam untuk semua kartu: setinggi kartu yang isinya paling
+  /// panjang. Wrap menghitung tinggi tiap anak sendiri-sendiri, jadi tanpa ini
+  /// kartu berjudul dua baris berdiri lebih jangkung dari yang satu baris.
+  double _uniformHeight(
+    BuildContext context,
+    List<_QuickAccessEntry> entries,
+    double itemWidth,
+  ) {
+    final contentWidth = itemWidth - 32 - _cardBorder * 2;
+    var tallest = 0.0;
+
+    for (final e in entries) {
+      final h = _measure(context, e.title, _titleStyle, contentWidth) +
+          _measure(context, e.subtitle, _subtitleStyle, contentWidth);
+      if (h > tallest) tallest = h;
+    }
+
+    return _fixedChrome + tallest;
   }
 
   @override
   Widget build(BuildContext context) {
     // 48 is horizontal padding of parent (24 * 2)
     final double itemWidth = (MediaQuery.of(context).size.width - 48 - 12) / 2;
-    final double itemHeight = _itemHeight(context);
+    final entries = _entries(context);
+    final double itemHeight = _uniformHeight(context, entries, itemWidth);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,63 +133,24 @@ class QuickAccess extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: [
-            SizedBox(
-              width: itemWidth,
-              height: itemHeight,
-              child: QuickAccessItem(
-                icon: Icons.cloud_outlined,
-                title: 'home.menu_weather'.tr(),
-                subtitle: 'Prakiraan 7 hari',
-                iconColor: const Color(0xFF2196F3), // Blue
-                backgroundColor: const Color(0xFFE3F2FD), // Light blue
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const WeatherDetailScreen(),
-                    ),
-                  );
-                },
+            for (final entry in entries)
+              SizedBox(
+                width: itemWidth,
+                height: itemHeight,
+                child: QuickAccessItem(
+                  icon: entry.icon,
+                  title: entry.title,
+                  subtitle: entry.subtitle,
+                  iconColor: entry.iconColor,
+                  backgroundColor: entry.backgroundColor,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: entry.destination),
+                    );
+                  },
+                ),
               ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              height: itemHeight,
-              child: QuickAccessItem(
-                icon: Icons.bug_report_outlined,
-                title: 'home.menu_pests'.tr(),
-                subtitle: 'Penyakit tanaman',
-                iconColor: Colors.red, // Red
-                backgroundColor: Colors.red.shade50, // Light red
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PestScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(
-              width: itemWidth,
-              height: itemHeight,
-              child: QuickAccessItem(
-                icon: Icons.healing_outlined,
-                title: 'home.menu_drugs'.tr(),
-                subtitle: 'Pencegahan & resep',
-                iconColor: Colors.green.shade700, // Green
-                backgroundColor: Colors.green.shade50, // Light green
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DrugScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
           ],
         ),
       ],
