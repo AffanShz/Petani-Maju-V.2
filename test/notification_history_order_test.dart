@@ -1,31 +1,38 @@
 import 'package:flutter_test/flutter_test.dart';
 
-/// Cerminan pengurutan di CacheService.getNotificationHistory.
-///
-/// 'seq' adalah urutan penyimpanan di Hive; 'createdAt' kapan entri dicatat;
-/// 'timestamp' kapan notifikasi berbunyi (bisa di masa depan untuk jadwal).
-List<Map<String, dynamic>> sortHistory(List<Map<String, dynamic>> raw) {
+/// Cerminan CacheService.getNotificationHistory: entri yang waktunya belum
+/// tiba disaring, sisanya diurutkan menurun berdasarkan 'timestamp'.
+List<Map<String, dynamic>> history(
+  List<Map<String, dynamic>> raw,
+  DateTime now,
+) {
   final entries = raw
       .asMap()
       .entries
       .map((e) => (seq: e.key, data: Map<String, dynamic>.from(e.value)))
+      .where((e) {
+        final t = DateTime.tryParse(e.data['timestamp'] ?? '');
+        return t != null && !t.isAfter(now);
+      })
       .toList();
 
   entries.sort((a, b) {
+    final tA = DateTime.parse(a.data['timestamp']);
+    final tB = DateTime.parse(b.data['timestamp']);
+    final byTime = tB.compareTo(tA);
+    if (byTime != 0) return byTime;
+
     final cA = DateTime.tryParse(a.data['createdAt'] ?? '');
     final cB = DateTime.tryParse(b.data['createdAt'] ?? '');
     if (cA != null && cB != null) return cB.compareTo(cA);
-    if (cA != null) return -1;
-    if (cB != null) return 1;
+
     return b.seq.compareTo(a.seq);
   });
 
   return entries.map((e) => e.data).toList();
 }
 
-Map<String, dynamic> entry(String title,
-        {String? createdAt, required String timestamp}) =>
-    {
+Map<String, dynamic> n(String title, String timestamp, {String? createdAt}) => {
       'title': title,
       'timestamp': timestamp,
       if (createdAt != null) 'createdAt': createdAt,
@@ -35,46 +42,68 @@ List<String> titles(List<Map<String, dynamic>> l) =>
     l.map((e) => e['title'] as String).toList();
 
 void main() {
-  test('yang paling baru dicatat berada di atas', () {
-    final sorted = sortHistory([
-      entry('lama', createdAt: '2026-09-01T08:00:00', timestamp: '2026-09-01T08:00:00'),
-      entry('terbaru', createdAt: '2026-09-03T10:00:00', timestamp: '2026-09-03T10:00:00'),
-      entry('tengah', createdAt: '2026-09-02T09:00:00', timestamp: '2026-09-02T09:00:00'),
-    ]);
-    expect(titles(sorted), ['terbaru', 'tengah', 'lama']);
+  final now = DateTime(2026, 9, 3, 2, 9);
+
+  test('hanya yang sudah tayang yang tampil', () {
+    final out = history([
+      n('jadwal 13 jam lagi', '2026-09-03T15:09:00'),
+      n('info tanaman', '2026-09-03T02:06:00'),
+      n('jadwal 2 jam lagi', '2026-09-03T04:09:00'),
+      n('waspada jamur', '2026-09-02T22:09:00'),
+    ], now);
+
+    expect(titles(out), ['info tanaman', 'waspada jamur']);
   });
 
-  test('jadwal jauh di masa depan tidak lagi naik ke paling atas', () {
-    // Inilah bug aslinya: diurutkan dengan 'timestamp', jadwal 15 hari ke
-    // depan mengalahkan notifikasi yang baru saja tayang.
-    final sorted = sortHistory([
-      entry('baru tayang',
-          createdAt: '2026-09-03T10:00:00', timestamp: '2026-09-03T10:00:00'),
-      entry('jadwal jauh',
-          createdAt: '2026-09-01T07:00:00', timestamp: '2026-09-18T16:00:00'),
-    ]);
-    expect(titles(sorted).first, 'baru tayang');
+  test('urut menurun sesuai waktu yang tampil di layar', () {
+    final out = history([
+      n('4 jam lalu', '2026-09-02T22:09:00'),
+      n('3 menit lalu', '2026-09-03T02:06:00'),
+      n('9 jam lalu', '2026-09-02T17:09:00'),
+    ], now);
+
+    expect(titles(out), ['3 menit lalu', '4 jam lalu', '9 jam lalu']);
   });
 
-  test('entri lama tanpa createdAt turun di bawah entri baru', () {
-    final sorted = sortHistory([
-      entry('warisan', timestamp: '2026-09-20T16:00:00'),
-      entry('baru', createdAt: '2026-09-02T09:00:00', timestamp: '2026-09-02T09:00:00'),
-    ]);
-    expect(titles(sorted), ['baru', 'warisan']);
+  test('entri lama tanpa createdAt tetap ikut terurut menurut waktunya', () {
+    // Inilah yang bikin daftarnya tampak acak sebelumnya: entri warisan
+    // jatuh ke urutan penyimpanan, yang tidak ada hubungannya dengan waktu.
+    final out = history([
+      n('warisan lama', '2026-09-01T08:00:00'),
+      n('baru', '2026-09-03T01:00:00', createdAt: '2026-09-03T01:00:00'),
+      n('warisan agak baru', '2026-09-03T02:00:00'),
+    ], now);
+
+    expect(titles(out), ['warisan agak baru', 'baru', 'warisan lama']);
   });
 
-  test('sesama entri lama memakai urutan penyimpanan terbalik', () {
-    final sorted = sortHistory([
-      entry('disimpan pertama', timestamp: '2026-09-20T16:00:00'),
-      entry('disimpan kedua', timestamp: '2026-09-01T16:00:00'),
-      entry('disimpan ketiga', timestamp: '2026-09-10T16:00:00'),
-    ]);
-    expect(titles(sorted),
-        ['disimpan ketiga', 'disimpan kedua', 'disimpan pertama']);
+  test('waktu kembar dipecah createdAt, yang terbaru dicatat lebih dulu', () {
+    final out = history([
+      n('dicatat duluan', '2026-09-03T01:00:00',
+          createdAt: '2026-09-03T01:00:00'),
+      n('dicatat belakangan', '2026-09-03T01:00:00',
+          createdAt: '2026-09-03T01:30:00'),
+    ], now);
+
+    expect(titles(out).first, 'dicatat belakangan');
   });
 
-  test('daftar kosong tidak meledak', () {
-    expect(sortHistory([]), isEmpty);
+  test('entri tepat pada detik ini dianggap sudah tayang', () {
+    final out = history([n('pas sekarang', now.toIso8601String())], now);
+    expect(titles(out), ['pas sekarang']);
+  });
+
+  test('timestamp rusak dibuang, tidak menggagalkan pengurutan', () {
+    final out = history([
+      n('rusak', 'bukan-tanggal'),
+      n('sah', '2026-09-03T01:00:00'),
+    ], now);
+
+    expect(titles(out), ['sah']);
+  });
+
+  test('semuanya masih terjadwal menghasilkan daftar kosong', () {
+    final out = history([n('nanti', '2026-09-04T08:00:00')], now);
+    expect(out, isEmpty);
   });
 }

@@ -96,11 +96,6 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
     return DateFormat('d MMM yyyy, HH:mm').format(dateTime);
   }
 
-  bool _isUpcoming(Map<String, dynamic> n) {
-    final t = DateTime.tryParse(n['timestamp'] ?? '');
-    return t != null && t.isAfter(DateTime.now());
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -257,9 +252,7 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
                       Row(
                         children: [
                           Icon(
-                            _isUpcoming(notification)
-                                ? Icons.schedule_rounded
-                                : Icons.history_rounded,
+                            Icons.history_rounded,
                             size: 12,
                             color: Colors.grey[500],
                           ),

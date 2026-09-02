@@ -639,33 +639,43 @@ class CacheService {
   }
 
   /// Get all history, sorted by newest first
-  /// Riwayat notifikasi, terbaru lebih dulu.
+  /// Riwayat notifikasi yang sudah tayang, terbaru lebih dulu.
   ///
-  /// Diurutkan berdasarkan 'createdAt' (kapan entri dicatat), bukan
-  /// 'timestamp'. Entri terjadwal menyimpan waktu jatuh temponya di masa
-  /// depan, sehingga mengurutkan dengan 'timestamp' menaruh jadwal terjauh di
-  /// paling atas, bukan notifikasi terbaru.
+  /// Box ini menyimpan dua macam entri. Notifikasi yang sudah berbunyi, dan
+  /// pengingat yang baru dijadwalkan. Yang kedua menyimpan waktu jatuh
+  /// temponya di masa depan, sehingga ikut mengacak urutan dan menampilkan
+  /// "13 jam lagi" di tengah daftar riwayat.
   ///
-  /// Entri lama belum punya 'createdAt'. Untuk itu dipakai urutan penyimpanan
-  /// di Hive sebagai pengganti, karena tiap kali sebuah notifikasi tayang atau
-  /// dijadwalkan ulang entrinya dihapus lalu ditambahkan lagi di belakang.
+  /// Layar ini adalah riwayat, jadi entri yang waktunya belum tiba disaring.
+  /// Ia tidak dihapus, hanya belum ditampilkan, dan akan muncul dengan
+  /// sendirinya begitu waktunya lewat.
+  ///
+  /// Sisanya diurutkan menurun berdasarkan 'timestamp', yaitu waktu yang juga
+  /// tampil di layar, supaya urutan yang terlihat cocok dengan angka yang
+  /// terbaca. 'createdAt' dipakai hanya sebagai pemecah seri.
   List<Map<String, dynamic>> getNotificationHistory() {
+    final now = DateTime.now();
+
     final entries = _notificationHistoryBox.values
         .toList()
         .asMap()
         .entries
         .map((e) => (seq: e.key, data: Map<String, dynamic>.from(e.value)))
-        .toList();
+        .where((e) {
+      final t = DateTime.tryParse(e.data['timestamp'] ?? '');
+      return t != null && !t.isAfter(now);
+    }).toList();
 
     entries.sort((a, b) {
+      final tA = DateTime.parse(a.data['timestamp']);
+      final tB = DateTime.parse(b.data['timestamp']);
+      final byTime = tB.compareTo(tA);
+      if (byTime != 0) return byTime;
+
       final cA = DateTime.tryParse(a.data['createdAt'] ?? '');
       final cB = DateTime.tryParse(b.data['createdAt'] ?? '');
-
       if (cA != null && cB != null) return cB.compareTo(cA);
-      // Entri yang sudah punya 'createdAt' pasti dicatat oleh versi yang lebih
-      // baru, jadi ia lebih baru daripada entri lama yang belum punya.
-      if (cA != null) return -1;
-      if (cB != null) return 1;
+
       return b.seq.compareTo(a.seq);
     });
 
