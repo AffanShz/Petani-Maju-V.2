@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:petani_maju/core/constants/colors.dart';
@@ -67,177 +67,186 @@ class _DemoQrPaymentSheetState extends State<DemoQrPaymentSheet> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.qr_code_2_rounded,
-                    color: AppColors.primaryGreen, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Pembayaran QRIS (Demo)',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('Order: ${widget.orderId}',
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey[600])),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey[200]!),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withAlpha(8),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3)),
-              ],
-            ),
-            child: QrImageView(
-              data: _buildQrPayload(),
-              version: QrVersions.auto,
-              size: 220,
-              backgroundColor: Colors.white,
-              eyeStyle: const QrEyeStyle(
-                eyeShape: QrEyeShape.square,
-                color: Colors.black,
-              ),
-              dataModuleStyle: const QrDataModuleStyle(
-                dataModuleShape: QrDataModuleShape.square,
-                color: Colors.black,
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        24 + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      // Layar pendek atau font sistem yang diperbesar bisa membuat isi sheet
+      // lebih tinggi dari ruang yang tersedia, jadi biarkan bisa digulir.
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: _secondsLeft > 0
-                  ? const Color(0xFFFFF3E0)
-                  : const Color(0xFFE8F5E9),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+            Row(
               children: [
-                Icon(
-                  _secondsLeft > 0
-                      ? Icons.timer_outlined
-                      : Icons.check_circle_rounded,
-                  size: 18,
-                  color: _secondsLeft > 0
-                      ? const Color(0xFFE65100)
-                      : AppColors.primaryGreen,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen.withAlpha(25),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.qr_code_2_rounded,
+                      color: AppColors.primaryGreen, size: 22),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  _secondsLeft > 0
-                      ? 'Tunggu: ${_formatTime(_secondsLeft)} sebelum bisa konfirmasi'
-                      : 'QR siap! Silakan klik tombol di bawah',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: _secondsLeft > 0
-                        ? const Color(0xFFE65100)
-                        : const Color(0xFF1B5E20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Pembayaran QRIS (Demo)',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Order: ${widget.orderId}',
+                          style:
+                              TextStyle(fontSize: 11, color: Colors.grey[600])),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
-            ),
-            child: Column(
-              children: [
-                _row('Paket', widget.planName),
-                const SizedBox(height: 6),
-                _row('Total', widget.planPrice, highlight: true),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    canConfirm ? AppColors.primaryGreen : Colors.grey[300],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[200]!),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withAlpha(8),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3)),
+                ],
               ),
-              icon: _isConfirming
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.check_rounded, size: 20),
-              label: Text(
-                _isConfirming ? 'Memproses...' : 'Saya Sudah Bayar',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 14),
+              child: QrImageView(
+                data: _buildQrPayload(),
+                version: QrVersions.auto,
+                size: 220,
+                backgroundColor: Colors.white,
+                eyeStyle: const QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: Colors.black,
+                ),
+                dataModuleStyle: const QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: Colors.black,
+                ),
               ),
-              onPressed: canConfirm
-                  ? () async {
-                      setState(() => _isConfirming = true);
-                      try {
-                        await widget.onConfirmPaid();
-                      } finally {
-                        if (mounted) {
-                          setState(() => _isConfirming = false);
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: _secondsLeft > 0
+                    ? const Color(0xFFFFF3E0)
+                    : const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _secondsLeft > 0
+                        ? Icons.timer_outlined
+                        : Icons.check_circle_rounded,
+                    size: 18,
+                    color: _secondsLeft > 0
+                        ? const Color(0xFFE65100)
+                        : AppColors.primaryGreen,
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      _secondsLeft > 0
+                          ? 'Tunggu: ${_formatTime(_secondsLeft)} sebelum bisa konfirmasi'
+                          : 'QR siap! Silakan klik tombol di bawah',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: _secondsLeft > 0
+                            ? const Color(0xFFE65100)
+                            : const Color(0xFF1B5E20),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Column(
+                children: [
+                  _row('Paket', widget.planName),
+                  const SizedBox(height: 6),
+                  _row('Total', widget.planPrice, highlight: true),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      canConfirm ? AppColors.primaryGreen : Colors.grey[300],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                icon: _isConfirming
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.check_rounded, size: 20),
+                label: Text(
+                  _isConfirming ? 'Memproses...' : 'Saya Sudah Bayar',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                onPressed: canConfirm
+                    ? () async {
+                        setState(() => _isConfirming = true);
+                        try {
+                          await widget.onConfirmPaid();
+                        } finally {
+                          if (mounted) {
+                            setState(() => _isConfirming = false);
+                          }
                         }
                       }
-                    }
-                  : null,
+                    : null,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed:
-                _isConfirming ? null : () => Navigator.pop(context),
-            child: const Text('Batal',
-                style: TextStyle(color: Colors.grey)),
-          ),
-        ],
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: _isConfirming ? null : () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        ),
       ),
     );
   }

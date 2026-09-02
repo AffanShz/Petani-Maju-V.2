@@ -100,7 +100,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
   @override
   Widget build(BuildContext context) {
     ImageProvider? imageProvider;
-    if (_userImagePath != null && _userImagePath!.isNotEmpty && File(_userImagePath!).existsSync()) {
+    if (_userImagePath != null &&
+        _userImagePath!.isNotEmpty &&
+        File(_userImagePath!).existsSync()) {
       imageProvider = FileImage(File(_userImagePath!));
     }
 
@@ -112,89 +114,108 @@ class _CustomAppBarState extends State<CustomAppBar> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: AppColors.primaryGreen,
-                    backgroundImage: imageProvider,
-                    onBackgroundImageError: imageProvider != null
-                        ? (exception, stackTrace) {
-                            if (kDebugMode) print("AppBar Profile Image Error: $exception");
-                          }
-                        : null,
-                    child: imageProvider == null
-                        ? const Icon(Icons.person, color: Colors.white, size: 28)
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+              Expanded(
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: AppColors.primaryGreen,
+                      backgroundImage: imageProvider,
+                      onBackgroundImageError: imageProvider != null
+                          ? (exception, stackTrace) {
+                              if (kDebugMode) {
+                                print("AppBar Profile Image Error: $exception");
+                              }
+                            }
+                          : null,
+                      child: imageProvider == null
+                          ? const Icon(Icons.person,
+                              color: Colors.white, size: 28)
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            _userName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: _isPremiumActive
-                                  ? const Color(0xFFFFF8E1)
-                                  : Colors.grey[100],
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: _isPremiumActive
-                                    ? const Color(0xFFFFB300)
-                                    : Colors.grey[300]!,
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (_isPremiumActive) ...[
-                                  const Icon(
-                                    Icons.workspace_premium_rounded,
-                                    size: 11,
-                                    color: Color(0xFFE65100),
-                                  ),
-                                  const SizedBox(width: 2),
-                                ],
-                                Text(
-                                  _isPremiumActive ? 'PRO' : 'Gratis',
-                                  style: TextStyle(
-                                    fontSize: 10,
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _userName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: _isPremiumActive
-                                        ? const Color(0xFFE65100)
-                                        : Colors.grey[600],
                                   ),
                                 ),
-                              ],
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: _isPremiumActive
+                                      ? const Color(0xFFFFF8E1)
+                                      : Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: _isPremiumActive
+                                        ? const Color(0xFFFFB300)
+                                        : Colors.grey[300]!,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (_isPremiumActive) ...[
+                                      const Icon(
+                                        Icons.workspace_premium_rounded,
+                                        size: 11,
+                                        color: Color(0xFFE65100),
+                                      ),
+                                      const SizedBox(width: 2),
+                                    ],
+                                    Text(
+                                      _isPremiumActive ? 'PRO' : 'Gratis',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: _isPremiumActive
+                                            ? const Color(0xFFE65100)
+                                            : Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _isPremiumActive
+                                ? 'Member PRO ($_planName) — AI Bebas Limit'
+                                : 'app_name'.tr(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: _isPremiumActive
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
+                              color: _isPremiumActive
+                                  ? AppColors.darkGreen
+                                  : Colors.grey[600],
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _isPremiumActive
-                            ? 'Member PRO ($_planName) — AI Bebas Limit'
-                            : 'app_name'.tr(),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: _isPremiumActive ? FontWeight.w500 : FontWeight.normal,
-                          color: _isPremiumActive ? AppColors.darkGreen : Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [
@@ -209,7 +230,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       margin: const EdgeInsets.only(right: 6),
                       decoration: BoxDecoration(
                         gradient: _isPremiumActive
@@ -221,7 +243,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                               ),
                         borderRadius: BorderRadius.circular(20),
                         border: _isPremiumActive
-                            ? Border.all(color: const Color(0xFFFFD700), width: 1)
+                            ? Border.all(
+                                color: const Color(0xFFFFD700), width: 1)
                             : null,
                         boxShadow: [
                           BoxShadow(
@@ -237,15 +260,21 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            _isPremiumActive ? Icons.verified_rounded : Icons.workspace_premium_rounded,
+                            _isPremiumActive
+                                ? Icons.verified_rounded
+                                : Icons.workspace_premium_rounded,
                             size: 14,
-                            color: _isPremiumActive ? const Color(0xFFFFD700) : Colors.white,
+                            color: _isPremiumActive
+                                ? const Color(0xFFFFD700)
+                                : Colors.white,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _isPremiumActive ? 'PRO Aktif' : 'Upgrade PRO',
                             style: TextStyle(
-                              color: _isPremiumActive ? const Color(0xFFFFD700) : Colors.white,
+                              color: _isPremiumActive
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.white,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.3,

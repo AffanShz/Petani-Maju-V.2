@@ -6,7 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/core/services/midtrans_service.dart';
-import 'package:petani_maju/features/premium/widgets/demo_qr_payment_sheet.dart';  // TAMBAH INI
+import 'package:petani_maju/features/premium/widgets/demo_qr_payment_sheet.dart'; // TAMBAH INI
 import 'package:petani_maju/widgets/app_toast.dart';
 
 class PurchasePremiumScreen extends StatefulWidget {
@@ -22,7 +22,8 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
   StreamSubscription<Map<String, dynamic>>? _subSubscription;
   Timer? _liveTicker;
 
-  int _selectedPlanIndex = 0; // Default to 30 Detik Demo agar user bisa langsung tes
+  int _selectedPlanIndex =
+      0; // Default to 30 Detik Demo agar user bisa langsung tes
   String _selectedPaymentMethod = 'qris';
   bool _isProcessing = false;
   late Map<String, dynamic> _subscriptionDetails;
@@ -32,8 +33,7 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
     super.initState();
     _subscriptionDetails = _cacheService.getSubscriptionDetails();
 
-    _subSubscription =
-        _cacheService.subscriptionUpdateStream.listen((sub) {
+    _subSubscription = _cacheService.subscriptionUpdateStream.listen((sub) {
       if (mounted) {
         setState(() {
           _subscriptionDetails = sub;
@@ -62,16 +62,16 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
 
   final List<Map<String, dynamic>> _plans = [
     {
-  'title': 'Demo 1 Jam (QRIS)',
-  'subtitle': 'Scan QR untuk simulasi aktivasi PRO',
-  'price': 'Gratis (Demo)',
-  'period': '/1 jam',
-  'rawPrice': '1 Jam Demo',
-  'saveTag': 'DEMO QRIS 1 JAM',
-  'isPopular': true,
-  'isDemoNoBrowser': true,
-  'duration': const Duration(hours: 1),
-  'amount': 1000,
+      'title': 'Demo 1 Jam (QRIS)',
+      'subtitle': 'Scan QR untuk simulasi aktivasi PRO',
+      'price': 'Gratis (Demo)',
+      'period': '/1 jam',
+      'rawPrice': '1 Jam Demo',
+      'saveTag': 'DEMO QRIS 1 JAM',
+      'isPopular': true,
+      'isDemoNoBrowser': true,
+      'duration': const Duration(hours: 1),
+      'amount': 1000,
     },
     {
       'title': '1 Bulan',
@@ -112,13 +112,15 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
     {
       'icon': Icons.image_search_rounded,
       'title': 'Chat Asisten Tani Tanpa Batas',
-      'desc': 'Akun gratis terbatas 3 jawaban per bulan, teks maupun foto. PRO bebas konsultasi tanpa limit.',
+      'desc':
+          'Akun gratis terbatas 3 jawaban per bulan, teks maupun foto. PRO bebas konsultasi tanpa limit.',
       'badge': 'Fitur Utama',
     },
     {
       'icon': Icons.bolt_rounded,
       'title': 'Respon AI Kilat & Prioritas',
-      'desc': 'Konsultasi kapan saja tanpa antri dengan model AI pertanian tercanggih.',
+      'desc':
+          'Konsultasi kapan saja tanpa antri dengan model AI pertanian tercanggih.',
       'badge': 'Cepat',
     },
     {
@@ -130,7 +132,8 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
     {
       'icon': Icons.support_agent_rounded,
       'title': 'Dukungan Prioritas',
-      'desc': 'Pengalaman aplikasi lancar tanpa gangguan dengan prioritas bantuan admin.',
+      'desc':
+          'Pengalaman aplikasi lancar tanpa gangguan dengan prioritas bantuan admin.',
       'badge': 'VIP',
     },
   ];
@@ -138,11 +141,13 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
   final List<Map<String, String>> _faqs = [
     {
       'q': 'Berapa batas upload gambar untuk akun gratis?',
-      'a': 'Pengguna gratis mendapatkan kuota maksimal 3 kali upload gambar konsultasi di chatbot. Dengan akun PRO, Anda bisa upload foto sepuasnya tanpa batas.',
+      'a':
+          'Pengguna gratis mendapatkan kuota maksimal 3 kali upload gambar konsultasi di chatbot. Dengan akun PRO, Anda bisa upload foto sepuasnya tanpa batas.',
     },
     {
       'q': 'Bagaimana cara aktivasi paket setelah bayar?',
-      'a': 'Status PRO akan aktif secara instan dan otomatis begitu transaksi pembayaran terkonfirmasi.',
+      'a':
+          'Status PRO akan aktif secara instan dan otomatis begitu transaksi pembayaran terkonfirmasi.',
     },
   ];
 
@@ -156,13 +161,13 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
 
     // Jika user sudah memiliki langganan aktif, perpanjang dari tanggal kedaluwarsa saat ini
     final bool isDemo = title.contains('2 Menit') || title.contains('Demo');
-    final baseDate = isCurrentlyActive && !isDemo
-        ? currentExpiry
-        : DateTime.now();
+    final baseDate =
+        isCurrentlyActive && !isDemo ? currentExpiry : DateTime.now();
 
     if (isDemo) {
-  final demoDuration = plan['duration'] as Duration? ?? const Duration(hours: 1);
-  return DateTime.now().add(demoDuration);
+      final demoDuration =
+          plan['duration'] as Duration? ?? const Duration(hours: 1);
+      return DateTime.now().add(demoDuration);
     } else if (title.contains('1 Bulan')) {
       return DateTime(
         baseDate.year,
@@ -224,42 +229,41 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
 
     try {
       // Paket Demo: tidak perlu API Midtrans / browser, langsung tampilkan sheet konfirmasi
-if (isDemoNoBrowser) {
-  setState(() => _isProcessing = false);
-  // Tampilkan sheet QR demo, tunggu user klik "Saya Sudah Bayar"
-  if (!mounted) return;
-  final orderId =
-      'PM-DEMO-${DateTime.now().millisecondsSinceEpoch}';
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (sheetCtx) => DemoQrPaymentSheet(
-      planName: planTitle,
-      planPrice: selectedPlan['price'] as String,
-      amount: amount,
-      orderId: orderId,
-      durationSeconds: 30,
-      onConfirmPaid: () async {
-        final sheetNavigator = Navigator.of(sheetCtx);
-        await Future.delayed(const Duration(milliseconds: 500));
+      if (isDemoNoBrowser) {
+        setState(() => _isProcessing = false);
+        // Tampilkan sheet QR demo, tunggu user klik "Saya Sudah Bayar"
         if (!mounted) return;
-        sheetNavigator.pop();
-        final expiryDate = await _activatePlan(selectedPlan);
-        if (!mounted) return;
-        _showSuccessDialog(expiryDate);
-      },
-    ),
-  );
-  return;
-}
-
+        final orderId = 'PM-DEMO-${DateTime.now().millisecondsSinceEpoch}';
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (sheetCtx) => DemoQrPaymentSheet(
+            planName: planTitle,
+            planPrice: selectedPlan['price'] as String,
+            amount: amount,
+            orderId: orderId,
+            durationSeconds: 30,
+            onConfirmPaid: () async {
+              final sheetNavigator = Navigator.of(sheetCtx);
+              await Future.delayed(const Duration(milliseconds: 500));
+              if (!mounted) return;
+              sheetNavigator.pop();
+              final expiryDate = await _activatePlan(selectedPlan);
+              if (!mounted) return;
+              _showSuccessDialog(expiryDate);
+            },
+          ),
+        );
+        return;
+      }
 
       final user = Supabase.instance.client.auth.currentUser;
       final userProfile = _cacheService.getUserProfile();
-      final customerName = (userProfile['name'] != null && userProfile['name']!.isNotEmpty)
-          ? userProfile['name']!
-          : (user?.userMetadata?['full_name'] as String? ?? 'Petani Maju');
+      final customerName =
+          (userProfile['name'] != null && userProfile['name']!.isNotEmpty)
+              ? userProfile['name']!
+              : (user?.userMetadata?['full_name'] as String? ?? 'Petani Maju');
       final customerEmail = user?.email ?? 'petani@petanimaju.id';
 
       final result = await _midtransService.createTransaction(
@@ -397,7 +401,8 @@ if (isDemoNoBrowser) {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text('Order ID',
-                                style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey)),
                             Row(
                               children: [
                                 Text(
@@ -411,7 +416,8 @@ if (isDemoNoBrowser) {
                                 const SizedBox(width: 4),
                                 InkWell(
                                   onTap: () {
-                                    Clipboard.setData(ClipboardData(text: orderId));
+                                    Clipboard.setData(
+                                        ClipboardData(text: orderId));
                                     AppToast.show(
                                       outerContext,
                                       message: 'Order ID disalin ke clipboard',
@@ -421,7 +427,8 @@ if (isDemoNoBrowser) {
                                   child: const Padding(
                                     padding: EdgeInsets.all(4.0),
                                     child: Icon(Icons.copy_rounded,
-                                        size: 14, color: AppColors.primaryGreen),
+                                        size: 14,
+                                        color: AppColors.primaryGreen),
                                   ),
                                 ),
                               ],
@@ -433,7 +440,8 @@ if (isDemoNoBrowser) {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text('Paket Pilihan',
-                                style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey)),
                             Text(
                               plan['title'] as String,
                               style: const TextStyle(
@@ -450,7 +458,8 @@ if (isDemoNoBrowser) {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             const Text('Total Tagihan',
-                                style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey)),
                             Text(
                               plan['price'] as String,
                               style: const TextStyle(
@@ -468,7 +477,8 @@ if (isDemoNoBrowser) {
                   const SizedBox(height: 16),
                   Text(
                     'Silakan selesaikan pembayaran pada halaman browser yang telah terbuka. Setelah itu, klik tombol di bawah untuk verifikasi status.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.4),
+                    style: TextStyle(
+                        fontSize: 12, color: Colors.grey[700], height: 1.4),
                   ),
 
                   const SizedBox(height: 20),
@@ -499,17 +509,21 @@ if (isDemoNoBrowser) {
                         isChecking
                             ? 'Mengecek ke Midtrans...'
                             : 'Cek Status Pembayaran',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       onPressed: isChecking
                           ? null
                           : () async {
                               setSheetState(() => isChecking = true);
-                              final status = await _midtransService.checkTransactionStatus(orderId);
+                              final status = await _midtransService
+                                  .checkTransactionStatus(orderId);
                               setSheetState(() => isChecking = false);
 
                               if (status == PaymentStatus.success) {
-                                if (sheetContext.mounted) Navigator.pop(sheetContext);
+                                if (sheetContext.mounted) {
+                                  Navigator.pop(sheetContext);
+                                }
                                 final expiryDate = await _activatePlan(plan);
                                 if (!mounted) return;
                                 _showSuccessDialog(expiryDate);
@@ -517,7 +531,8 @@ if (isDemoNoBrowser) {
                                 if (outerContext.mounted) {
                                   AppToast.show(
                                     outerContext,
-                                    message: 'Pembayaran belum terdeteksi. Silakan selesaikan pembayaran terlebih dahulu di browser atau simulator.',
+                                    message:
+                                        'Pembayaran belum terdeteksi. Silakan selesaikan pembayaran terlebih dahulu di browser atau simulator.',
                                     type: ToastType.warning,
                                   );
                                 }
@@ -525,7 +540,8 @@ if (isDemoNoBrowser) {
                                 if (outerContext.mounted) {
                                   AppToast.show(
                                     outerContext,
-                                    message: 'Status transaksi: $status (Belum berhasil)',
+                                    message:
+                                        'Status transaksi: $status (Belum berhasil)',
                                     type: ToastType.info,
                                   );
                                 }
@@ -548,9 +564,12 @@ if (isDemoNoBrowser) {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: const Icon(Icons.open_in_browser_rounded, size: 16),
-                          label: const Text('Buka Ulang Web', style: TextStyle(fontSize: 12)),
-                          onPressed: () => _midtransService.openPaymentUrl(redirectUrl),
+                          icon: const Icon(Icons.open_in_browser_rounded,
+                              size: 16),
+                          label: const Text('Buka Ulang Web',
+                              style: TextStyle(fontSize: 12)),
+                          onPressed: () =>
+                              _midtransService.openPaymentUrl(redirectUrl),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -564,8 +583,10 @@ if (isDemoNoBrowser) {
                             ),
                           ),
                           icon: const Icon(Icons.science_outlined, size: 16),
-                          label: const Text('Simulator PG', style: TextStyle(fontSize: 12)),
-                          onPressed: () => _midtransService.openMidtransSimulator(
+                          label: const Text('Simulator PG',
+                              style: TextStyle(fontSize: 12)),
+                          onPressed: () =>
+                              _midtransService.openMidtransSimulator(
                             // Pilih simulator bank yang sesuai dengan metode pembayaran
                             // paymentMethod langsung dipakai sebagai type simulator
                             type: paymentMethod,
@@ -576,7 +597,6 @@ if (isDemoNoBrowser) {
                   ),
 
                   const SizedBox(height: 8),
-
                 ],
               ),
             ),
@@ -595,86 +615,95 @@ if (isDemoNoBrowser) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primaryGreen.withAlpha(50), width: 2),
-                ),
-                child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: AppColors.primaryGreen,
-                  size: 48,
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'Selamat! Akun PRO Aktif 🎉',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1B5E20),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Paket ${selectedPlan['title']} telah aktif. Anda sekarang bisa upload foto tanpa batas di fitur Chatbot!',
-                style: TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.4),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Total Pembayaran', style: TextStyle(fontSize: 13, color: Colors.grey)),
-                    Text(
-                      selectedPlan['price'],
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E9),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: AppColors.primaryGreen.withAlpha(50), width: 2),
                   ),
-                  onPressed: () {
-                    Navigator.pop(ctx); // Close dialog
-                    Navigator.pop(context, true); // Return to previous screen with success
-                    AppToast.show(
-                      context,
-                      message: 'Status Petani Maju PRO berhasil diaktifkan!',
-                      type: ToastType.success,
-                      icon: Icons.workspace_premium_rounded,
-                    );
-                  },
-                  child: const Text('Mulai Gunakan PRO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.primaryGreen,
+                    size: 48,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 18),
+                const Text(
+                  'Selamat! Akun PRO Aktif 🎉',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1B5E20),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Paket ${selectedPlan['title']} telah aktif. Anda sekarang bisa konsultasi dengan Asisten Tani tanpa batas kuota!',
+                  style: TextStyle(
+                      fontSize: 14, color: Colors.grey[700], height: 1.4),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Total Pembayaran',
+                          style: TextStyle(fontSize: 13, color: Colors.grey)),
+                      Text(
+                        selectedPlan['price'],
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx); // Close dialog
+                      Navigator.pop(context,
+                          true); // Return to previous screen with success
+                      AppToast.show(
+                        context,
+                        message: 'Status Petani Maju PRO berhasil diaktifkan!',
+                        type: ToastType.success,
+                        icon: Icons.workspace_premium_rounded,
+                      );
+                    },
+                    child: const Text('Mulai Gunakan PRO',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 15)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -691,13 +720,15 @@ if (isDemoNoBrowser) {
         backgroundColor: const Color(0xFF0F3813),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 22),
+            Icon(Icons.workspace_premium_rounded,
+                color: Color(0xFFFFD700), size: 22),
             SizedBox(width: 8),
             Text(
               'Petani Maju PRO',
@@ -747,7 +778,8 @@ if (isDemoNoBrowser) {
                       // Section Header: Keuntungan PRO
                       _buildSectionTitle(
                         'Keuntungan Menjadi Member PRO',
-                        subtitle: 'Solusi lengkap memaksimalkan produktivitas tani',
+                        subtitle:
+                            'Solusi lengkap memaksimalkan produktivitas tani',
                       ),
                       const SizedBox(height: 12),
                       _buildBenefitsList(),
@@ -806,9 +838,11 @@ if (isDemoNoBrowser) {
       } else if (remaining.inSeconds < 60) {
         remainingStr = '${remaining.inSeconds} detik (Live)';
       } else if (remaining.inMinutes < 60) {
-        remainingStr = '${remaining.inMinutes} menit ${remaining.inSeconds % 60} dtk';
+        remainingStr =
+            '${remaining.inMinutes} menit ${remaining.inSeconds % 60} dtk';
       } else if (remaining.inHours < 24) {
-        remainingStr = '${remaining.inHours} jam ${remaining.inMinutes % 60} mnt';
+        remainingStr =
+            '${remaining.inHours} jam ${remaining.inMinutes % 60} mnt';
       } else {
         remainingStr = '${remaining.inDays} hari lagi';
       }
@@ -875,10 +909,14 @@ if (isDemoNoBrowser) {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Paket Aktif', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const Text('Paket Aktif',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
               Text(
                 _subscriptionDetails['planName'] as String,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
               ),
             ],
           ),
@@ -886,10 +924,14 @@ if (isDemoNoBrowser) {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Masa Berlaku Hingga', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const Text('Masa Berlaku Hingga',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
               Text(
                 expiryFormatted,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2E7D32)),
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2E7D32)),
               ),
             ],
           ),
@@ -898,9 +940,11 @@ if (isDemoNoBrowser) {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Hitung Mundur Sisa Waktu', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text('Hitung Mundur Sisa Waktu',
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF3E0),
                     borderRadius: BorderRadius.circular(6),
@@ -909,7 +953,8 @@ if (isDemoNoBrowser) {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.timer_outlined, size: 12, color: Color(0xFFE65100)),
+                      const Icon(Icons.timer_outlined,
+                          size: 12, color: Color(0xFFE65100)),
                       const SizedBox(width: 4),
                       Text(
                         remainingStr,
@@ -929,10 +974,14 @@ if (isDemoNoBrowser) {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Upload Foto Chatbot', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text('Upload Foto Chatbot',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
               Text(
                 'Unlimited (Tanpa Batas)',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primaryGreen),
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryGreen),
               ),
             ],
           ),
@@ -942,7 +991,8 @@ if (isDemoNoBrowser) {
             child: TextButton.icon(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.red[700],
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               ),
               icon: const Icon(Icons.restart_alt_rounded, size: 16),
               label: const Text(
@@ -1000,7 +1050,8 @@ if (isDemoNoBrowser) {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.auto_awesome_rounded, color: Color(0xFFFFD700), size: 16),
+                Icon(Icons.auto_awesome_rounded,
+                    color: Color(0xFFFFD700), size: 16),
                 SizedBox(width: 6),
                 Text(
                   'UNLIMITED AI ACCESS',
@@ -1094,7 +1145,8 @@ if (isDemoNoBrowser) {
               clipBehavior: Clip.none,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
                       // Radio check circle
@@ -1103,14 +1155,19 @@ if (isDemoNoBrowser) {
                         height: 22,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                          color: isSelected
+                              ? AppColors.primaryGreen
+                              : Colors.transparent,
                           border: Border.all(
-                            color: isSelected ? AppColors.primaryGreen : Colors.grey[400]!,
+                            color: isSelected
+                                ? AppColors.primaryGreen
+                                : Colors.grey[400]!,
                             width: 2,
                           ),
                         ),
                         child: isSelected
-                            ? const Icon(Icons.check, size: 14, color: Colors.white)
+                            ? const Icon(Icons.check,
+                                size: 14, color: Colors.white)
                             : null,
                       ),
                       const SizedBox(width: 14),
@@ -1126,13 +1183,16 @@ if (isDemoNoBrowser) {
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? AppColors.primaryGreen : Colors.black87,
+                                    color: isSelected
+                                        ? AppColors.primaryGreen
+                                        : Colors.black87,
                                   ),
                                 ),
                                 if (plan['saveTag'] != null) ...[
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFE65100),
                                       borderRadius: BorderRadius.circular(6),
@@ -1152,7 +1212,8 @@ if (isDemoNoBrowser) {
                             const SizedBox(height: 2),
                             Text(
                               plan['subtitle'],
-                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -1166,14 +1227,18 @@ if (isDemoNoBrowser) {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isSelected ? AppColors.primaryGreen : Colors.black87,
+                              color: isSelected
+                                  ? AppColors.primaryGreen
+                                  : Colors.black87,
                             ),
                           ),
                           Text(
                             plan['rawPrice'],
                             style: TextStyle(
                               fontSize: 11,
-                              color: isSelected ? AppColors.darkGreen : Colors.grey[500],
+                              color: isSelected
+                                  ? AppColors.darkGreen
+                                  : Colors.grey[500],
                             ),
                           ),
                         ],
@@ -1186,7 +1251,8 @@ if (isDemoNoBrowser) {
                     top: -10,
                     right: 18,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 3),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],
@@ -1203,7 +1269,8 @@ if (isDemoNoBrowser) {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.star_rounded, size: 12, color: Colors.white),
+                          Icon(Icons.star_rounded,
+                              size: 12, color: Colors.white),
                           SizedBox(width: 4),
                           Text(
                             'PALING LARIS',
@@ -1244,7 +1311,8 @@ if (isDemoNoBrowser) {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _benefits.length,
-        separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
+        separatorBuilder: (_, __) =>
+            Divider(height: 1, color: Colors.grey[200]),
         itemBuilder: (context, index) {
           final item = _benefits[index];
           return Padding(
@@ -1282,11 +1350,13 @@ if (isDemoNoBrowser) {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: const Color(0xFFE8F5E9),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: AppColors.primaryGreen.withAlpha(50)),
+                              border: Border.all(
+                                  color: AppColors.primaryGreen.withAlpha(50)),
                             ),
                             child: Text(
                               item['badge'] as String,
@@ -1351,27 +1421,34 @@ if (isDemoNoBrowser) {
         children: paymentOptions.map((opt) {
           final isSelected = _selectedPaymentMethod == opt['id'];
           return InkWell(
-            onTap: () => setState(() => _selectedPaymentMethod = opt['id'] as String),
+            onTap: () =>
+                setState(() => _selectedPaymentMethod = opt['id'] as String),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 children: [
-                  Icon(opt['icon'] as IconData, color: isSelected ? AppColors.primaryGreen : Colors.grey[600], size: 22),
+                  Icon(opt['icon'] as IconData,
+                      color: isSelected
+                          ? AppColors.primaryGreen
+                          : Colors.grey[600],
+                      size: 22),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       opt['title'] as String,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
                         color: Colors.black87,
                       ),
                     ),
                   ),
                   if (opt['badge'] != null) ...[
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(4),
@@ -1388,9 +1465,13 @@ if (isDemoNoBrowser) {
                     height: 20,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                      color: isSelected
+                          ? AppColors.primaryGreen
+                          : Colors.transparent,
                       border: Border.all(
-                        color: isSelected ? AppColors.primaryGreen : Colors.grey[400]!,
+                        color: isSelected
+                            ? AppColors.primaryGreen
+                            : Colors.grey[400]!,
                         width: 2,
                       ),
                     ),
@@ -1432,7 +1513,8 @@ if (isDemoNoBrowser) {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: Text(
                   faq['a']!,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.4),
+                  style: TextStyle(
+                      fontSize: 12, color: Colors.grey[700], height: 1.4),
                 ),
               ),
             ],
@@ -1457,7 +1539,10 @@ if (isDemoNoBrowser) {
           Flexible(
             child: Text(
               'Transaksi Terenkripsi & Jaminan Akses Instan',
-              style: TextStyle(fontSize: 12, color: AppColors.darkGreen, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.darkGreen,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -1486,74 +1571,76 @@ if (isDemoNoBrowser) {
           children: [
             Row(
               children: [
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Total Tagihan',
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      selectedPlan['price'],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryGreen,
-                      ),
+                    const Text(
+                      'Total Tagihan',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
                     ),
-                    Text(
-                      ' ${selectedPlan['period']}',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          selectedPlan['price'],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryGreen,
+                          ),
+                        ),
+                        Text(
+                          ' ${selectedPlan['period']}',
+                          style:
+                              TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryGreen,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _isProcessing ? null : _processPayment,
+                      child: _isProcessing
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Langganan Sekarang',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Icon(Icons.arrow_forward_rounded, size: 16),
+                              ],
+                            ),
                     ),
                   ),
-                  onPressed: _isProcessing ? null : _processPayment,
-                  child: _isProcessing
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Langganan Sekarang',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(width: 6),
-                            Icon(Icons.arrow_forward_rounded, size: 16),
-                          ],
-                        ),
                 ),
-              ),
-            ),
               ],
             ),
           ],
