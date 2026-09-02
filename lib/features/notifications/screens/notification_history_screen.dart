@@ -22,7 +22,7 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
 
   void _loadNotifications() {
     setState(() {
-      _notifications = _sortForDisplay(CacheService().getNotificationHistory());
+      _notifications = CacheService().getNotificationHistory();
     });
   }
 
@@ -101,24 +101,6 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
     return t != null && t.isAfter(DateTime.now());
   }
 
-  /// Urutkan supaya terbaca wajar: pengingat yang paling dekat lebih dulu,
-  /// lalu riwayat yang sudah tayang dari yang terbaru.
-  ///
-  /// Tanpa ini daftarnya memakai urutan waktu menurun, yang menaruh jadwal
-  /// paling jauh di masa depan justru di paling atas.
-  List<Map<String, dynamic>> _sortForDisplay(List<Map<String, dynamic>> items) {
-    final upcoming = items.where(_isUpcoming).toList()
-      ..sort((a, b) => DateTime.parse(a['timestamp'])
-          .compareTo(DateTime.parse(b['timestamp'])));
-    final past = items.where((n) => !_isUpcoming(n)).toList()
-      ..sort((a, b) {
-        final tA = DateTime.tryParse(a['timestamp'] ?? '') ?? DateTime(2000);
-        final tB = DateTime.tryParse(b['timestamp'] ?? '') ?? DateTime(2000);
-        return tB.compareTo(tA);
-      });
-    return [...upcoming, ...past];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -171,11 +153,57 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
                     const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final notification = _notifications[index];
-                  return _buildNotificationCard(notification);
+                  return Dismissible(
+                    key: ValueKey(
+                      '${notification['id']}_${notification['createdAt'] ?? notification['timestamp']}',
+                    ),
+                    direction: DismissDirection.endToStart,
+                    background: _buildDismissBackground(),
+                    onDismissed: (_) => _deleteOne(notification),
+                    child: _buildNotificationCard(notification),
+                  );
                 },
               ),
             ),
     );
+  }
+
+  Widget _buildDismissBackground() {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: Colors.red.shade400,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(Icons.delete_outline, color: Colors.white, size: 26),
+    );
+  }
+
+  Future<void> _deleteOne(Map<String, dynamic> notification) async {
+    final id = notification['id'];
+
+    setState(() => _notifications.remove(notification));
+    if (id is int) await CacheService().removeNotification(id);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Notifikasi dihapus'),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Urungkan',
+            onPressed: () async {
+              // Entri ditulis ulang apa adanya, termasuk 'createdAt', jadi ia
+              // kembali ke posisi semula setelah daftar dimuat ulang.
+              await CacheService().saveNotification(notification);
+              if (mounted) _loadNotifications();
+            },
+          ),
+        ),
+      );
   }
 
   Widget _buildNotificationCard(Map<String, dynamic> notification) {

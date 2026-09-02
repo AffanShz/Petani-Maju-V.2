@@ -145,6 +145,7 @@ class NotificationService {
         'title': title,
         'body': body,
         'timestamp': DateTime.now().toIso8601String(),
+        'createdAt': DateTime.now().toIso8601String(),
         'payload': payload,
         'isRead': false,
       });
@@ -235,6 +236,10 @@ class NotificationService {
         'title': title,
         'body': body,
         'timestamp': finalScheduledDate.toIso8601String(),
+        // Kapan entri ini dicatat, bukan kapan ia berbunyi. 'timestamp' sebuah
+        // jadwal menunjuk masa depan, jadi ia tidak bisa dipakai mengurutkan
+        // mana yang paling baru masuk ke riwayat.
+        'createdAt': DateTime.now().toIso8601String(),
         'payload': 'scheduled',
         'isRead': false,
       });

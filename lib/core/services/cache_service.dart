@@ -285,9 +285,8 @@ class CacheService {
       final serverPlan = meta['premium_plan'] as String?;
       final serverExpiry = meta['premium_expiry'] as String?;
 
-      final serverExpiryDate = serverExpiry != null
-          ? DateTime.tryParse(serverExpiry)
-          : null;
+      final serverExpiryDate =
+          serverExpiry != null ? DateTime.tryParse(serverExpiry) : null;
 
       if (serverIsPremium &&
           serverExpiryDate != null &&
@@ -374,7 +373,7 @@ class CacheService {
       if (kDebugMode) print("CacheService: Getting user profile...");
       final name = _settingsBox.get('userName', defaultValue: 'Pak Tani');
       final image = _settingsBox.get('userImage');
-      
+
       final result = {
         'name': name?.toString() ?? 'Pak Tani',
         'imagePath': image?.toString()
@@ -441,7 +440,8 @@ class CacheService {
           return false;
         } else {
           // Jadwalkan timer otomatis jika belum aktif
-          if (_subscriptionExpiryTimer == null || !_subscriptionExpiryTimer!.isActive) {
+          if (_subscriptionExpiryTimer == null ||
+              !_subscriptionExpiryTimer!.isActive) {
             _scheduleExpiryTimer(expiryDate);
           }
         }
@@ -493,7 +493,8 @@ class CacheService {
     final planKey = _getUserSubKey('premiumPlanName');
     final expiryKey = _getUserSubKey('premiumExpiryDate');
 
-    final planName = _settingsBox.get(planKey, defaultValue: 'Gratis') as String;
+    final planName =
+        _settingsBox.get(planKey, defaultValue: 'Gratis') as String;
     final expiryStr = _settingsBox.get(expiryKey) as String?;
     final chatCount = _effectiveFreeChatCount();
 
@@ -527,7 +528,8 @@ class CacheService {
     }
     if (expiryDate != null) {
       await _settingsBox.put(expiryKey, expiryDate.toIso8601String());
-      await _settingsBox.put('global_premiumExpiryDate', expiryDate.toIso8601String());
+      await _settingsBox.put(
+          'global_premiumExpiryDate', expiryDate.toIso8601String());
       _scheduleExpiryTimer(expiryDate);
     } else if (!isActive) {
       await _settingsBox.delete(expiryKey);
@@ -637,20 +639,37 @@ class CacheService {
   }
 
   /// Get all history, sorted by newest first
+  /// Riwayat notifikasi, terbaru lebih dulu.
+  ///
+  /// Diurutkan berdasarkan 'createdAt' (kapan entri dicatat), bukan
+  /// 'timestamp'. Entri terjadwal menyimpan waktu jatuh temponya di masa
+  /// depan, sehingga mengurutkan dengan 'timestamp' menaruh jadwal terjauh di
+  /// paling atas, bukan notifikasi terbaru.
+  ///
+  /// Entri lama belum punya 'createdAt'. Untuk itu dipakai urutan penyimpanan
+  /// di Hive sebagai pengganti, karena tiap kali sebuah notifikasi tayang atau
+  /// dijadwalkan ulang entrinya dihapus lalu ditambahkan lagi di belakang.
   List<Map<String, dynamic>> getNotificationHistory() {
-    final data = _notificationHistoryBox.values.toList();
-    final List<Map<String, dynamic>> history = data
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList(); // Cast dynamic map to typed map
+    final entries = _notificationHistoryBox.values
+        .toList()
+        .asMap()
+        .entries
+        .map((e) => (seq: e.key, data: Map<String, dynamic>.from(e.value)))
+        .toList();
 
-    // Sort descending by timestamp
-    history.sort((a, b) {
-      final tA = DateTime.tryParse(a['timestamp'] ?? '') ?? DateTime(2000);
-      final tB = DateTime.tryParse(b['timestamp'] ?? '') ?? DateTime(2000);
-      return tB.compareTo(tA);
+    entries.sort((a, b) {
+      final cA = DateTime.tryParse(a.data['createdAt'] ?? '');
+      final cB = DateTime.tryParse(b.data['createdAt'] ?? '');
+
+      if (cA != null && cB != null) return cB.compareTo(cA);
+      // Entri yang sudah punya 'createdAt' pasti dicatat oleh versi yang lebih
+      // baru, jadi ia lebih baru daripada entri lama yang belum punya.
+      if (cA != null) return -1;
+      if (cB != null) return 1;
+      return b.seq.compareTo(a.seq);
     });
 
-    return history;
+    return entries.map((e) => e.data).toList();
   }
 
   /// Remove semua history dengan ID tertentu
@@ -746,4 +765,3 @@ class CacheService {
     return _settingsBox.get('lastActiveChatSessionId') as String?;
   }
 }
-
