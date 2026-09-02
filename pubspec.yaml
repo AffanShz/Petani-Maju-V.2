@@ -1,4 +1,4 @@
-name: petani_maju
+﻿name: petani_maju
 description: "A new Flutter project."
 publish_to: "none"
 version: 0.1.0
@@ -16,7 +16,7 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   http: ^1.6.0
-  intl: 0.20.2
+  intl: ^0.20.3
   permission_handler: ^11.3.0
   supabase_flutter: ^2.0.0
   flutter_local_notifications: ^17.0.0
@@ -34,6 +34,7 @@ dependencies:
   google_generative_ai: ">=0.4.7 <2.0.0"
   flutter_cache_manager: ^3.4.1
   flutter_markdown: ^0.7.3
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -52,3 +53,4 @@ flutter:
     - katalog_obat_tanaman.json
     - assets/images/
     - assets/translations/
+

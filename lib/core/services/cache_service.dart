@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:petani_maju/data/models/notification_settings.dart';
 
 import 'package:petani_maju/data/models/chat_session.dart';
@@ -19,6 +20,12 @@ class CacheService {
       StreamController<Map<String, String?>>.broadcast();
   Stream<Map<String, String?>> get profileUpdateStream =>
       _profileUpdateController.stream;
+
+  // Subscription update stream
+  final _subscriptionUpdateController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get subscriptionUpdateStream =>
+      _subscriptionUpdateController.stream;
 
   // Box names
   static const String _weatherBoxName = 'weatherCache';
@@ -227,7 +234,7 @@ class CacheService {
 
   // ==================== UTILITY ====================
 
-  /// Clear all cached data
+  /// Clear all cached data EXCEPT subscription/premium data (preserved per-user)
   Future<void> clearAllCache() async {
     await _weatherBox.clear();
     await _tipsBox.clear();
@@ -235,7 +242,82 @@ class CacheService {
     await Hive.box(_plantingScheduleBoxName).clear();
     await _notificationHistoryBox.clear();
     await _chatSessionsBox.clear();
+    // Hapus semua settings KECUALI subscription keys (sub_*) yang terikat per user
+    await _clearSettingsExceptSubscription();
+  }
+
+  /// Hapus settings box tapi pertahankan semua kunci sub_{userId}_* dan global_premium*
+  Future<void> _clearSettingsExceptSubscription() async {
+    final keysToKeep = _settingsBox.keys
+        .where((k) =>
+            k.toString().startsWith('sub_') ||
+            k.toString().startsWith('global_premium') ||
+            k.toString() == 'global_isPremiumActive')
+        .toList();
+    final preserved = <dynamic, dynamic>{};
+    for (final k in keysToKeep) {
+      preserved[k] = _settingsBox.get(k);
+    }
     await _settingsBox.clear();
+    for (final entry in preserved.entries) {
+      await _settingsBox.put(entry.key, entry.value);
+    }
+  }
+
+  /// Restore subscription dari Supabase user metadata ke Hive saat login.
+  /// Dipanggil setelah user berhasil login agar status PRO yang tersimpan
+  /// di server (Supabase) disinkronkan kembali ke Hive lokal.
+  Future<void> restoreSubscriptionOnLogin() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+
+      // Cek apakah Hive sudah punya data untuk user ini
+      final activeKey = _getUserSubKey('isPremiumActive');
+      final expiryKey = _getUserSubKey('premiumExpiryDate');
+      final planKey = _getUserSubKey('premiumPlanName');
+
+      final hiveHasData = _settingsBox.containsKey(activeKey);
+
+      // Ambil data dari Supabase user metadata
+      final meta = user.userMetadata ?? {};
+      final serverIsPremium = meta['is_premium'] as bool? ?? false;
+      final serverPlan = meta['premium_plan'] as String?;
+      final serverExpiry = meta['premium_expiry'] as String?;
+
+      final serverExpiryDate = serverExpiry != null
+          ? DateTime.tryParse(serverExpiry)
+          : null;
+
+      if (serverIsPremium &&
+          serverExpiryDate != null &&
+          serverExpiryDate.isAfter(DateTime.now())) {
+        // Server adalah sumber kebenaran saat subscription masih aktif.
+        // Ini juga memperbaiki state Hive false/stale setelah login ulang.
+        await _settingsBox.put(activeKey, true);
+        await _settingsBox.put(expiryKey, serverExpiryDate.toIso8601String());
+        if (serverPlan != null) await _settingsBox.put(planKey, serverPlan);
+        _scheduleExpiryTimer(serverExpiryDate);
+      } else if (!hiveHasData && serverIsPremium && serverExpiry != null) {
+        // Hive kosong dan langganan server sudah kedaluwarsa.
+        await _settingsBox.put(activeKey, false);
+      } else if (hiveHasData) {
+        // Hive sudah ada data — jadwalkan timer ulang kalau masih aktif
+        final expiryStr = _settingsBox.get(expiryKey) as String?;
+        if (expiryStr != null) {
+          final expiryDate = DateTime.tryParse(expiryStr);
+          if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
+            _scheduleExpiryTimer(expiryDate);
+          } else {
+            await _settingsBox.put(activeKey, false);
+          }
+        }
+      }
+
+      _subscriptionUpdateController.add(getSubscriptionDetails());
+    } catch (e) {
+      debugPrint('[CacheService] restoreSubscriptionOnLogin error: $e');
+    }
   }
 
   Box get _settingsBox => Hive.box(_settingsBoxName);
@@ -303,6 +385,156 @@ class CacheService {
       if (kDebugMode) print('CacheService: Error getting user profile: $e');
       return {'name': 'Pak Tani', 'imagePath': null};
     }
+  }
+
+  // ==================== SUBSCRIPTION & PREMIUM ====================
+
+  Timer? _subscriptionExpiryTimer;
+
+  String _getUserSubKey(String key) {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null && user.id.isNotEmpty) {
+        return 'sub_${user.id}_$key';
+      }
+    } catch (_) {}
+    return 'sub_guest_$key';
+  }
+
+  void _scheduleExpiryTimer(DateTime expiryDate) {
+    _subscriptionExpiryTimer?.cancel();
+    final remaining = expiryDate.difference(DateTime.now());
+    if (remaining.isNegative) {
+      _handleSubscriptionExpired();
+      return;
+    }
+
+    _subscriptionExpiryTimer = Timer(remaining, () {
+      _handleSubscriptionExpired();
+    });
+  }
+
+  void _handleSubscriptionExpired() {
+    final activeKey = _getUserSubKey('isPremiumActive');
+    _settingsBox.put(activeKey, false);
+    _subscriptionExpiryTimer?.cancel();
+    _subscriptionExpiryTimer = null;
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+  }
+
+  /// Cek apakah status premium sedang aktif
+  bool isPremiumActive() {
+    try {
+      final activeKey = _getUserSubKey('isPremiumActive');
+      final expiryKey = _getUserSubKey('premiumExpiryDate');
+
+      final isActive = _settingsBox.get(activeKey, defaultValue: false) as bool;
+      if (!isActive) return false;
+
+      final expiryStr = _settingsBox.get(expiryKey) as String?;
+      if (expiryStr != null) {
+        final expiryDate = DateTime.parse(expiryStr);
+        if (DateTime.now().isAfter(expiryDate)) {
+          _settingsBox.put(activeKey, false);
+          _subscriptionExpiryTimer?.cancel();
+          _subscriptionExpiryTimer = null;
+          return false;
+        } else {
+          // Jadwalkan timer otomatis jika belum aktif
+          if (_subscriptionExpiryTimer == null || !_subscriptionExpiryTimer!.isActive) {
+            _scheduleExpiryTimer(expiryDate);
+          }
+        }
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Ambil detail status langganan spesifik untuk akun yang sedang login
+  Map<String, dynamic> getSubscriptionDetails() {
+    final active = isPremiumActive();
+    final planKey = _getUserSubKey('premiumPlanName');
+    final expiryKey = _getUserSubKey('premiumExpiryDate');
+    final countKey = _getUserSubKey('freeImageUploadCount');
+
+    final planName = _settingsBox.get(planKey, defaultValue: 'Gratis') as String;
+    final expiryStr = _settingsBox.get(expiryKey) as String?;
+    final imageUploadCount = _settingsBox.get(countKey, defaultValue: 0) as int;
+
+    return {
+      'isActive': active,
+      'planName': active ? planName : 'Gratis',
+      'expiryDate': expiryStr != null ? DateTime.tryParse(expiryStr) : null,
+      'freeUploadLimit': 3,
+      'freeUploadUsed': imageUploadCount,
+      'remainingFreeUploads': (3 - imageUploadCount).clamp(0, 3),
+    };
+  }
+
+  /// Update status langganan untuk akun user yang aktif & broadcast ke seluruh listener UI
+  Future<void> setSubscription({
+    required bool isActive,
+    String? planName,
+    DateTime? expiryDate,
+  }) async {
+    final activeKey = _getUserSubKey('isPremiumActive');
+    final planKey = _getUserSubKey('premiumPlanName');
+    final expiryKey = _getUserSubKey('premiumExpiryDate');
+
+    await _settingsBox.put(activeKey, isActive);
+    await _settingsBox.put('global_isPremiumActive', isActive);
+
+    if (planName != null) {
+      await _settingsBox.put(planKey, planName);
+      await _settingsBox.put('global_premiumPlanName', planName);
+    }
+    if (expiryDate != null) {
+      await _settingsBox.put(expiryKey, expiryDate.toIso8601String());
+      await _settingsBox.put('global_premiumExpiryDate', expiryDate.toIso8601String());
+      _scheduleExpiryTimer(expiryDate);
+    } else if (!isActive) {
+      await _settingsBox.delete(expiryKey);
+      await _settingsBox.delete('global_premiumExpiryDate');
+      _subscriptionExpiryTimer?.cancel();
+      _subscriptionExpiryTimer = null;
+    }
+
+    // Update metadata di Supabase jika sedang login
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        await Supabase.instance.client.auth.updateUser(
+          UserAttributes(
+            data: {
+              'is_premium': isActive,
+              'premium_plan': planName ?? 'Gratis',
+              'premium_expiry': expiryDate?.toIso8601String(),
+            },
+          ),
+        );
+      }
+    } catch (_) {}
+
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+  }
+
+  /// Tambah counter penggunaan upload gambar gratis
+  Future<int> incrementFreeImageUploadCount() async {
+    final countKey = _getUserSubKey('freeImageUploadCount');
+    final current = _settingsBox.get(countKey, defaultValue: 0) as int;
+    final next = current + 1;
+    await _settingsBox.put(countKey, next);
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+    return next;
+  }
+
+  /// Reset counter penggunaan upload gambar
+  Future<void> resetFreeImageUploadCount() async {
+    final countKey = _getUserSubKey('freeImageUploadCount');
+    await _settingsBox.put(countKey, 0);
+    _subscriptionUpdateController.add(getSubscriptionDetails());
   }
 
   // ==================== NOTIFICATION SETTINGS ====================
