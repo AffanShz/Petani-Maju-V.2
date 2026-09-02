@@ -241,9 +241,10 @@ if (isDemoNoBrowser) {
       orderId: orderId,
       durationSeconds: 30,
       onConfirmPaid: () async {
+        final sheetNavigator = Navigator.of(sheetCtx);
         await Future.delayed(const Duration(milliseconds: 500));
         if (!mounted) return;
-        Navigator.pop(sheetCtx);
+        sheetNavigator.pop();
         final expiryDate = await _activatePlan(selectedPlan);
         if (!mounted) return;
         _showSuccessDialog(expiryDate);
