@@ -7,6 +7,7 @@ import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 import 'package:petani_maju/data/repositories/history_repository.dart';
 import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
 import 'package:petani_maju/features/chatbot/screens/chat_history_screen.dart';
+import 'package:petani_maju/features/premium/widgets/upgrade_to_pro_dialog.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_bubble.dart';
 import 'package:petani_maju/features/chatbot/widgets/chat_input_bar.dart';
 import 'package:petani_maju/widgets/app_toast.dart';
@@ -229,6 +230,9 @@ class _ChatbotViewState extends State<_ChatbotView> {
                     type: ToastType.error,
                   );
                 }
+                if (state is ChatbotImageQuotaExceeded) {
+                  showUpgradeToProDialog(context);
+                }
               },
               builder: (context, state) {
                 if (state is ChatbotInitial) {
@@ -239,7 +243,9 @@ class _ChatbotViewState extends State<_ChatbotView> {
                     ? state.messages
                     : state is ChatbotError
                         ? state.messages
-                        : const <ChatMessage>[];
+                        : state is ChatbotImageQuotaExceeded
+                            ? state.messages
+                            : const <ChatMessage>[];
 
                 if (messages.isEmpty) {
                   return _buildWelcomeScreen();

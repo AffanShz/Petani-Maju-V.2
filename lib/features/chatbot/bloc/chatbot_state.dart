@@ -57,3 +57,21 @@ class ChatbotError extends ChatbotState {
   @override
   List<Object?> get props => [sessionId, messages, error, sessions];
 }
+
+/// Gambar ditolak karena kuota upload gratis habis.
+///
+/// Dipancarkan dari [ChatbotBloc] apapun jalur masuknya, sehingga UI cukup
+/// menampilkan dialog upgrade tanpa perlu ikut menghitung kuota sendiri.
+class ChatbotImageQuotaExceeded extends ChatbotState {
+  final String? sessionId;
+  final List<ChatMessage> messages;
+
+  const ChatbotImageQuotaExceeded({
+    this.sessionId,
+    required this.messages,
+    super.sessions,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, messages, sessions];
+}

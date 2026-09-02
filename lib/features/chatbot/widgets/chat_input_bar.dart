@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petani_maju/core/constants/colors.dart';
 import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dart';
+import 'package:petani_maju/features/premium/widgets/upgrade_to_pro_dialog.dart';
 import 'package:petani_maju/widgets/app_toast.dart';
 
 class ChatInputBar extends StatefulWidget {
@@ -49,14 +49,16 @@ class _ChatInputBarState extends State<ChatInputBar> {
     }
 
     final imageToSend = _selectedImagePath;
+    // Pengecekan awal supaya user tidak terlanjur menulis pesan. Penghitungan
+    // kuota yang sebenarnya dilakukan ChatbotBloc, agar jalur lain (hasil scan,
+    // riwayat) ikut terhitung dan tidak ada penghitungan ganda di sini.
     if (imageToSend != null && !_cacheService.isPremiumActive()) {
       final sub = _cacheService.getSubscriptionDetails();
       final remaining = sub['remainingFreeUploads'] as int? ?? 0;
       if (remaining <= 0) {
-        _showUpgradeToProDialog();
+        showUpgradeToProDialog(context);
         return;
       }
-      _cacheService.incrementFreeImageUploadCount();
     }
     _controller.clear();
     setState(() {
@@ -135,7 +137,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
       final sub = _cacheService.getSubscriptionDetails();
       final remaining = sub['remainingFreeUploads'] as int? ?? 0;
       if (remaining <= 0) {
-        _showUpgradeToProDialog();
+        showUpgradeToProDialog(context);
         return;
       }
     }
@@ -430,93 +432,6 @@ class _ChatInputBarState extends State<ChatInputBar> {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _showUpgradeToProDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(22.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8E1),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: Color(0xFFFFA000),
-                  size: 38,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Batas Upload Foto Gratis Tercapai',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Akun gratis dibatasi 3x upload foto untuk analisis hama/daun. Upgrade ke Petani Maju PRO untuk konsultasi foto AI sepuasnya tanpa batas kuota!',
-                style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryGreen,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PurchasePremiumScreen(),
-                      ),
-                    );
-                  },
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.bolt_rounded, size: 18, color: Color(0xFFFFD700)),
-                      SizedBox(width: 6),
-                      Text(
-                        'Upgrade ke PRO Sekarang',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(
-                  'Nanti Saja',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

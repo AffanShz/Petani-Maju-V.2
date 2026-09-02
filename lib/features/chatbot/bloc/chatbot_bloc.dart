@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:petani_maju/data/models/chat_message.dart';
 import 'package:petani_maju/data/models/chat_session.dart';
+import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 
 part 'chatbot_event.dart';
@@ -11,9 +12,13 @@ part 'chatbot_state.dart';
 
 class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
   final ChatbotRepository _chatbotRepository;
+  final CacheService _cacheService;
 
-  ChatbotBloc({required ChatbotRepository chatbotRepository})
-      : _chatbotRepository = chatbotRepository,
+  ChatbotBloc({
+    required ChatbotRepository chatbotRepository,
+    CacheService? cacheService,
+  })  : _chatbotRepository = chatbotRepository,
+        _cacheService = cacheService ?? CacheService(),
         super(const ChatbotInitial()) {
     on<InitChatbot>(_onInitChatbot);
     on<SendMessage>(_onSendMessage);
@@ -83,6 +88,27 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
 
     final sanitized = _chatbotRepository.sanitizeInput(event.text);
     final hasImage = event.imagePath != null && event.imagePath!.isNotEmpty;
+
+    // Kuota upload foto akun gratis dijaga di sini, bukan di UI, supaya semua
+    // jalur masuk ikut terhitung: input bar, hasil scan, dan riwayat scan.
+    if (hasImage && !_cacheService.isPremiumActive()) {
+      final remaining =
+          _cacheService.getSubscriptionDetails()['remainingFreeUploads']
+                  as int? ??
+              0;
+      if (remaining <= 0) {
+        emit(ChatbotImageQuotaExceeded(
+          sessionId:
+              state is ChatbotLoaded ? (state as ChatbotLoaded).sessionId : null,
+          messages: state is ChatbotLoaded
+              ? List<ChatMessage>.from((state as ChatbotLoaded).messages)
+              : <ChatMessage>[],
+          sessions: sessions,
+        ));
+        return;
+      }
+      await _cacheService.incrementFreeImageUploadCount();
+    }
 
     if (sanitized.isEmpty && !hasImage) {
       final currentMessages = state is ChatbotLoaded
