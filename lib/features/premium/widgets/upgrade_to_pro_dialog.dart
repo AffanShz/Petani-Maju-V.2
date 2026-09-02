@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petani_maju/core/constants/colors.dart';
+import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dart';
 
 /// Dialog batas kuota upload foto chatbot untuk akun gratis.
@@ -7,7 +8,18 @@ import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dar
 /// Dipakai dari beberapa tempat: pengecekan awal di [ChatInputBar] dan
 /// penolakan dari [ChatbotBloc] ketika gambar dikirim lewat jalur lain
 /// (hasil scan, riwayat), jadi bentuknya disatukan di sini.
+const List<String> _monthNames = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+];
+
 Future<void> showUpgradeToProDialog(BuildContext context) {
+  final resetDate =
+      CacheService().getSubscriptionDetails()['freeUploadResetDate'] as DateTime?;
+  final resetLabel = resetDate == null
+      ? 'awal bulan depan'
+      : '${resetDate.day} ${_monthNames[resetDate.month - 1]}';
+
   return showDialog(
     context: context,
     builder: (ctx) => Dialog(
@@ -43,7 +55,9 @@ Future<void> showUpgradeToProDialog(BuildContext context) {
             ),
             const SizedBox(height: 8),
             Text(
-              'Akun gratis dibatasi 3x upload foto untuk analisis hama/daun. Upgrade ke Petani Maju PRO untuk konsultasi foto AI sepuasnya tanpa batas kuota!',
+              'Akun gratis dibatasi 3x upload foto per bulan untuk analisis '
+              'hama/daun. Kuotamu terisi ulang $resetLabel. Upgrade ke Petani '
+              'Maju PRO untuk konsultasi foto AI sepuasnya tanpa batas kuota!',
               style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4),
               textAlign: TextAlign.center,
             ),

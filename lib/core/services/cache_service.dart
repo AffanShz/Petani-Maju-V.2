@@ -452,16 +452,47 @@ class CacheService {
     }
   }
 
+  /// Penanda periode kuota upload gratis, dalam format 'YYYY-MM'.
+  ///
+  /// Kuota gratis berlaku per bulan kalender. Alih-alih memakai timer yang
+  /// bisa terlewat saat app tidak berjalan, periode disimpan bersama counter
+  /// lalu dibandingkan setiap kali dibaca.
+  String _currentUploadPeriod() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}';
+  }
+
+  /// Jumlah upload gratis yang sudah terpakai pada periode berjalan.
+  ///
+  /// Sengaja tidak menulis apa pun supaya tetap sinkron dipanggil dari UI.
+  /// Penulisan periode baru dilakukan [incrementFreeImageUploadCount] saat
+  /// upload pertama di bulan berikutnya.
+  int _effectiveFreeImageUploadCount() {
+    final countKey = _getUserSubKey('freeImageUploadCount');
+    final periodKey = _getUserSubKey('freeImageUploadPeriod');
+    final storedPeriod = _settingsBox.get(periodKey) as String?;
+
+    if (storedPeriod != _currentUploadPeriod()) return 0;
+    return _settingsBox.get(countKey, defaultValue: 0) as int;
+  }
+
+  /// Awal bulan berikutnya, saat kuota gratis terisi ulang.
+  DateTime _nextUploadQuotaReset() {
+    final now = DateTime.now();
+    return now.month == 12
+        ? DateTime(now.year + 1, 1, 1)
+        : DateTime(now.year, now.month + 1, 1);
+  }
+
   /// Ambil detail status langganan spesifik untuk akun yang sedang login
   Map<String, dynamic> getSubscriptionDetails() {
     final active = isPremiumActive();
     final planKey = _getUserSubKey('premiumPlanName');
     final expiryKey = _getUserSubKey('premiumExpiryDate');
-    final countKey = _getUserSubKey('freeImageUploadCount');
 
     final planName = _settingsBox.get(planKey, defaultValue: 'Gratis') as String;
     final expiryStr = _settingsBox.get(expiryKey) as String?;
-    final imageUploadCount = _settingsBox.get(countKey, defaultValue: 0) as int;
+    final imageUploadCount = _effectiveFreeImageUploadCount();
 
     return {
       'isActive': active,
@@ -470,6 +501,7 @@ class CacheService {
       'freeUploadLimit': 3,
       'freeUploadUsed': imageUploadCount,
       'remainingFreeUploads': (3 - imageUploadCount).clamp(0, 3),
+      'freeUploadResetDate': _nextUploadQuotaReset(),
     };
   }
 
@@ -520,20 +552,29 @@ class CacheService {
     _subscriptionUpdateController.add(getSubscriptionDetails());
   }
 
-  /// Tambah counter penggunaan upload gambar gratis
+  /// Tambah counter penggunaan upload gambar gratis.
+  ///
+  /// Upload pertama di bulan baru otomatis memulai periode baru dari nol.
   Future<int> incrementFreeImageUploadCount() async {
     final countKey = _getUserSubKey('freeImageUploadCount');
-    final current = _settingsBox.get(countKey, defaultValue: 0) as int;
-    final next = current + 1;
+    final periodKey = _getUserSubKey('freeImageUploadPeriod');
+
+    final next = _effectiveFreeImageUploadCount() + 1;
     await _settingsBox.put(countKey, next);
+    await _settingsBox.put(periodKey, _currentUploadPeriod());
+
     _subscriptionUpdateController.add(getSubscriptionDetails());
     return next;
   }
 
-  /// Reset counter penggunaan upload gambar
+  /// Reset counter penggunaan upload gambar sebelum periodenya habis
   Future<void> resetFreeImageUploadCount() async {
     final countKey = _getUserSubKey('freeImageUploadCount');
+    final periodKey = _getUserSubKey('freeImageUploadPeriod');
+
     await _settingsBox.put(countKey, 0);
+    await _settingsBox.put(periodKey, _currentUploadPeriod());
+
     _subscriptionUpdateController.add(getSubscriptionDetails());
   }
 
