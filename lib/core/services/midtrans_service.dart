@@ -41,11 +41,16 @@ class MidtransService {
   final Map<String, PaymentStatus> _mockTransactionStatuses = {};
 
   /// Cek apakah Server Key Midtrans sudah dikonfigurasi dengan benar di secrets.json
+  ///
+  /// Dashboard sandbox Midtrans menerbitkan server key berawalan 'Mid-server-'
+  /// (tanpa 'SB-'), sedangkan sebagian akun lama memakai 'SB-Mid-server-'.
+  /// Keduanya harus diterima, kalau tidak app diam-diam jatuh ke mock gateway
+  /// walaupun key-nya sudah benar.
   bool get isServerKeyConfigured {
     final key = EnvConfig.midtransServerKey;
     return key.isNotEmpty &&
         !key.contains('YOUR_SANDBOX') &&
-        key.startsWith('SB-Mid-server-');
+        (key.startsWith('Mid-server-') || key.startsWith('SB-Mid-server-'));
   }
 
   /// Membuat transaksi Snap di Midtrans Sandbox API
