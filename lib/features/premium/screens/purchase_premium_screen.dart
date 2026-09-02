@@ -769,7 +769,7 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                             : 'Pilih Paket Berlangganan',
                         subtitle: _subscriptionDetails['isActive'] == true
                             ? 'Pilih paket untuk memperpanjang durasi akses'
-                            : 'Upgrade untuk akses upload foto AI tanpa limit',
+                            : 'Upgrade untuk konsultasi AI tanpa batas kuota',
                       ),
                       const SizedBox(height: 12),
                       _buildPricingPlansList(),
@@ -1176,7 +1176,10 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Text(
                                   plan['title'],
@@ -1189,7 +1192,6 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                                   ),
                                 ),
                                 if (plan['saveTag'] != null) ...[
-                                  const SizedBox(width: 8),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 6, vertical: 2),
@@ -1219,29 +1221,32 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                         ),
                       ),
                       // Price
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            plan['price'],
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isSelected
-                                  ? AppColors.primaryGreen
-                                  : Colors.black87,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              plan['price'],
+                              textAlign: TextAlign.end,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected
+                                    ? AppColors.primaryGreen
+                                    : Colors.black87,
+                              ),
                             ),
-                          ),
-                          Text(
-                            plan['rawPrice'],
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isSelected
-                                  ? AppColors.darkGreen
-                                  : Colors.grey[500],
+                            Text(
+                              plan['rawPrice'],
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isSelected
+                                    ? AppColors.darkGreen
+                                    : Colors.grey[500],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -1571,39 +1576,49 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
           children: [
             Row(
               children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Total Tagihan',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          selectedPlan['price'],
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryGreen,
+                Flexible(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Total Tagihan',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              selectedPlan['price'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryGreen,
+                              ),
+                            ),
                           ),
-                        ),
-                        Text(
-                          ' ${selectedPlan['period']}',
-                          style:
-                              TextStyle(fontSize: 11, color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ],
+                          Flexible(
+                            child: Text(
+                              ' ${selectedPlan['period']}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 11, color: Colors.grey[600]),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: SizedBox(
-                    height: 48,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 48),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryGreen,
@@ -1626,12 +1641,17 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                             )
                           : const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  'Langganan Sekarang',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                                Flexible(
+                                  child: Text(
+                                    'Langganan Sekarang',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 6),

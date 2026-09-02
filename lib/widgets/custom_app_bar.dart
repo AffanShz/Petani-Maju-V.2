@@ -152,46 +152,47 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: _isPremiumActive
-                                      ? const Color(0xFFFFF8E1)
-                                      : Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
+                              if (_isPremiumActive) const SizedBox(width: 6),
+                              if (_isPremiumActive)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
                                     color: _isPremiumActive
-                                        ? const Color(0xFFFFB300)
-                                        : Colors.grey[300]!,
-                                    width: 1,
+                                        ? const Color(0xFFFFF8E1)
+                                        : Colors.grey[100],
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: _isPremiumActive
+                                          ? const Color(0xFFFFB300)
+                                          : Colors.grey[300]!,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (_isPremiumActive) ...[
+                                        const Icon(
+                                          Icons.workspace_premium_rounded,
+                                          size: 11,
+                                          color: Color(0xFFE65100),
+                                        ),
+                                        const SizedBox(width: 2),
+                                      ],
+                                      Text(
+                                        _isPremiumActive ? 'PRO' : 'Gratis',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: _isPremiumActive
+                                              ? const Color(0xFFE65100)
+                                              : Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (_isPremiumActive) ...[
-                                      const Icon(
-                                        Icons.workspace_premium_rounded,
-                                        size: 11,
-                                        color: Color(0xFFE65100),
-                                      ),
-                                      const SizedBox(width: 2),
-                                    ],
-                                    Text(
-                                      _isPremiumActive ? 'PRO' : 'Gratis',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: _isPremiumActive
-                                            ? const Color(0xFFE65100)
-                                            : Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ],
                           ),
                           const SizedBox(height: 2),
@@ -229,58 +230,67 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         ),
                       );
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        gradient: _isPremiumActive
-                            ? const LinearGradient(
-                                colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
-                              )
-                            : const LinearGradient(
-                                colors: [Color(0xFFFFB300), Color(0xFFFF8F00)],
-                              ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: _isPremiumActive
-                            ? Border.all(
-                                color: const Color(0xFFFFD700), width: 1)
-                            : null,
-                        boxShadow: [
-                          BoxShadow(
-                            color: _isPremiumActive
-                                ? Colors.green.withAlpha(50)
-                                : Colors.orange.withAlpha(60),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _isPremiumActive
-                                ? Icons.verified_rounded
-                                : Icons.workspace_premium_rounded,
-                            size: 14,
-                            color: _isPremiumActive
-                                ? const Color(0xFFFFD700)
-                                : Colors.white,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _isPremiumActive ? 'PRO Aktif' : 'Upgrade PRO',
-                            style: TextStyle(
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.1,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        margin: const EdgeInsets.only(right: 6),
+                        decoration: BoxDecoration(
+                          gradient: _isPremiumActive
+                              ? const LinearGradient(
+                                  colors: [
+                                    Color(0xFF1B5E20),
+                                    Color(0xFF2E7D32)
+                                  ],
+                                )
+                              : const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFFB300),
+                                    Color(0xFFFF8F00)
+                                  ],
+                                ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: _isPremiumActive
+                              ? Border.all(
+                                  color: const Color(0xFFFFD700), width: 1)
+                              : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: _isPremiumActive
+                                  ? Colors.green.withAlpha(50)
+                                  : Colors.orange.withAlpha(60),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _isPremiumActive
+                                  ? Icons.verified_rounded
+                                  : Icons.workspace_premium_rounded,
+                              size: 14,
                               color: _isPremiumActive
                                   ? const Color(0xFFFFD700)
                                   : Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              _isPremiumActive ? 'PRO Aktif' : 'Upgrade PRO',
+                              style: TextStyle(
+                                color: _isPremiumActive
+                                    ? const Color(0xFFFFD700)
+                                    : Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -321,14 +331,18 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 size: 18,
               ),
               const SizedBox(width: 8),
-              Text(
-                widget.isOnline
-                    ? 'home.sync_online'.tr(args: [_formatLastSync()])
-                    : 'home.sync_offline'.tr(args: [_formatLastSync()]),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  widget.isOnline
+                      ? 'home.sync_online'.tr(args: [_formatLastSync()])
+                      : 'home.sync_offline'.tr(args: [_formatLastSync()]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],

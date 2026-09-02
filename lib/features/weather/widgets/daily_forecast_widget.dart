@@ -116,9 +116,14 @@ class DailyForecastWidget extends StatelessWidget {
           const SizedBox(width: 8),
 
           // Max Temp (bold) / Min Temp (dim)
-          SizedBox(
-            width: 60,
+          //
+          // Lebar minimum, bukan lebar mati: dua angka suhu 14pt masih muat di
+          // 60px pada skala font normal, tapi meluber begitu user memperbesar
+          // ukuran teks di setelan HP.
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 60),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text('$maxTemp°',
