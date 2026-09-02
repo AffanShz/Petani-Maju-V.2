@@ -8,10 +8,28 @@ import 'package:petani_maju/features/drugs/screens/drug_screen.dart';
 class QuickAccess extends StatelessWidget {
   const QuickAccess({super.key});
 
+  /// Tinggi seragam untuk semua kartu akses cepat.
+  ///
+  /// Wrap menghitung tinggi tiap anak sendiri-sendiri, sehingga kartu yang
+  /// judulnya turun ke baris kedua ("Hama & Penyakit") jadi lebih jangkung
+  /// dari yang satu baris ("Info Cuaca"). Dikunci ke satu tinggi yang cukup
+  /// untuk kasus terpanjang, dan ikut skala font sistem supaya tetap seragam
+  /// saat ukuran teks diperbesar.
+  double _itemHeight(BuildContext context) {
+    final scale = MediaQuery.textScalerOf(context).scale(1.0);
+    const double iconBlock = 44; // padding 10*2 + ikon 24
+    const double gaps = 12 + 4;
+    const double cardPadding = 32; // 16 atas + 16 bawah
+    final double title = 16 * 1.25 * 2 * scale;
+    final double subtitle = 12 * 1.25 * 2 * scale;
+    return iconBlock + gaps + cardPadding + title + subtitle;
+  }
+
   @override
   Widget build(BuildContext context) {
     // 48 is horizontal padding of parent (24 * 2)
     final double itemWidth = (MediaQuery.of(context).size.width - 48 - 12) / 2;
+    final double itemHeight = _itemHeight(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,6 +48,7 @@ class QuickAccess extends StatelessWidget {
           children: [
             SizedBox(
               width: itemWidth,
+              height: itemHeight,
               child: QuickAccessItem(
                 icon: Icons.cloud_outlined,
                 title: 'home.menu_weather'.tr(),
@@ -48,6 +67,7 @@ class QuickAccess extends StatelessWidget {
             ),
             SizedBox(
               width: itemWidth,
+              height: itemHeight,
               child: QuickAccessItem(
                 icon: Icons.bug_report_outlined,
                 title: 'home.menu_pests'.tr(),
@@ -66,6 +86,7 @@ class QuickAccess extends StatelessWidget {
             ),
             SizedBox(
               width: itemWidth,
+              height: itemHeight,
               child: QuickAccessItem(
                 icon: Icons.healing_outlined,
                 title: 'home.menu_drugs'.tr(),

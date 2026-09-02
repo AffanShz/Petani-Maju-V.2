@@ -22,7 +22,7 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
 
   void _loadNotifications() {
     setState(() {
-      _notifications = CacheService().getNotificationHistory();
+      _notifications = _sortForDisplay(CacheService().getNotificationHistory());
     });
   }
 
@@ -63,25 +63,60 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
     }
   }
 
+  /// Label waktu relatif, naik bertingkat: menit -> jam -> hari -> tanggal.
+  ///
+  /// Riwayat ini memuat dua macam entri. Notifikasi yang sudah tayang disimpan
+  /// dengan waktu saat itu (masa lalu), sedangkan pengingat yang dijadwalkan
+  /// disimpan dengan waktu jadwalnya (masa depan). Versi sebelumnya selalu
+  /// memakai kalimat "yang lalu" dan membandingkan selisih negatif dengan
+  /// batas 60, sehingga jadwal 15 hari ke depan tampil sebagai
+  /// "-21036 menit yang lalu". Arah waktunya sekarang dibedakan.
   String _formatTime(String? timestamp) {
     if (timestamp == null) return '';
-    try {
-      final dateTime = DateTime.parse(timestamp);
-      final now = DateTime.now();
-      final difference = now.difference(dateTime);
+    final dateTime = DateTime.tryParse(timestamp);
+    if (dateTime == null) return '';
 
-      if (difference.inMinutes < 60) {
-        return '${difference.inMinutes} menit yang lalu';
-      } else if (difference.inHours < 24) {
-        return '${difference.inHours} jam yang lalu';
-      } else if (difference.inDays < 7) {
-        return '${difference.inDays} hari yang lalu';
-      } else {
-        return DateFormat('dd MMM yyyy, HH:mm').format(dateTime);
-      }
-    } catch (e) {
-      return '';
+    final now = DateTime.now();
+
+    if (dateTime.isAfter(now)) {
+      final d = dateTime.difference(now);
+      if (d.inMinutes < 1) return 'Sebentar lagi';
+      if (d.inMinutes < 60) return '${d.inMinutes} menit lagi';
+      if (d.inHours < 24) return '${d.inHours} jam lagi';
+      if (d.inDays < 7) return '${d.inDays} hari lagi';
+      return DateFormat('d MMM yyyy, HH:mm').format(dateTime);
     }
+
+    final d = now.difference(dateTime);
+    if (d.inMinutes < 1) return 'Baru saja';
+    if (d.inMinutes < 60) return '${d.inMinutes} menit lalu';
+    if (d.inHours < 24) return '${d.inHours} jam lalu';
+    if (d.inDays == 1) return 'Kemarin';
+    if (d.inDays < 7) return '${d.inDays} hari lalu';
+    return DateFormat('d MMM yyyy, HH:mm').format(dateTime);
+  }
+
+  bool _isUpcoming(Map<String, dynamic> n) {
+    final t = DateTime.tryParse(n['timestamp'] ?? '');
+    return t != null && t.isAfter(DateTime.now());
+  }
+
+  /// Urutkan supaya terbaca wajar: pengingat yang paling dekat lebih dulu,
+  /// lalu riwayat yang sudah tayang dari yang terbaru.
+  ///
+  /// Tanpa ini daftarnya memakai urutan waktu menurun, yang menaruh jadwal
+  /// paling jauh di masa depan justru di paling atas.
+  List<Map<String, dynamic>> _sortForDisplay(List<Map<String, dynamic>> items) {
+    final upcoming = items.where(_isUpcoming).toList()
+      ..sort((a, b) => DateTime.parse(a['timestamp'])
+          .compareTo(DateTime.parse(b['timestamp'])));
+    final past = items.where((n) => !_isUpcoming(n)).toList()
+      ..sort((a, b) {
+        final tA = DateTime.tryParse(a['timestamp'] ?? '') ?? DateTime(2000);
+        final tB = DateTime.tryParse(b['timestamp'] ?? '') ?? DateTime(2000);
+        return tB.compareTo(tA);
+      });
+    return [...upcoming, ...past];
   }
 
   @override
@@ -180,24 +215,36 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        notification['title'] ?? 'Notifikasi',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(
-                              notification['title'] ?? 'Notifikasi',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
+                          Icon(
+                            _isUpcoming(notification)
+                                ? Icons.schedule_rounded
+                                : Icons.history_rounded,
+                            size: 12,
+                            color: Colors.grey[500],
                           ),
-                          Text(
-                            _formatTime(notification['timestamp']),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[500],
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              _formatTime(notification['timestamp']),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
                             ),
                           ),
                         ],
