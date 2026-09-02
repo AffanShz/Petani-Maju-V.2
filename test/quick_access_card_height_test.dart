@@ -1,128 +1,170 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:petani_maju/features/home/widgets/quick_access_item.dart';
+import 'package:petani_maju/features/home/widgets/quick_access_metrics.dart';
 
-/// Cerminan perhitungan tinggi di QuickAccess: bagian berukuran tetap
-/// (ikon 44 + jarak 16 + padding kartu 32 + garis tepi 1px atas & bawah)
-/// ditambah tinggi teks yang diukur.
-const double _cardBorder = 1;
-const double _fixedChrome = 44 + 16 + 32 + _cardBorder * 2;
-
-const _titleStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
-const _subtitleStyle = TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
-
-double _measure(String text, TextStyle style, double maxWidth, TextScaler scaler) {
-  final painter = TextPainter(
-    text: TextSpan(text: text, style: style),
-    maxLines: 2,
-    textDirection: TextDirection.ltr,
-    textScaler: scaler,
-  )..layout(maxWidth: maxWidth);
-  return painter.height;
-}
-
-/// Isi ketiga kartu yang sebenarnya. 'Obat Tanaman' adalah yang terpanjang dan
-/// yang meluber 14px sebelum tingginya diukur, bukan ditaksir.
-const _entries = <List<String>>[
-  ['Info Cuaca', 'Prakiraan 7 hari'],
-  ['Hama & Penyakit', 'Penyakit tanaman'],
-  ['Obat Tanaman', 'Pencegahan & resep'],
+/// Isi ketiga kartu yang sebenarnya. 'Obat Tanaman' yang paling panjang, dan
+/// itulah yang meluber sebelum pengukurannya ikut memperhitungkan tema.
+const _entries = <QuickAccessText>[
+  (title: 'Info Cuaca', subtitle: 'Prakiraan 7 hari'),
+  (title: 'Hama & Penyakit', subtitle: 'Penyakit tanaman'),
+  (title: 'Obat Tanaman', subtitle: 'Pencegahan & resep'),
 ];
 
-double _uniformHeight(double itemWidth, TextScaler scaler) {
-  final contentWidth = itemWidth - 32 - _cardBorder * 2;
-  var tallest = 0.0;
-  for (final e in _entries) {
-    final h = _measure(e[0], _titleStyle, contentWidth, scaler) +
-        _measure(e[1], _subtitleStyle, contentWidth, scaler);
-    if (h > tallest) tallest = h;
-  }
-  return _fixedChrome + tallest;
-}
+/// Lebar kartu pada layar 360dp: (360 - 48 - 12) / 2
+const double _itemWidth = 150;
 
-void main() {
-  // Lebar kartu pada layar 360dp: (360 - 48 - 12) / 2
-  const itemWidth = 150.0;
-
-  for (final factor in [1.0, 1.15, 1.3, 1.5, 1.8]) {
-    testWidgets('kartu tidak meluber pada skala teks $factor',
-        (WidgetTester tester) async {
-      final scaler = TextScaler.linear(factor);
-      final height = _uniformHeight(itemWidth, scaler);
-
-      await tester.pumpWidget(
-        MediaQuery(
-          data: MediaQueryData(textScaler: scaler),
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Center(
-              child: Wrap(
+/// Merender kartu memakai tinggi yang dihitung fungsi produksi.
+///
+/// Sengaja dibungkus MaterialApp dengan tema yang sama seperti aplikasi.
+/// Versi test sebelumnya merender tanpa MaterialApp, sehingga DefaultTextStyle
+/// dari Material 3 (height 1.43, letterSpacing) tidak ikut berlaku dan test
+/// lolos walaupun di perangkat kartunya meluber 18px.
+Future<void> _pumpCards(WidgetTester tester, TextScaler scaler) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        useMaterial3: true,
+      ),
+      home: MediaQuery(
+        data: MediaQueryData(textScaler: scaler),
+        child: Scaffold(
+          body: Builder(
+            builder: (context) {
+              final height =
+                  quickAccessCardHeight(context, _entries, _itemWidth);
+              return Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 children: [
                   for (final e in _entries)
                     SizedBox(
-                      width: itemWidth,
+                      width: _itemWidth,
                       height: height,
                       child: QuickAccessItem(
                         icon: Icons.healing_outlined,
-                        title: e[0],
-                        subtitle: e[1],
+                        title: e.title,
+                        subtitle: e.subtitle,
                         iconColor: Colors.green,
                         backgroundColor: Colors.green.shade50,
                       ),
                     ),
                 ],
-              ),
-            ),
+              );
+            },
           ),
         ),
-      );
+      ),
+    ),
+  );
+}
 
-      // Overflow apa pun dilaporkan sebagai FlutterError dan menggagalkan test.
+void main() {
+  for (final factor in [1.0, 1.15, 1.3, 1.5, 1.8, 2.0]) {
+    testWidgets('kartu tidak meluber pada skala teks $factor',
+        (WidgetTester tester) async {
+      await _pumpCards(tester, TextScaler.linear(factor));
       expect(tester.takeException(), isNull);
     });
   }
 
   testWidgets('ketiga kartu berakhir dengan tinggi yang sama',
       (WidgetTester tester) async {
-    const scaler = TextScaler.linear(1.3);
-    final height = _uniformHeight(itemWidth, scaler);
+    await _pumpCards(tester, const TextScaler.linear(1.3));
+
+    final heights = tester
+        .widgetList<QuickAccessItem>(find.byType(QuickAccessItem))
+        .map((w) => tester.getSize(find.byWidget(w)).height)
+        .toSet();
+
+    expect(heights.length, 1, reason: 'tinggi kartu harus seragam');
+  });
+
+  testWidgets('tinggi mengikuti tema, bukan metrik font telanjang',
+      (WidgetTester tester) async {
+    late double themed;
+    late double bare;
 
     await tester.pumpWidget(
-      MediaQuery(
-        data: const MediaQueryData(textScaler: scaler),
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Center(
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (final e in _entries)
-                  SizedBox(
-                    width: itemWidth,
-                    height: height,
-                    child: QuickAccessItem(
-                      icon: Icons.healing_outlined,
-                      title: e[0],
-                      subtitle: e[1],
-                      iconColor: Colors.green,
-                      backgroundColor: Colors.green.shade50,
-                    ),
-                  ),
-              ],
-            ),
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              themed = quickAccessCardHeight(context, _entries, _itemWidth);
+              return const SizedBox();
+            },
           ),
         ),
       ),
     );
 
-    final sizes = tester
-        .widgetList<QuickAccessItem>(find.byType(QuickAccessItem))
-        .map((w) => tester.getSize(find.byWidget(w)).height)
-        .toSet();
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Builder(
+          builder: (context) {
+            bare = quickAccessCardHeight(context, _entries, _itemWidth);
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
 
-    expect(sizes.length, 1, reason: 'tinggi kartu harus seragam');
+    // Tema Material 3 memberi height 1.43, jauh di atas metrik font apa adanya.
+    expect(themed, greaterThan(bare),
+        reason: 'gaya tema harus ikut diperhitungkan saat mengukur');
+  });
+
+  testWidgets('teks kartu tidak terpotong oleh tinggi yang dihitung',
+      (WidgetTester tester) async {
+    // Jaring pengaman Flexible di QuickAccessItem menahan garis overflow, jadi
+    // "tidak meluber" saja tidak membuktikan tingginya cukup: teks bisa
+    // terpotong diam-diam. Di sini tiap teks dibandingkan dengan tinggi yang
+    // sama saat dirender tanpa batas tinggi. Pembandingnya render sungguhan,
+    // bukan TextPainter, supaya tidak ada selisih metrik antara cara mengukur
+    // dan cara menggambar.
+    const scaler = TextScaler.linear(1.3);
+
+    await _pumpCards(tester, scaler);
+    final inCard = <String, double>{
+      for (final e in _entries) ...{
+        e.title: tester.getSize(find.text(e.title).first).height,
+        e.subtitle: tester.getSize(find.text(e.subtitle).first).height,
+      }
+    };
+
+    for (final e in _entries) {
+      for (final item in <(String, TextStyle)>[
+        (e.title, quickAccessTitleStyle),
+        (e.subtitle, quickAccessSubtitleStyle),
+      ]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: ThemeData(useMaterial3: true),
+            home: MediaQuery(
+              data: const MediaQueryData(textScaler: scaler),
+              child: Scaffold(
+                body: SizedBox(
+                  width: _itemWidth - 34, // lebar isi kartu
+                  child: Text(
+                    item.$1,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: item.$2,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final unconstrained = tester.getSize(find.text(item.$1)).height;
+
+        expect(inCard[item.$1], unconstrained,
+            reason: '"${item.$1}" terpotong di dalam kartu');
+      }
+    }
   });
 }

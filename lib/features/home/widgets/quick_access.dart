@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:petani_maju/features/home/widgets/quick_access_item.dart';
+import 'package:petani_maju/features/home/widgets/quick_access_metrics.dart';
 import 'package:petani_maju/features/weather/screens/weather_detail_screen.dart';
 import 'package:petani_maju/features/pests/screens/pest_screen.dart';
 import 'package:petani_maju/features/drugs/screens/drug_screen.dart';
@@ -26,23 +27,6 @@ class _QuickAccessEntry {
 
 class QuickAccess extends StatelessWidget {
   const QuickAccess({super.key});
-
-  // Harus sama persis dengan yang dipakai QuickAccessItem, karena tinggi
-  // kartu dihitung dari gaya ini.
-  static const TextStyle _titleStyle =
-      TextStyle(fontSize: 16, fontWeight: FontWeight.w600);
-  static const TextStyle _subtitleStyle =
-      TextStyle(fontSize: 12, fontWeight: FontWeight.w400);
-
-  static const int _maxLines = 2;
-
-  // Bagian kartu yang tingginya tetap: ikon (padding 10*2 + ikon 24), jarak
-  // antar elemen (12 + 4), padding kartu (16 atas + 16 bawah), dan garis tepi
-  // 1px di atas & bawah. Border-nya mudah terlewat padahal ikut memakan
-  // tempat: selain 2px tinggi, ia juga menyempitkan lebar isi sehingga teks
-  // turun baris lebih cepat.
-  static const double _cardBorder = 1;
-  static const double _fixedChrome = 44 + 16 + 32 + _cardBorder * 2;
 
   List<_QuickAccessEntry> _entries(BuildContext context) => [
         _QuickAccessEntry(
@@ -71,52 +55,16 @@ class QuickAccess extends StatelessWidget {
         ),
       ];
 
-  /// Tinggi sebenarnya sebuah teks pada lebar dan skala font yang berlaku.
-  ///
-  /// Diukur, bukan ditaksir. Menaksir tinggi baris dari ukuran font meleset:
-  /// metrik tiap font berbeda, dan Android memakai penskalaan teks non-linier
-  /// sehingga faktor untuk 12pt tidak sama dengan untuk 16pt.
-  double _measure(
-    BuildContext context,
-    String text,
-    TextStyle style,
-    double maxWidth,
-  ) {
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      maxLines: _maxLines,
-      textDirection: Directionality.of(context),
-      textScaler: MediaQuery.textScalerOf(context),
-    )..layout(maxWidth: maxWidth);
-    return painter.height;
-  }
-
-  /// Tinggi seragam untuk semua kartu: setinggi kartu yang isinya paling
-  /// panjang. Wrap menghitung tinggi tiap anak sendiri-sendiri, jadi tanpa ini
-  /// kartu berjudul dua baris berdiri lebih jangkung dari yang satu baris.
-  double _uniformHeight(
-    BuildContext context,
-    List<_QuickAccessEntry> entries,
-    double itemWidth,
-  ) {
-    final contentWidth = itemWidth - 32 - _cardBorder * 2;
-    var tallest = 0.0;
-
-    for (final e in entries) {
-      final h = _measure(context, e.title, _titleStyle, contentWidth) +
-          _measure(context, e.subtitle, _subtitleStyle, contentWidth);
-      if (h > tallest) tallest = h;
-    }
-
-    return _fixedChrome + tallest;
-  }
-
   @override
   Widget build(BuildContext context) {
     // 48 is horizontal padding of parent (24 * 2)
     final double itemWidth = (MediaQuery.of(context).size.width - 48 - 12) / 2;
     final entries = _entries(context);
-    final double itemHeight = _uniformHeight(context, entries, itemWidth);
+    final double itemHeight = quickAccessCardHeight(
+      context,
+      entries.map((e) => (title: e.title, subtitle: e.subtitle)),
+      itemWidth,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
