@@ -28,7 +28,8 @@ class _StreamingTextState extends State<StreamingText>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
-    _cursorOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(_cursorController);
+    _cursorOpacity =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_cursorController);
   }
 
   @override

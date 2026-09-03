@@ -7,12 +7,12 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:petani_maju/core/constants/colors.dart';
+import 'package:petani_maju/features/chatbot/widgets/recommended_drugs_list.dart';
 import 'package:petani_maju/data/models/chat_message.dart';
 import 'package:petani_maju/data/repositories/calendar_repository.dart';
 import 'package:petani_maju/features/calendar/bloc/calendar_bloc.dart';
 import 'package:petani_maju/features/calendar/screens/calendar_screen.dart';
 import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
-import 'package:petani_maju/features/drugs/screens/drug_detail_screen.dart';
 import 'package:petani_maju/features/drugs/screens/drug_screen.dart';
 import 'package:petani_maju/features/scanner/screens/scanner_screen.dart';
 import 'package:petani_maju/features/weather/screens/weather_detail_screen.dart';
@@ -53,8 +53,9 @@ class DrugCatalogLoader {
       for (final name in names) {
         final q = name.toLowerCase();
         for (final item in catalog) {
-          final drugName =
-              (item['nama_obat'] ?? item['nama'] ?? '').toString().toLowerCase();
+          final drugName = (item['nama_obat'] ?? item['nama'] ?? '')
+              .toString()
+              .toLowerCase();
           final id = (item['id'] ?? '').toString().toLowerCase();
           if (drugName == q ||
               id == q ||
@@ -143,9 +144,7 @@ class _CalendarConfirmationCardWidgetState
     final data = widget.actionData;
     if (data.containsKey('schedules') && data['schedules'] is List) {
       final list = data['schedules'] as List;
-      return list
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList();
+      return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
     return [data];
   }
@@ -253,8 +252,8 @@ class _CalendarConfirmationCardWidgetState
         decoration: BoxDecoration(
           color: const Color(0xFFE8F5E9),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: AppColors.primaryGreen.withValues(alpha: 0.4)),
+          border:
+              Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.4)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -397,18 +396,15 @@ class _CalendarConfirmationCardWidgetState
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, idx) {
                   final item = items[idx];
-                  final name =
-                      item['nama_tanaman']?.toString() ?? 'Kegiatan';
-                  final date =
-                      _formatDate(item['tanggal_tanam']?.toString());
+                  final name = item['nama_tanaman']?.toString() ?? 'Kegiatan';
+                  final date = _formatDate(item['tanggal_tanam']?.toString());
                   return Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9FBE7),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color:
-                              AppColors.primaryGreen.withValues(alpha: 0.2)),
+                          color: AppColors.primaryGreen.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       children: [
@@ -441,9 +437,7 @@ class _CalendarConfirmationCardWidgetState
             Text(
               _errorMessage!,
               style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.red,
-                  fontWeight: FontWeight.w500),
+                  fontSize: 12, color: Colors.red, fontWeight: FontWeight.w500),
             ),
           ],
           const SizedBox(height: 14),
@@ -535,7 +529,9 @@ class WeatherRecommendationCardWidget extends StatelessWidget {
 
   IconData _getWeatherIcon(String kondisi) {
     final lower = kondisi.toLowerCase();
-    if (lower.contains('petir') || lower.contains('badai') || lower.contains('thunder')) {
+    if (lower.contains('petir') ||
+        lower.contains('badai') ||
+        lower.contains('thunder')) {
       return Icons.thunderstorm_rounded;
     }
     if (lower.contains('hujan') || lower.contains('rain')) {
@@ -544,10 +540,14 @@ class WeatherRecommendationCardWidget extends StatelessWidget {
     if (lower.contains('gerimis') || lower.contains('drizzle')) {
       return Icons.water_drop_rounded;
     }
-    if (lower.contains('berawan') || lower.contains('cloud') || lower.contains('mendung')) {
+    if (lower.contains('berawan') ||
+        lower.contains('cloud') ||
+        lower.contains('mendung')) {
       return Icons.cloud_rounded;
     }
-    if (lower.contains('kabut') || lower.contains('fog') || lower.contains('mist')) {
+    if (lower.contains('kabut') ||
+        lower.contains('fog') ||
+        lower.contains('mist')) {
       return Icons.cloud_queue_rounded;
     }
     if (lower.contains('malam') || lower.contains('night')) {
@@ -558,7 +558,9 @@ class WeatherRecommendationCardWidget extends StatelessWidget {
 
   Color _getWeatherIconColor(String kondisi) {
     final lower = kondisi.toLowerCase();
-    if (lower.contains('petir') || lower.contains('badai') || lower.contains('thunder')) {
+    if (lower.contains('petir') ||
+        lower.contains('badai') ||
+        lower.contains('thunder')) {
       return Colors.deepPurple;
     }
     if (lower.contains('hujan') || lower.contains('rain')) {
@@ -567,7 +569,9 @@ class WeatherRecommendationCardWidget extends StatelessWidget {
     if (lower.contains('gerimis') || lower.contains('drizzle')) {
       return Colors.teal;
     }
-    if (lower.contains('berawan') || lower.contains('cloud') || lower.contains('mendung')) {
+    if (lower.contains('berawan') ||
+        lower.contains('cloud') ||
+        lower.contains('mendung')) {
       return Colors.blueGrey;
     }
     if (lower.contains('malam') || lower.contains('night')) {
@@ -655,12 +659,14 @@ class WeatherRecommendationCardWidget extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.water_drop_rounded, size: 16, color: Colors.blue),
+              const Icon(Icons.water_drop_rounded,
+                  size: 16, color: Colors.blue),
               const SizedBox(width: 8),
               Expanded(
                 child: RichText(
                   text: TextSpan(
-                    style: const TextStyle(fontSize: 12.5, color: Colors.black87),
+                    style:
+                        const TextStyle(fontSize: 12.5, color: Colors.black87),
                     children: [
                       const TextSpan(
                         text: 'Penyiraman: ',
@@ -917,192 +923,6 @@ class ChatBubble extends StatelessWidget {
     return null;
   }
 
-  Widget _buildHorizontalDrugCards(
-      BuildContext context, List<Map<String, dynamic>> drugs) {
-    return Container(
-      margin: const EdgeInsets.only(top: 10),
-      height: 145,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6, left: 2, right: 2),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.medical_services_outlined,
-                        size: 15, color: AppColors.primaryGreen),
-                    SizedBox(width: 6),
-                    Text(
-                      'Rekomendasi Produk Obat:',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryGreen,
-                      ),
-                    ),
-                  ],
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const DrugScreen()),
-                    );
-                  },
-                  child: Shimmer.fromColors(
-                    baseColor: AppColors.primaryGreen,
-                    highlightColor: const Color(0xFFAED581),
-                    period: const Duration(milliseconds: 2000),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Katalog Lengkap',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryGreen,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                        SizedBox(width: 2),
-                        Icon(Icons.arrow_forward_ios_rounded,
-                            size: 10, color: AppColors.primaryGreen),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: drugs.length,
-              itemBuilder: (context, index) {
-                final drug = drugs[index];
-                final name = drug['nama_obat'] ?? drug['nama'] ?? 'Obat';
-                final category = drug['kategori'] ?? 'Pertanian';
-                final activeMat = drug['bahan_aktif'] ?? '';
-                String imageUrl = drug['gambar_url'] ?? '';
-                if (imageUrl.isEmpty) {
-                  imageUrl =
-                      'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&q=80&w=400';
-                }
-
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DrugDetailScreen(drug: drug),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 210,
-                    margin: const EdgeInsets.only(right: 10, bottom: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.primaryGreen.withValues(alpha: 0.2),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.horizontal(
-                            left: Radius.circular(13),
-                          ),
-                          child: Image.network(
-                            imageUrl,
-                            width: 80,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                              width: 80,
-                              color: Colors.grey.shade200,
-                              child: Icon(Icons.image_not_supported_outlined,
-                                  color: Colors.grey[400]),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                    height: 1.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE8F5E9),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    category,
-                                    style: const TextStyle(
-                                      fontSize: 9.5,
-                                      color: Color(0xFF2E7D32),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                if (activeMat.toString().isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    activeMat.toString(),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildActionButtonsCard(
       BuildContext context, List<RegExpMatch> matches) {
     return Container(
@@ -1189,8 +1009,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = message.role == MessageRole.user;
-    final hasImage =
-        message.imagePath != null && message.imagePath!.isNotEmpty;
+    final hasImage = message.imagePath != null && message.imagePath!.isNotEmpty;
 
     final promptLinkRegex = RegExp(r'\[(.*?)\]\(action:prompt:(.*?)\)');
     final drugTagRegex =
@@ -1235,8 +1054,7 @@ class ChatBubble extends StatelessWidget {
               ),
               child: CircleAvatar(
                 radius: 16,
-                backgroundColor:
-                    AppColors.primaryGreen.withValues(alpha: 0.15),
+                backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.15),
                 child: const Icon(Icons.eco,
                     size: 18, color: AppColors.primaryGreen),
               ),
@@ -1245,8 +1063,7 @@ class ChatBubble extends StatelessWidget {
           ],
           Flexible(
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: isUser ? AppColors.primaryGreen : Colors.white,
                 borderRadius: BorderRadius.only(
@@ -1408,7 +1225,7 @@ class ChatBubble extends StatelessWidget {
                         final matched = DrugCatalogLoader.findDrugsFromContent(
                             message.content, catalog);
                         if (matched.isEmpty) return const SizedBox.shrink();
-                        return _buildHorizontalDrugCards(context, matched);
+                        return RecommendedDrugsList(drugs: matched);
                       },
                     ),
 

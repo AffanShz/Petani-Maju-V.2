@@ -152,7 +152,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
       builder: (ctx) {
         final sub = _cacheService.getSubscriptionDetails();
         final isPro = _cacheService.isPremiumActive();
-        final remaining = isPro ? null : (sub['remainingFreeChats'] as int? ?? 0);
+        final remaining =
+            isPro ? null : (sub['remainingFreeChats'] as int? ?? 0);
 
         return SafeArea(
           child: Padding(
@@ -162,7 +163,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Row(
                     children: [
                       const Expanded(
@@ -177,7 +179,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                       ),
                       if (!isPro && remaining != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: remaining > 0
                                 ? const Color(0xFFE8F5E9)
@@ -267,7 +270,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   @override
   Widget build(BuildContext context) {
-    final hasInput = _controller.text.trim().isNotEmpty || _selectedImagePath != null;
+    final hasInput =
+        _controller.text.trim().isNotEmpty || _selectedImagePath != null;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -289,7 +293,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
             if (_selectedImagePath != null) ...[
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
@@ -372,7 +377,9 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     Icons.add_photo_alternate_rounded,
                     color: _selectedImagePath != null
                         ? AppColors.primaryGreen
-                        : (widget.isStreaming ? Colors.grey.shade400 : Colors.grey.shade700),
+                        : (widget.isStreaming
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade700),
                     size: 22,
                   ),
                 ),
@@ -391,7 +398,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                       hintText: _selectedImagePath != null
                           ? 'Tanyakan sesuatu tentang foto ini...'
                           : 'Tanyakan seputar pertanian & perkebunan...',
-                      hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                      hintStyle:
+                          const TextStyle(color: Colors.grey, fontSize: 13),
                       counterText: '',
                       filled: true,
                       fillColor: Colors.grey.shade100,
@@ -411,7 +419,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   child: IconButton(
-                    onPressed: (widget.isStreaming || !hasInput) ? null : _handleSend,
+                    onPressed:
+                        (widget.isStreaming || !hasInput) ? null : _handleSend,
                     style: IconButton.styleFrom(
                       backgroundColor: (widget.isStreaming || !hasInput)
                           ? Colors.grey.shade300
