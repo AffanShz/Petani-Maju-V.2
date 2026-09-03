@@ -139,66 +139,23 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  _userName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              if (_isPremiumActive) const SizedBox(width: 6),
-                              if (_isPremiumActive)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: _isPremiumActive
-                                        ? const Color(0xFFFFF8E1)
-                                        : Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: _isPremiumActive
-                                          ? const Color(0xFFFFB300)
-                                          : Colors.grey[300]!,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (_isPremiumActive) ...[
-                                        const Icon(
-                                          Icons.workspace_premium_rounded,
-                                          size: 11,
-                                          color: Color(0xFFE65100),
-                                        ),
-                                        const SizedBox(width: 2),
-                                      ],
-                                      Text(
-                                        _isPremiumActive ? 'PRO' : 'Gratis',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: _isPremiumActive
-                                              ? const Color(0xFFE65100)
-                                              : Colors.grey[600],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
+                          // Status PRO cukup ditandai sekali. Tombol di kanan
+                          // sudah menampilkan 'PRO Aktif'/'Upgrade PRO', jadi
+                          // chip di sebelah nama hanya mengulang hal yang sama
+                          // sambil memakan lebar yang dibutuhkan nama user.
+                          Text(
+                            _userName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             _isPremiumActive
-                                ? 'Member PRO ($_planName) — AI Bebas Limit'
+                                ? 'Paket $_planName'
                                 : 'app_name'.tr(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

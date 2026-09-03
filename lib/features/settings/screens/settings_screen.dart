@@ -172,7 +172,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Paket & Langganan',
                   subtitle: _isPremiumActive
                       ? 'Member PRO ($_planName)'
-                      : 'Akun Gratis (Maks. 3x Upload Foto)',
+                      : 'Akun Gratis',
                   onTap: () {
                     Navigator.push(
                       context,
@@ -370,7 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 _isPremiumActive
                     ? 'Status: Member PRO Aktif'
-                    : 'Status: Akun Gratis (3x Upload Foto)',
+                    : 'Status: Akun Gratis',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: _isPremiumActive ? FontWeight.w500 : FontWeight.normal,

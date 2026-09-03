@@ -662,14 +662,24 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total Pembayaran',
-                          style: TextStyle(fontSize: 13, color: Colors.grey)),
-                      Text(
-                        selectedPlan['price'],
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                      const Flexible(
+                        child: Text('Total Pembayaran',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 13, color: Colors.grey)),
+                      ),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          selectedPlan['price'],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
@@ -909,14 +919,24 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Paket Aktif',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(
-                _subscriptionDetails['planName'] as String,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87),
+              const Flexible(
+                child: Text('Paket Aktif',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  _subscriptionDetails['planName'] as String,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
+                ),
               ),
             ],
           ),
@@ -924,14 +944,24 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Masa Berlaku Hingga',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(
-                expiryFormatted,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2E7D32)),
+              const Flexible(
+                child: Text('Masa Berlaku Hingga',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  expiryFormatted,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2E7D32)),
+                ),
               ),
             ],
           ),
@@ -940,8 +970,13 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Hitung Mundur Sisa Waktu',
-                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Flexible(
+                  child: Text('Hitung Mundur Sisa Waktu',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                ),
+                const SizedBox(width: 10),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -974,14 +1009,24 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Upload Foto Chatbot',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(
-                'Unlimited (Tanpa Batas)',
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryGreen),
+              Flexible(
+                child: Text('Kuota Asisten Tani',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+              ),
+              SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  'Tanpa Batas',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryGreen),
+                ),
               ),
             ],
           ),

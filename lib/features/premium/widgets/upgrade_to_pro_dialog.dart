@@ -54,8 +54,8 @@ Future<void> showUpgradeToProDialog(BuildContext context) {
             ),
             const SizedBox(height: 8),
             Text(
-              'Akun gratis dibatasi 3 jawaban Asisten Tani per hari, baik '
-              'pertanyaan teks maupun analisis foto. Kuotamu terisi ulang '
+              'Akun gratis dibatasi 3 jawaban Asisten Tani per hari.'
+              'Kuotamu terisi ulang '
               '$resetLabel. Upgrade ke Petani Maju PRO untuk konsultasi AI '
               'sepuasnya tanpa batas kuota!',
               style:
