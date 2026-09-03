@@ -4,15 +4,19 @@ import 'package:flutter_test/flutter_test.dart';
 /// tidak perlu menyalakan Hive/secure storage.
 const int freeChatLimit = 3;
 
-String currentQuotaPeriod(DateTime now) =>
-    '${now.year}-${now.month.toString().padLeft(2, '0')}';
+/// Penanda periode harian, 'YYYY-MM-DD'.
+String currentQuotaPeriod(DateTime now) {
+  final month = now.month.toString().padLeft(2, '0');
+  final day = now.day.toString().padLeft(2, '0');
+  return '${now.year}-$month-$day';
+}
 
 int effectiveCount(String? storedPeriod, int storedCount, DateTime now) =>
     storedPeriod != currentQuotaPeriod(now) ? 0 : storedCount;
 
-DateTime nextReset(DateTime now) => now.month == 12
-    ? DateTime(now.year + 1, 1, 1)
-    : DateTime(now.year, now.month + 1, 1);
+/// Tengah malam berikutnya.
+DateTime nextReset(DateTime now) =>
+    DateTime(now.year, now.month, now.day + 1);
 
 int remaining(String? period, int count, DateTime now) =>
     (freeChatLimit - effectiveCount(period, count, now)).clamp(0, freeChatLimit);
@@ -26,59 +30,90 @@ int refund(String? period, int count, DateTime now) {
 
 void main() {
   group('periode kuota', () {
-    test('bulan satu digit dipad jadi dua digit', () {
-      expect(currentQuotaPeriod(DateTime(2026, 3, 15)), '2026-03');
-      expect(currentQuotaPeriod(DateTime(2026, 11, 1)), '2026-11');
+    test('bulan dan tanggal satu digit dipad jadi dua digit', () {
+      expect(currentQuotaPeriod(DateTime(2026, 3, 5)), '2026-03-05');
+      expect(currentQuotaPeriod(DateTime(2026, 11, 20)), '2026-11-20');
     });
 
-    test('kuota habis tetap habis di bulan yang sama', () {
-      expect(remaining('2026-09', 3, DateTime(2026, 9, 30, 23, 59)), 0);
+    test('jam berapa pun pada hari yang sama menghasilkan periode sama', () {
+      expect(currentQuotaPeriod(DateTime(2026, 9, 3, 0, 0)),
+          currentQuotaPeriod(DateTime(2026, 9, 3, 23, 59, 59)));
     });
 
-    test('kuota terisi ulang saat ganti bulan', () {
-      expect(remaining('2026-09', 3, DateTime(2026, 10, 1, 0, 0)), 3);
+    test('lewat tengah malam periodenya berganti', () {
+      expect(currentQuotaPeriod(DateTime(2026, 9, 3, 23, 59)),
+          isNot(currentQuotaPeriod(DateTime(2026, 9, 4, 0, 1))));
+    });
+  });
+
+  group('pemakaian', () {
+    test('hitungan berjalan selama masih di hari yang sama', () {
+      final now = DateTime(2026, 9, 3, 14);
+      expect(effectiveCount('2026-09-03', 2, now), 2);
+      expect(remaining('2026-09-03', 2, now), 1);
     });
 
-    test('lintas tahun dianggap periode baru, bukan bulan yang sama', () {
-      expect(remaining('2025-09', 3, DateTime(2026, 9, 1)), 3);
+    test('kuota habis setelah tiga jawaban', () {
+      final now = DateTime(2026, 9, 3);
+      expect(remaining('2026-09-03', 3, now), 0);
     });
 
-    test('akun baru tanpa periode tersimpan dapat kuota penuh', () {
-      expect(remaining(null, 0, DateTime(2026, 9, 2)), 3);
+    test('hitungan tidak pernah negatif walau tersimpan berlebih', () {
+      expect(remaining('2026-09-03', 9, DateTime(2026, 9, 3)), 0);
     });
 
-    test('pemakaian sebagian tetap terhitung dalam bulan berjalan', () {
-      expect(remaining('2026-09', 1, DateTime(2026, 9, 20)), 2);
+    test('ganti hari mengembalikan kuota penuh tanpa menunggu timer', () {
+      // Inti perubahannya: kuota yang habis kemarin tersedia lagi hari ini.
+      final besok = DateTime(2026, 9, 4, 0, 5);
+      expect(effectiveCount('2026-09-03', 3, besok), 0);
+      expect(remaining('2026-09-03', 3, besok), freeChatLimit);
     });
 
-    test('counter melebihi batas tidak membuat sisa jadi negatif', () {
-      expect(remaining('2026-09', 5, DateTime(2026, 9, 20)), 0);
+    test('belum pernah dipakai berarti kuota penuh', () {
+      expect(remaining(null, 0, DateTime(2026, 9, 3)), freeChatLimit);
     });
   });
 
   group('refund saat AI gagal menjawab', () {
-    test('mengembalikan satu kuota di bulan berjalan', () {
-      final now = DateTime(2026, 9, 20);
-      expect(refund('2026-09', 3, now), 2);
-      expect(remaining('2026-09', refund('2026-09', 3, now), now), 1);
+    test('mengembalikan satu kuota', () {
+      expect(refund('2026-09-03', 2, DateTime(2026, 9, 3)), 1);
     });
 
-    test('tidak turun di bawah nol saat belum ada pemakaian', () {
-      expect(refund('2026-09', 0, DateTime(2026, 9, 20)), 0);
+    test('tidak turun di bawah nol', () {
+      expect(refund('2026-09-03', 0, DateTime(2026, 9, 3)), 0);
     });
 
-    test('tidak mengembalikan apa pun kalau periodenya sudah berganti', () {
-      expect(refund('2026-08', 3, DateTime(2026, 9, 1)), 0);
+    test('tidak mengembalikan apa pun kalau harinya sudah berganti', () {
+      expect(refund('2026-09-03', 3, DateTime(2026, 9, 4)), 0);
     });
   });
 
   group('tanggal reset berikutnya', () {
-    test('bulan biasa maju satu bulan', () {
-      expect(nextReset(DateTime(2026, 9, 2)), DateTime(2026, 10, 1));
+    test('hari biasa maju satu hari', () {
+      expect(nextReset(DateTime(2026, 9, 3, 14)), DateTime(2026, 9, 4));
     });
 
-    test('Desember berguling ke Januari tahun berikutnya', () {
-      expect(nextReset(DateTime(2026, 12, 31)), DateTime(2027, 1, 1));
+    test('akhir bulan berguling ke bulan berikutnya', () {
+      expect(nextReset(DateTime(2026, 9, 30, 23)), DateTime(2026, 10, 1));
+    });
+
+    test('31 Desember berguling ke tahun berikutnya', () {
+      expect(nextReset(DateTime(2026, 12, 31, 23, 59)), DateTime(2027, 1, 1));
+    });
+
+    test('28 Februari tahun kabisat maju ke 29, bukan 1 Maret', () {
+      expect(nextReset(DateTime(2028, 2, 28)), DateTime(2028, 2, 29));
+    });
+
+    test('29 Februari tahun kabisat maju ke 1 Maret', () {
+      expect(nextReset(DateTime(2028, 2, 29)), DateTime(2028, 3, 1));
+    });
+
+    test('reset selalu di masa depan dan kurang dari 24 jam lagi', () {
+      final now = DateTime(2026, 9, 3, 23, 30);
+      final reset = nextReset(now);
+      expect(reset.isAfter(now), isTrue);
+      expect(reset.difference(now).inHours, lessThan(24));
     });
   });
 }

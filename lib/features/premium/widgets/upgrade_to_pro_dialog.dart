@@ -8,17 +8,16 @@ import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dar
 /// Dipakai dari beberapa tempat: pengecekan awal di [ChatInputBar] dan
 /// penolakan dari [ChatbotBloc] ketika pesan dikirim lewat jalur lain
 /// (tombol saran, hasil scan, riwayat), jadi bentuknya disatukan di sini.
-const List<String> _monthNames = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-];
-
 Future<void> showUpgradeToProDialog(BuildContext context) {
   final resetDate =
       CacheService().getSubscriptionDetails()['freeChatResetDate'] as DateTime?;
-  final resetLabel = resetDate == null
-      ? 'awal bulan depan'
-      : '${resetDate.day} ${_monthNames[resetDate.month - 1]}';
+
+  // Kuota terisi ulang pada tengah malam berikutnya. Untuk user, "besok"
+  // lebih jelas daripada tanggal, kecuali sisa waktunya tinggal beberapa jam.
+  final hoursLeft = resetDate?.difference(DateTime.now()).inHours;
+  final resetLabel = hoursLeft == null
+      ? 'besok'
+      : (hoursLeft < 1 ? 'sebentar lagi' : 'besok pukul 00.00');
 
   return showDialog(
     context: context,
@@ -55,11 +54,12 @@ Future<void> showUpgradeToProDialog(BuildContext context) {
             ),
             const SizedBox(height: 8),
             Text(
-              'Akun gratis dibatasi 3 jawaban Asisten Tani per bulan, baik '
+              'Akun gratis dibatasi 3 jawaban Asisten Tani per hari, baik '
               'pertanyaan teks maupun analisis foto. Kuotamu terisi ulang '
               '$resetLabel. Upgrade ke Petani Maju PRO untuk konsultasi AI '
               'sepuasnya tanpa batas kuota!',
-              style: TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4),
+              style:
+                  TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -85,7 +85,8 @@ Future<void> showUpgradeToProDialog(BuildContext context) {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.bolt_rounded, size: 18, color: Color(0xFFFFD700)),
+                    Icon(Icons.bolt_rounded,
+                        size: 18, color: Color(0xFFFFD700)),
                     SizedBox(width: 6),
                     Text(
                       'Upgrade ke PRO Sekarang',

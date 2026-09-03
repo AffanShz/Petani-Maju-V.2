@@ -58,7 +58,7 @@ class ChatbotError extends ChatbotState {
   List<Object?> get props => [sessionId, messages, error, sessions];
 }
 
-/// Pesan ditolak karena kuota chat gratis bulan ini habis.
+/// Pesan ditolak karena kuota chat gratis hari ini habis.
 ///
 /// Dipancarkan dari [ChatbotBloc] apapun jalur masuknya, sehingga UI cukup
 /// menampilkan dialog upgrade tanpa perlu ikut menghitung kuota sendiri.

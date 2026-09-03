@@ -113,7 +113,7 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
       'icon': Icons.image_search_rounded,
       'title': 'Chat Asisten Tani Tanpa Batas',
       'desc':
-          'Akun gratis terbatas 3 jawaban per bulan, teks maupun foto. PRO bebas konsultasi tanpa limit.',
+          'Akun gratis terbatas 3 jawaban per hari, teks maupun foto. PRO bebas konsultasi tanpa limit.',
       'badge': 'Fitur Utama',
     },
     {

@@ -452,24 +452,26 @@ class CacheService {
     }
   }
 
-  /// Batas jawaban chatbot untuk akun gratis dalam satu bulan.
+  /// Batas jawaban chatbot untuk akun gratis dalam satu hari.
   static const int freeChatLimit = 3;
 
-  /// Penanda periode kuota chat gratis, dalam format 'YYYY-MM'.
+  /// Penanda periode kuota chat gratis, dalam format 'YYYY-MM-DD'.
   ///
-  /// Kuota gratis berlaku per bulan kalender. Alih-alih memakai timer yang
-  /// bisa terlewat saat app tidak berjalan, periode disimpan bersama counter
-  /// lalu dibandingkan setiap kali dibaca.
+  /// Kuota gratis berlaku per hari kalender, mengikuti waktu lokal perangkat.
+  /// Alih-alih memakai timer yang bisa terlewat saat app tidak berjalan,
+  /// periode disimpan bersama counter lalu dibandingkan setiap kali dibaca.
   String _currentQuotaPeriod() {
     final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}';
+    final month = now.month.toString().padLeft(2, '0');
+    final day = now.day.toString().padLeft(2, '0');
+    return '${now.year}-$month-$day';
   }
 
   /// Jumlah jawaban chatbot yang sudah terpakai pada periode berjalan.
   ///
   /// Sengaja tidak menulis apa pun supaya tetap sinkron dipanggil dari UI.
   /// Penulisan periode baru dilakukan [incrementFreeChatCount] saat chat
-  /// pertama di bulan berikutnya.
+  /// pertama di hari berikutnya.
   int _effectiveFreeChatCount() {
     final countKey = _getUserSubKey('freeChatCount');
     final periodKey = _getUserSubKey('freeChatPeriod');
@@ -479,12 +481,13 @@ class CacheService {
     return _settingsBox.get(countKey, defaultValue: 0) as int;
   }
 
-  /// Awal bulan berikutnya, saat kuota gratis terisi ulang.
+  /// Tengah malam berikutnya, saat kuota gratis terisi ulang.
+  ///
+  /// DateTime menormalkan tanggal yang melewati akhir bulan, jadi menambah
+  /// satu hari tetap benar pada 31 Desember maupun 28 Februari.
   DateTime _nextQuotaReset() {
     final now = DateTime.now();
-    return now.month == 12
-        ? DateTime(now.year + 1, 1, 1)
-        : DateTime(now.year, now.month + 1, 1);
+    return DateTime(now.year, now.month, now.day + 1);
   }
 
   /// Ambil detail status langganan spesifik untuk akun yang sedang login
@@ -559,7 +562,7 @@ class CacheService {
 
   /// Tambah counter pemakaian chat gratis.
   ///
-  /// Chat pertama di bulan baru otomatis memulai periode baru dari nol.
+  /// Chat pertama di hari baru otomatis memulai periode baru dari nol.
   Future<int> incrementFreeChatCount() async {
     final countKey = _getUserSubKey('freeChatCount');
     final periodKey = _getUserSubKey('freeChatPeriod');
@@ -576,7 +579,7 @@ class CacheService {
   ///
   /// Dipakai saat permintaan ke AI gagal tanpa menghasilkan jawaban sama
   /// sekali, supaya user tidak kehilangan kuota untuk sesuatu yang tidak
-  /// pernah ia terima. Tidak berlaku lintas bulan: kalau periodenya sudah
+  /// pernah ia terima. Tidak berlaku lintas hari: kalau periodenya sudah
   /// berganti, counter-nya memang sudah nol.
   Future<void> refundFreeChatCount() async {
     final countKey = _getUserSubKey('freeChatCount');
