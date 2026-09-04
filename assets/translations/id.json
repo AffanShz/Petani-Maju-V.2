@@ -1,5 +1,5 @@
 {
-    "app_name": "Petani Maju",
+    "app_name": "AgriNova",
     "home": {
         "greeting_morning": "Selamat Pagi",
         "greeting_afternoon": "Selamat Siang",
@@ -59,7 +59,7 @@
         "today": "Hari Ini"
     },
     "onboarding": {
-        "page1_title": "Selamat Datang di Petani Maju",
+        "page1_title": "Selamat Datang di AgriNova",
         "page1_desc": "Aplikasi asisten pintar untuk membantu pertanian Anda lebih produktif dan efisien.",
         "page2_title": "Cuaca & Prediksi",
         "page2_desc": "Dapatkan informasi cuaca terkini dan prediksi 7 hari ke depan untuk merencanakan aktivitas pertanian.",
@@ -171,21 +171,21 @@
         "end_quiet_hours": "Akhir Jam Tenang"
     },
     "help": {
-        "email_subject": "Bantuan Aplikasi Petani Maju",
+        "email_subject": "Bantuan Aplikasi AgriNova",
         "email_body": "Halo Tim Support,\n\nSaya ingin bertanya mengenai...",
         "email_error": "Tidak dapat membuka aplikasi email.",
         "contact_us": "Hubungi Kami",
-        "contact_desc": "Jika Anda mengalami kendala atau memiliki pertanyaan seputar aplikasi Petani Maju, tim kami siap membantu Anda.",
+        "contact_desc": "Jika Anda mengalami kendala atau memiliki pertanyaan seputar aplikasi AgriNova, tim kami siap membantu Anda.",
         "email_support_title": "Kirim Email ke Support",
         "email_support_desc": "Kami biasanya membalas dalam waktu 24 jam.",
         "send_email_button": "Kirim Email Sekarang"
     },
     "about": {
         "version": "Versi 1.0.0",
-        "description": "Petani Maju adalah aplikasi asisten pertanian cerdas yang dirancang untuk membantu petani Indonesia meningkatkan produktivitas hasil panen. Aplikasi ini menyediakan fitur cuaca, kalender tanam, deteksi hama, dan tips pertanian yang relevan.",
+        "description": "AgriNova adalah aplikasi asisten pertanian cerdas yang dirancang untuk membantu petani Indonesia meningkatkan produktivitas hasil panen. Aplikasi ini menyediakan fitur cuaca, kalender tanam, deteksi hama, dan tips pertanian yang relevan.",
         "developer": "Pengembang",
         "contact": "Kontak",
         "year": "Tahun Pembuatan",
-        "copyright": "© 2025 Petani Maju. All Rights Reserved."
+        "copyright": "© 2025 AgriNova. All Rights Reserved."
     }
 }

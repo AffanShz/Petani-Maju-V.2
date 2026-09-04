@@ -1,5 +1,5 @@
 {
-    "app_name": "Petani Maju",
+    "app_name": "AgriNova",
     "home": {
         "greeting_morning": "Good Morning",
         "greeting_afternoon": "Good Afternoon",
@@ -59,7 +59,7 @@
         "today": "Today"
     },
     "onboarding": {
-        "page1_title": "Welcome to Petani Maju",
+        "page1_title": "Welcome to AgriNova",
         "page1_desc": "Smart assistant app to help your farming be more productive and efficient.",
         "page2_title": "Weather & Forecast",
         "page2_desc": "Get current weather info and 7-day forecast to plan farming activities.",
@@ -171,21 +171,21 @@
         "end_quiet_hours": "End Quiet Hours"
     },
     "help": {
-        "email_subject": "Petani Maju App Support",
+        "email_subject": "AgriNova App Support",
         "email_body": "Hello Support Team,\n\nI want to ask about...",
         "email_error": "Cannot open email app.",
         "contact_us": "Contact Us",
-        "contact_desc": "If you have issues or questions about Petani Maju app, our team is ready to help.",
+        "contact_desc": "If you have issues or questions about AgriNova app, our team is ready to help.",
         "email_support_title": "Email Support",
         "email_support_desc": "We usually reply within 24 hours.",
         "send_email_button": "Send Email Now"
     },
     "about": {
         "version": "Version 1.0.0",
-        "description": "Petani Maju is a smart farming assistant app designed to help Indonesian farmers increase harvest productivity. The app provides weather features, planting calendar, pest detection, and relevant farming tips.",
+        "description": "AgriNova is a smart farming assistant app designed to help Indonesian farmers increase harvest productivity. The app provides weather features, planting calendar, pest detection, and relevant farming tips.",
         "developer": "Developer",
         "contact": "Contact",
         "year": "Year Created",
-        "copyright": "© 2025 Petani Maju. All Rights Reserved."
+        "copyright": "© 2025 AgriNova. All Rights Reserved."
     }
 }
