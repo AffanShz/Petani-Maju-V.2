@@ -60,7 +60,7 @@ class MidtransService {
     String paymentMethod = 'qris',
     String? orderId,
     String customerName = 'Petani Unggul',
-    String customerEmail = 'petani@petanimaju.id',
+    String customerEmail = 'support@agrinova.id',
   }) async {
     // Generate Order ID yang valid untuk Midtrans (hanya huruf, angka, '-')
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -106,7 +106,7 @@ class MidtransService {
         },
         'customer_details': {
           'first_name': customerName.isEmpty ? 'Petani' : customerName,
-          'email': customerEmail.isEmpty ? 'petani@petanimaju.id' : customerEmail,
+          'email': customerEmail.isEmpty ? 'support@agrinova.id' : customerEmail,
         },
         'item_details': [
           {

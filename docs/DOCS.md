@@ -584,7 +584,7 @@ Permissions yang dibutuhkan (`ios/Runner/Info.plist`):
 
 ### OpenStreetMap Nominatim
 - **Tidak memerlukan API key**
-- **User-Agent**: `PetaniMaju/1.0`
+- **User-Agent**: `AgriNova/1.0`
 
 ---
 

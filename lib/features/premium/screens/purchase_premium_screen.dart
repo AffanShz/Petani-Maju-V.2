@@ -264,7 +264,7 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
           (userProfile['name'] != null && userProfile['name']!.isNotEmpty)
               ? userProfile['name']!
               : (user?.userMetadata?['full_name'] as String? ?? 'AgriNova');
-      final customerEmail = user?.email ?? 'petani@petanimaju.id';
+      final customerEmail = user?.email ?? 'support@agrinova.id';
 
       final result = await _midtransService.createTransaction(
         planName: planTitle,

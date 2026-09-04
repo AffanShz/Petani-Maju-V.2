@@ -13,7 +13,7 @@ class LocationService {
           'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon&addressdetails=1&accept-language=id');
 
       final response = await http.get(url, headers: {
-        'User-Agent': 'PetaniMaju/1.0',
+        'User-Agent': 'AgriNova/1.0',
       }).timeout(_timeout);
 
       if (response.statusCode == 200) {
