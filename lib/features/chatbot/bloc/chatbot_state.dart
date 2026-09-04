@@ -57,3 +57,22 @@ class ChatbotError extends ChatbotState {
   @override
   List<Object?> get props => [sessionId, messages, error, sessions];
 }
+
+/// Pesan ditolak karena kuota chat gratis hari ini habis.
+///
+/// Dipancarkan dari [ChatbotBloc] apapun jalur masuknya, sehingga UI cukup
+/// menampilkan dialog upgrade tanpa perlu ikut menghitung kuota sendiri.
+class ChatbotQuotaExceeded extends ChatbotState {
+  final String? sessionId;
+  final List<ChatMessage> messages;
+
+  const ChatbotQuotaExceeded({
+    this.sessionId,
+    required this.messages,
+    super.sessions,
+  });
+
+  @override
+  List<Object?> get props => [sessionId, messages, sessions];
+}
+

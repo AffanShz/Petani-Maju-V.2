@@ -46,35 +46,90 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     );
   }
 
-  // ─── Alur AUTO (deteksi jenis tanaman dulu) ───────────────────────────────
+  // ─── Alur AUTO DETEKSI (Menggunakan Gemini Vision AI) ───────────────────────
   Future<void> _onScanWithAutoDetect(
       ScanWithAutoDetect event, Emitter<ScannerState> emit) async {
     final imagePath = await _pickImage(event.source, emit);
     if (imagePath == null) return;
 
     try {
-      emit(const ScannerLoading(message: 'Mendeteksi jenis tanaman...'));
+      emit(const ScannerLoading(message: 'Menganalisis gambar dengan Gemini AI Vision...'));
 
-      final detection = await _scannerService.detectPlant(File(imagePath));
-      final detectedPlant = detection['plant'] as String;
-      final accepted = detection['accepted'] == true;
+      final geminiResult = await _scannerService.analyzeWithGeminiVision(File(imagePath));
+      final isPlant = geminiResult['is_plant'] == true;
 
-      if (!accepted || !supportedPlants.contains(detectedPlant)) {
+      if (!isPlant) {
         emit(const ScannerError(
-            'Jenis tanaman tidak terdeteksi dengan jelas. Pastikan foto fokus pada daun tanaman, lalu coba foto ulang.'));
+            'Gambar tidak terdeteksi sebagai tanaman. Silakan foto ulang tanaman atau daun dengan jelas.'));
         return;
       }
 
-      // Sinkronkan pilihan agar konsisten saat foto ulang.
-      _currentPlantType = detectedPlant;
+      final detectedPlant = (geminiResult['plant_type'] ?? 'Tanaman').toString();
+      final diseaseName = (geminiResult['disease_name'] ?? 'Sehat').toString();
+      final confidence = (geminiResult['confidence'] is num)
+          ? (geminiResult['confidence'] as num).toDouble()
+          : 0.90;
 
-      await _analyzeDisease(
-        emit,
-        imagePath: imagePath,
+      // Upload gambar ke cloud storage (hanya untuk histori)
+      String cloudImageUrl = '';
+      try {
+        cloudImageUrl = await _pestService.uploadImage(imagePath);
+      } catch (e) {
+        debugPrint('PestScanner: Upload image for history failed (non-fatal): $e');
+      }
+
+      // Ambil detail penyakit dari DB jika ada
+      Map<String, dynamic>? pestData;
+      final isHealthy = diseaseName.toLowerCase() == 'sehat' || diseaseName.toLowerCase() == 'healthy';
+      if (!isHealthy) {
+        pestData = await _pestService.fetchDiseaseDetailByName(
+          plantType: detectedPlant,
+          name: diseaseName,
+        );
+
+        // Jika tidak ada di DB, buat map pestData sintetis dari analisis Gemini Vision
+        pestData ??= {
+          'nama_penyakit': diseaseName,
+          'deskripsi': geminiResult['description'] ?? 'Penyakit terdeteksi melalui AI Gemini Vision.',
+          'tindakan': geminiResult['recommendation'] ?? 'Lakukan penanganan dengan obat/pupuk yang sesuai.',
+          'pencegahan': geminiResult['prevention'] ?? 'Jaga kebersihan lahan dan pola irigasi.',
+        };
+      }
+
+      final recommendedDrugs = await _getRecommendedDrugs(
         plantType: detectedPlant,
+        finalLabel: diseaseName,
+        searchName: diseaseName,
+        rawLabel: diseaseName,
       );
+
+      // Simpan histori
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (cloudImageUrl.isNotEmpty && userId != null) {
+        await _pestService.savePredictionHistory({
+          'user_id': userId,
+          'image_url': cloudImageUrl,
+          'plant_type': detectedPlant,
+          'disease': diseaseName,
+          'confidence': confidence,
+          'severity': 'Pending',
+          'status': 'Success',
+        });
+      }
+
+      emit(ScannerSuccess(
+        imagePath: imagePath,
+        cloudImageUrl: cloudImageUrl,
+        label: diseaseName,
+        confidence: confidence,
+        plantType: detectedPlant,
+        pestData: pestData,
+        recommendedDrugs: recommendedDrugs,
+      ));
     } catch (e) {
-      emit(ScannerError('Gagal mendeteksi jenis tanaman: ${e.toString()}'));
+      debugPrint('ScannerBloc error: $e');
+      emit(const ScannerError(
+          'Gambar tidak terdeteksi sebagai tanaman. Silakan foto ulang tanaman atau daun dengan jelas.'));
     }
   }
 
@@ -97,7 +152,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     }
   }
 
-  /// Upload gambar, jalankan model penyakit sesuai [plantType], ambil detail,
+  /// Upload gambar, jalankan model penyakit sesuai [plantType] (HuggingFace), ambil detail,
   /// simpan histori, dan emit hasil.
   Future<void> _analyzeDisease(
     Emitter<ScannerState> emit, {
@@ -108,8 +163,6 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
 
     try {
       // 1. Upload gambar ke Supabase Storage.
-      // Tomat: wajib (model membutuhkan cloud URL).
-      // Padi/Teh: best-effort (hanya untuk histori; model pakai file lokal).
       String cloudImageUrl = '';
       try {
         cloudImageUrl = await _pestService.uploadImage(imagePath);
@@ -121,7 +174,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
         debugPrint('PestScanner: Upload gagal (non-fatal untuk $plantType): $e');
       }
 
-      // 2. Jalankan model penyakit sesuai jenis tanaman
+      // 2. Jalankan model penyakit sesuai jenis tanaman (HuggingFace)
       final Map<String, dynamic> result =
           await _runDiseaseModel(plantType, imagePath, cloudImageUrl);
 
@@ -144,70 +197,12 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
           pestData != null ? pestData['nama_penyakit'] : searchName;
 
       // 5. Cari obat rekomendasi dari JSON
-      List<Map<String, dynamic>> recommendedDrugs = [];
-      if (finalLabel != 'Sehat' && finalLabel != 'Tidak Terdeteksi') {
-        try {
-          final jsonString = await rootBundle.loadString('katalog_obat_tanaman.json');
-          final data = jsonDecode(jsonString) as List<dynamic>;
-          
-          final qPlant = plantType.toLowerCase();
-          final qDisease = finalLabel.toLowerCase();
-          final qSearchName = searchName.toLowerCase();
-          final qRawLabel = rawLabel.toLowerCase();
-          
-          for (final item in data) {
-            final drug = Map<String, dynamic>.from(item as Map<String, dynamic>);
-            final sasaranRaw = drug['sasaran'];
-            final tanamanRaw = drug['tanaman'];
-            
-            bool matchPlant = false;
-            if (tanamanRaw is List) {
-              matchPlant = tanamanRaw.any((t) => t.toString().toLowerCase().contains(qPlant));
-            } else if (tanamanRaw != null) {
-              matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
-            }
-            
-            bool matchDisease = false;
-            final sStr = sasaranRaw is List ? sasaranRaw.join(' ').toLowerCase() : sasaranRaw?.toString().toLowerCase() ?? '';
-            
-            if (sStr.contains(qDisease) || sStr.contains(qSearchName) || sStr.contains(qRawLabel) || qDisease.contains(sStr) || qSearchName.contains(sStr)) {
-              matchDisease = true;
-            } else {
-              // Fallback: check overlapping words > 4 chars
-              final sTokens = sStr.split(RegExp(r'[^a-z0-9]')).where((e) => e.length > 4);
-              for (final t in sTokens) {
-                if (qDisease.contains(t) || qSearchName.contains(t) || qRawLabel.contains(t)) {
-                  matchDisease = true;
-                  break;
-                }
-              }
-            }
-
-            if (matchPlant && matchDisease) {
-              recommendedDrugs.add(drug);
-            }
-          }
-
-          // Fallback: jika tidak ada obat yang cocok spesifik penyakit,
-          // tampilkan obat yang relevan untuk jenis tanaman ini agar
-          // rekomendasi tetap muncul saat penyakit terdeteksi.
-          if (recommendedDrugs.isEmpty) {
-            for (final item in data) {
-              final drug = Map<String, dynamic>.from(item as Map<String, dynamic>);
-              final tanamanRaw = drug['tanaman'];
-              bool matchPlant = false;
-              if (tanamanRaw is List) {
-                matchPlant = tanamanRaw.any((t) => t.toString().toLowerCase().contains(qPlant));
-              } else if (tanamanRaw != null) {
-                matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
-              }
-              if (matchPlant) recommendedDrugs.add(drug);
-            }
-          }
-        } catch (e) {
-          debugPrint('Error loading recommended drugs: $e');
-        }
-      }
+      final recommendedDrugs = await _getRecommendedDrugs(
+        plantType: plantType,
+        finalLabel: finalLabel,
+        searchName: searchName,
+        rawLabel: rawLabel,
+      );
 
       // 6. Simpan histori (hanya jika ada URL gambar dan user login)
       final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -235,6 +230,83 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     } catch (e) {
       emit(ScannerError('Terjadi kesalahan saat analisis: ${e.toString()}'));
     }
+  }
+
+  Future<List<Map<String, dynamic>>> _getRecommendedDrugs({
+    required String plantType,
+    required String finalLabel,
+    required String searchName,
+    required String rawLabel,
+  }) async {
+    List<Map<String, dynamic>> recommendedDrugs = [];
+    if (finalLabel == 'Sehat' || finalLabel == 'Tidak Terdeteksi') {
+      return recommendedDrugs;
+    }
+
+    try {
+      final jsonString = await rootBundle.loadString('katalog_obat_tanaman.json');
+      final data = jsonDecode(jsonString) as List<dynamic>;
+
+      final qPlant = plantType.toLowerCase();
+      final qDisease = finalLabel.toLowerCase();
+      final qSearchName = searchName.toLowerCase();
+      final qRawLabel = rawLabel.toLowerCase();
+
+      for (final item in data) {
+        final drug = Map<String, dynamic>.from(item as Map<String, dynamic>);
+        final sasaranRaw = drug['sasaran'];
+        final tanamanRaw = drug['tanaman'];
+
+        bool matchPlant = false;
+        if (tanamanRaw is List) {
+          matchPlant = tanamanRaw.any((t) => t.toString().toLowerCase().contains(qPlant));
+        } else if (tanamanRaw != null) {
+          matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
+        }
+
+        bool matchDisease = false;
+        final sStr = sasaranRaw is List
+            ? sasaranRaw.join(' ').toLowerCase()
+            : sasaranRaw?.toString().toLowerCase() ?? '';
+
+        if (sStr.contains(qDisease) ||
+            sStr.contains(qSearchName) ||
+            sStr.contains(qRawLabel) ||
+            qDisease.contains(sStr) ||
+            qSearchName.contains(sStr)) {
+          matchDisease = true;
+        } else {
+          final sTokens = sStr.split(RegExp(r'[^a-z0-9]')).where((e) => e.length > 4);
+          for (final t in sTokens) {
+            if (qDisease.contains(t) || qSearchName.contains(t) || qRawLabel.contains(t)) {
+              matchDisease = true;
+              break;
+            }
+          }
+        }
+
+        if (matchPlant && matchDisease) {
+          recommendedDrugs.add(drug);
+        }
+      }
+
+      if (recommendedDrugs.isEmpty) {
+        for (final item in data) {
+          final drug = Map<String, dynamic>.from(item as Map<String, dynamic>);
+          final tanamanRaw = drug['tanaman'];
+          bool matchPlant = false;
+          if (tanamanRaw is List) {
+            matchPlant = tanamanRaw.any((t) => t.toString().toLowerCase().contains(qPlant));
+          } else if (tanamanRaw != null) {
+            matchPlant = tanamanRaw.toString().toLowerCase().contains(qPlant);
+          }
+          if (matchPlant) recommendedDrugs.add(drug);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading recommended drugs: $e');
+    }
+    return recommendedDrugs;
   }
 
   /// Pilih & jalankan model penyakit yang sesuai.

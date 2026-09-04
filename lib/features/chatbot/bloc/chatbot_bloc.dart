@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:petani_maju/data/models/chat_message.dart';
 import 'package:petani_maju/data/models/chat_session.dart';
+import 'package:petani_maju/core/services/cache_service.dart';
 import 'package:petani_maju/data/repositories/chatbot_repository.dart';
 
 part 'chatbot_event.dart';
@@ -11,9 +12,13 @@ part 'chatbot_state.dart';
 
 class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
   final ChatbotRepository _chatbotRepository;
+  final CacheService _cacheService;
 
-  ChatbotBloc({required ChatbotRepository chatbotRepository})
-      : _chatbotRepository = chatbotRepository,
+  ChatbotBloc({
+    required ChatbotRepository chatbotRepository,
+    CacheService? cacheService,
+  })  : _chatbotRepository = chatbotRepository,
+        _cacheService = cacheService ?? CacheService(),
         super(const ChatbotInitial()) {
     on<InitChatbot>(_onInitChatbot);
     on<SendMessage>(_onSendMessage);
@@ -99,6 +104,30 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
       return;
     }
 
+    // Kuota chat akun gratis dijaga di sini, bukan di UI, supaya semua jalur
+    // masuk ikut terhitung: input bar, tombol saran, hasil scan, dan riwayat
+    // scan. Diletakkan setelah pemeriksaan pesan kosong karena pesan kosong
+    // tidak menghasilkan jawaban, jadi tidak boleh memotong kuota.
+    var quotaCharged = false;
+    if (!_cacheService.isPremiumActive()) {
+      final remaining =
+          _cacheService.getSubscriptionDetails()['remainingFreeChats'] as int? ??
+              0;
+      if (remaining <= 0) {
+        emit(ChatbotQuotaExceeded(
+          sessionId:
+              state is ChatbotLoaded ? (state as ChatbotLoaded).sessionId : null,
+          messages: state is ChatbotLoaded
+              ? List<ChatMessage>.from((state as ChatbotLoaded).messages)
+              : <ChatMessage>[],
+          sessions: sessions,
+        ));
+        return;
+      }
+      await _cacheService.incrementFreeChatCount();
+      quotaCharged = true;
+    }
+
     final sessionId = state is ChatbotLoaded && (state as ChatbotLoaded).sessionId.isNotEmpty
         ? (state as ChatbotLoaded).sessionId
         : 'session_${DateTime.now().millisecondsSinceEpoch}';
@@ -150,6 +179,8 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
         userText: sanitized,
         imagePath: event.imagePath,
         currentWeather: event.currentWeather,
+        plantingSchedules: event.plantingSchedules,
+        recentScanHistory: event.recentScanHistory,
       );
 
       await for (final token in stream) {
@@ -204,6 +235,12 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
         sessions: updatedSessions,
       ));
     } catch (e) {
+      // Kuota hanya dipotong untuk jawaban yang benar-benar diterima user.
+      // Kalau gagal sebelum satu token pun sampai, kembalikan kuotanya.
+      if (quotaCharged && accumulatedText.isEmpty) {
+        await _cacheService.refundFreeChatCount();
+      }
+
       if (isClosed) return;
       debugPrint('ChatbotBloc Error: $e');
       currentMessages[botIndex] = ChatMessage(

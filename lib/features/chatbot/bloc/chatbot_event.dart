@@ -19,15 +19,26 @@ class SendMessage extends ChatbotEvent {
   final String text;
   final String? imagePath;
   final Map<String, dynamic>? currentWeather;
+  final List<dynamic>? plantingSchedules;
+  final List<dynamic>? recentScanHistory;
 
   const SendMessage({
     required this.text,
     this.imagePath,
     this.currentWeather,
+    this.plantingSchedules,
+    this.recentScanHistory,
   });
 
   @override
-  List<Object?> get props => [text, imagePath, currentWeather];
+  List<Object?> get props => [
+        text,
+        imagePath,
+        currentWeather,
+        plantingSchedules,
+        recentScanHistory,
+      ];
+
 }
 
 class LoadChatSession extends ChatbotEvent {

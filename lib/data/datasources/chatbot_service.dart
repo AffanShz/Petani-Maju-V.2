@@ -9,7 +9,12 @@ class ChatbotService {
   final String apiKey;
   final List<Map<String, dynamic>> _history = [];
 
-  static const String _model = 'gemini-3.5-flash';
+  static const List<String> _candidateModels = [
+    'gemini-3.5-flash',
+    'gemini-3.6-flash',
+    'gemini-2.5-flash',
+  ];
+
   static const String _apiBase =
       'https://generativelanguage.googleapis.com/v1beta';
 
@@ -103,68 +108,84 @@ class ChatbotService {
     if (_history.length > 2 + _maxHistoryTurns * 2) {
       _history.removeRange(2, _history.length - _maxHistoryTurns * 2);
     }
-
-    // API key dikirim via header x-goog-api-key, bukan di query string,
-    // agar tidak bocor ke access-log server/CDN/proxy.
-    final url = Uri.parse(
-      '$_apiBase/models/$_model:streamGenerateContent?alt=sse',
-    );
-
-    final request = http.Request('POST', url)
-      ..headers['Content-Type'] = 'application/json'
-      ..headers['x-goog-api-key'] = apiKey
-      ..body = json.encode({'contents': _history});
-
-    final client = http.Client();
     String accumulatedText = '';
+    Object? lastError;
 
-    try {
-      final response =
-          await client.send(request).timeout(const Duration(seconds: 30));
+    // Rantai fallback model untuk mengatasi HTTP 503 / 429 (High Demand)
+    for (final model in _candidateModels) {
+      final url = Uri.parse(
+        '$_apiBase/models/$model:streamGenerateContent?alt=sse',
+      );
+      final client = http.Client();
 
-      if (response.statusCode != 200) {
-        final body = await response.stream.bytesToString();
-        throw Exception('Gemini API error ${response.statusCode}: $body');
-      }
+      try {
+        final request = http.Request('POST', url)
+          ..headers['Content-Type'] = 'application/json'
+          ..headers['x-goog-api-key'] = apiKey
+          ..body = json.encode({'contents': _history});
 
-      await for (final line in response.stream
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())) {
-        if (!line.startsWith('data: ')) continue;
-        final data = line.substring(6).trim();
-        if (data.isEmpty || data == '[DONE]') continue;
+        final response =
+            await client.send(request).timeout(const Duration(seconds: 30));
 
-        try {
-          final parsed = json.decode(data) as Map<String, dynamic>;
-          final candidates = parsed['candidates'] as List?;
-          if (candidates != null && candidates.isNotEmpty) {
-            final parts = candidates[0]['content']?['parts'] as List?;
-            if (parts != null && parts.isNotEmpty) {
-              final text = parts[0]['text'] as String?;
-              if (text != null && text.isNotEmpty) {
-                accumulatedText += text;
-                yield text;
+        if (response.statusCode != 200) {
+          final body = await response.stream.bytesToString();
+          lastError = 'Gemini API error (${response.statusCode} - $model): $body';
+          debugPrint('ChatbotService: Model $model returned status ${response.statusCode}. Trying next fallback model...');
+          client.close();
+          await Future.delayed(const Duration(milliseconds: 800));
+          continue;
+        }
+
+        await for (final line in response.stream
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())) {
+          if (!line.startsWith('data: ')) continue;
+          final data = line.substring(6).trim();
+          if (data.isEmpty || data == '[DONE]') continue;
+
+          try {
+            final parsed = json.decode(data) as Map<String, dynamic>;
+            final candidates = parsed['candidates'] as List?;
+            if (candidates != null && candidates.isNotEmpty) {
+              final parts = candidates[0]['content']?['parts'] as List?;
+              if (parts != null && parts.isNotEmpty) {
+                final text = parts[0]['text'] as String?;
+                if (text != null && text.isNotEmpty) {
+                  accumulatedText += text;
+                  yield text;
+                }
               }
             }
+          } catch (e) {
+            debugPrint('ChatbotService: SSE parse error: $e, data: $data');
           }
-        } catch (e) {
-          // Log parse error tapi lanjutkan stream
-          debugPrint('ChatbotService: SSE parse error: $e, data: $data');
         }
-      }
 
-      if (accumulatedText.isNotEmpty) {
-        _history.add({
-          'role': 'model',
-          'parts': [
-            {'text': accumulatedText}
-          ]
-        });
+
+        if (accumulatedText.isNotEmpty) {
+          _history.add({
+            'role': 'model',
+            'parts': [
+              {'text': accumulatedText}
+            ]
+          });
+          client.close();
+          return;
+        }
+      } catch (e) {
+        lastError = e;
+        debugPrint('ChatbotService: Request failed on model $model: $e');
+        client.close();
+        await Future.delayed(const Duration(milliseconds: 800));
       }
-    } finally {
-      client.close();
+    }
+
+    if (accumulatedText.isEmpty) {
+      throw Exception(lastError ??
+          'Seluruh server model Gemini sedang sibuk karena trafik tinggi (503 High Demand). Silakan coba beberapa saat lagi.');
     }
   }
 
   bool get isReady => _history.isNotEmpty;
 }
+

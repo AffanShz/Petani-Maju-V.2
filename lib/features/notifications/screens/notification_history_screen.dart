@@ -63,25 +63,37 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
     }
   }
 
+  /// Label waktu relatif, naik bertingkat: menit -> jam -> hari -> tanggal.
+  ///
+  /// Riwayat ini memuat dua macam entri. Notifikasi yang sudah tayang disimpan
+  /// dengan waktu saat itu (masa lalu), sedangkan pengingat yang dijadwalkan
+  /// disimpan dengan waktu jadwalnya (masa depan). Versi sebelumnya selalu
+  /// memakai kalimat "yang lalu" dan membandingkan selisih negatif dengan
+  /// batas 60, sehingga jadwal 15 hari ke depan tampil sebagai
+  /// "-21036 menit yang lalu". Arah waktunya sekarang dibedakan.
   String _formatTime(String? timestamp) {
     if (timestamp == null) return '';
-    try {
-      final dateTime = DateTime.parse(timestamp);
-      final now = DateTime.now();
-      final difference = now.difference(dateTime);
+    final dateTime = DateTime.tryParse(timestamp);
+    if (dateTime == null) return '';
 
-      if (difference.inMinutes < 60) {
-        return '${difference.inMinutes} menit yang lalu';
-      } else if (difference.inHours < 24) {
-        return '${difference.inHours} jam yang lalu';
-      } else if (difference.inDays < 7) {
-        return '${difference.inDays} hari yang lalu';
-      } else {
-        return DateFormat('dd MMM yyyy, HH:mm').format(dateTime);
-      }
-    } catch (e) {
-      return '';
+    final now = DateTime.now();
+
+    if (dateTime.isAfter(now)) {
+      final d = dateTime.difference(now);
+      if (d.inMinutes < 1) return 'Sebentar lagi';
+      if (d.inMinutes < 60) return '${d.inMinutes} menit lagi';
+      if (d.inHours < 24) return '${d.inHours} jam lagi';
+      if (d.inDays < 7) return '${d.inDays} hari lagi';
+      return DateFormat('d MMM yyyy, HH:mm').format(dateTime);
     }
+
+    final d = now.difference(dateTime);
+    if (d.inMinutes < 1) return 'Baru saja';
+    if (d.inMinutes < 60) return '${d.inMinutes} menit lalu';
+    if (d.inHours < 24) return '${d.inHours} jam lalu';
+    if (d.inDays == 1) return 'Kemarin';
+    if (d.inDays < 7) return '${d.inDays} hari lalu';
+    return DateFormat('d MMM yyyy, HH:mm').format(dateTime);
   }
 
   @override
@@ -136,11 +148,57 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
                     const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final notification = _notifications[index];
-                  return _buildNotificationCard(notification);
+                  return Dismissible(
+                    key: ValueKey(
+                      '${notification['id']}_${notification['createdAt'] ?? notification['timestamp']}',
+                    ),
+                    direction: DismissDirection.endToStart,
+                    background: _buildDismissBackground(),
+                    onDismissed: (_) => _deleteOne(notification),
+                    child: _buildNotificationCard(notification),
+                  );
                 },
               ),
             ),
     );
+  }
+
+  Widget _buildDismissBackground() {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: Colors.red.shade400,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(Icons.delete_outline, color: Colors.white, size: 26),
+    );
+  }
+
+  Future<void> _deleteOne(Map<String, dynamic> notification) async {
+    final id = notification['id'];
+
+    setState(() => _notifications.remove(notification));
+    if (id is int) await CacheService().removeNotification(id);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Notifikasi dihapus'),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Urungkan',
+            onPressed: () async {
+              // Entri ditulis ulang apa adanya, termasuk 'createdAt', jadi ia
+              // kembali ke posisi semula setelah daftar dimuat ulang.
+              await CacheService().saveNotification(notification);
+              if (mounted) _loadNotifications();
+            },
+          ),
+        ),
+      );
   }
 
   Widget _buildNotificationCard(Map<String, dynamic> notification) {
@@ -180,24 +238,34 @@ class _NotificationHistoryScreenState extends State<NotificationHistoryScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        notification['title'] ?? 'Notifikasi',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(
-                              notification['title'] ?? 'Notifikasi',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
+                          Icon(
+                            Icons.history_rounded,
+                            size: 12,
+                            color: Colors.grey[500],
                           ),
-                          Text(
-                            _formatTime(notification['timestamp']),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[500],
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              _formatTime(notification['timestamp']),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
                             ),
                           ),
                         ],

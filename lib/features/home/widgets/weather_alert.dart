@@ -38,7 +38,7 @@ class WeatherAlert extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PERINGATAN CUACA!', 
+                  'PERINGATAN CUACA!',
                   style: TextStyle(
                     color: Colors.red[900],
                     fontWeight: FontWeight.bold,

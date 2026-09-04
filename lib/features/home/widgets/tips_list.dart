@@ -83,31 +83,44 @@ class _TipsListState extends State<TipsList> {
     }
   }
 
+  /// Tinggi kartu ikut skala font sistem.
+  ///
+  /// Gambar di dalam kartu tingginya tetap, tapi kategori dan judulnya ikut
+  /// membesar saat user memperbesar ukuran teks di setelan HP. Tinggi mati
+  /// 190 membuat teks itu meluber ke bawah, jadi tambahkan ruang sebanding
+  /// dengan kenaikan skalanya.
+  double _cardHeight(BuildContext context) {
+    final scale = MediaQuery.textScalerOf(context).scale(1.0);
+    return 190 + (scale - 1).clamp(0.0, 0.8) * 80;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cardHeight = _cardHeight(context);
+
     if (_isLoading && _tips.isEmpty) {
-      return const SizedBox(
-        height: 190,
-        child: Center(child: CircularProgressIndicator()),
+      return SizedBox(
+        height: cardHeight,
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_error != null && _tips.isEmpty) {
       return SizedBox(
-        height: 190,
+        height: cardHeight,
         child: Center(child: Text(_error!)),
       );
     }
 
     if (_tips.isEmpty) {
-      return const SizedBox(
-        height: 190,
-        child: Center(child: Text("Belum ada tips tersedia")),
+      return SizedBox(
+        height: cardHeight,
+        child: const Center(child: Text("Belum ada tips tersedia")),
       );
     }
 
     return SizedBox(
-      height: 190,
+      height: cardHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 4),

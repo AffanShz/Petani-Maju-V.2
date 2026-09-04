@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petani_maju/core/constants/colors.dart';
+import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:petani_maju/features/premium/widgets/upgrade_to_pro_dialog.dart';
 import 'package:petani_maju/widgets/app_toast.dart';
 
 class ChatInputBar extends StatefulWidget {
@@ -21,6 +23,7 @@ class ChatInputBar extends StatefulWidget {
 class _ChatInputBarState extends State<ChatInputBar> {
   final TextEditingController _controller = TextEditingController();
   final ImagePicker _picker = ImagePicker();
+  final CacheService _cacheService = CacheService();
   String? _selectedImagePath;
 
   static const int _maxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
@@ -46,6 +49,18 @@ class _ChatInputBarState extends State<ChatInputBar> {
     }
 
     final imageToSend = _selectedImagePath;
+    // Pengecekan awal supaya pesan tidak terlanjur terkirim dan terhapus dari
+    // kolom input. Penghitungan kuota yang sebenarnya dilakukan ChatbotBloc,
+    // agar jalur lain (tombol saran, hasil scan, riwayat) ikut terhitung dan
+    // tidak ada penghitungan ganda di sini.
+    if (!_cacheService.isPremiumActive()) {
+      final sub = _cacheService.getSubscriptionDetails();
+      final remaining = sub['remainingFreeChats'] as int? ?? 0;
+      if (remaining <= 0) {
+        showUpgradeToProDialog(context);
+        return;
+      }
+    }
     _controller.clear();
     setState(() {
       _selectedImagePath = null;
@@ -118,6 +133,16 @@ class _ChatInputBarState extends State<ChatInputBar> {
   void _showImageSourcePicker() {
     if (widget.isStreaming) return;
 
+    final bool isPro = _cacheService.isPremiumActive();
+    if (!isPro) {
+      final sub = _cacheService.getSubscriptionDetails();
+      final remaining = sub['remainingFreeChats'] as int? ?? 0;
+      if (remaining <= 0) {
+        showUpgradeToProDialog(context);
+        return;
+      }
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -125,6 +150,11 @@ class _ChatInputBarState extends State<ChatInputBar> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
+        final sub = _cacheService.getSubscriptionDetails();
+        final isPro = _cacheService.isPremiumActive();
+        final remaining =
+            isPro ? null : (sub['remainingFreeChats'] as int? ?? 0);
+
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -132,15 +162,43 @@ class _ChatInputBarState extends State<ChatInputBar> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    'Lampirkan Foto Pertanian/Perkebunan',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Lampirkan Foto Pertanian/Perkebunan',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      if (!isPro && remaining != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: remaining > 0
+                                ? const Color(0xFFE8F5E9)
+                                : const Color(0xFFFFEBEE),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Sisa $remaining/3 chat',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: remaining > 0
+                                  ? AppColors.primaryGreen
+                                  : Colors.red[700],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -212,7 +270,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   @override
   Widget build(BuildContext context) {
-    final hasInput = _controller.text.trim().isNotEmpty || _selectedImagePath != null;
+    final hasInput =
+        _controller.text.trim().isNotEmpty || _selectedImagePath != null;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -234,7 +293,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
             if (_selectedImagePath != null) ...[
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14),
@@ -317,7 +377,9 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     Icons.add_photo_alternate_rounded,
                     color: _selectedImagePath != null
                         ? AppColors.primaryGreen
-                        : (widget.isStreaming ? Colors.grey.shade400 : Colors.grey.shade700),
+                        : (widget.isStreaming
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade700),
                     size: 22,
                   ),
                 ),
@@ -336,7 +398,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                       hintText: _selectedImagePath != null
                           ? 'Tanyakan sesuatu tentang foto ini...'
                           : 'Tanyakan seputar pertanian & perkebunan...',
-                      hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                      hintStyle:
+                          const TextStyle(color: Colors.grey, fontSize: 13),
                       counterText: '',
                       filled: true,
                       fillColor: Colors.grey.shade100,
@@ -356,7 +419,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   child: IconButton(
-                    onPressed: (widget.isStreaming || !hasInput) ? null : _handleSend,
+                    onPressed:
+                        (widget.isStreaming || !hasInput) ? null : _handleSend,
                     style: IconButton.styleFrom(
                       backgroundColor: (widget.isStreaming || !hasInput)
                           ? Colors.grey.shade300

@@ -147,9 +147,137 @@ class PestScannerService {
     }
   }
 
+  // ─── Deteksi & Analisis Penyakit Daun menggunakan Gemini Vision AI ────────
+  /// Mengisikan {is_plant, reason, plant_type, disease_name, confidence, description, recommendation, prevention}
+  Future<Map<String, dynamic>> analyzeWithGeminiVision(File imageFile) async {
+    final apiKey = EnvConfig.geminiApiKey;
+    if (apiKey.isEmpty) {
+      throw Exception('GEMINI_API_KEY tidak ditemukan pada konfigurasi aplikasi.');
+    }
+
+    final bytes = await imageFile.readAsBytes();
+    final mimeType = _getMimeType(imageFile.path);
+    final base64Image = base64Encode(bytes);
+
+    const candidateModels = [
+      'gemini-3.5-flash',
+      'gemini-3.6-flash',
+      'gemini-2.5-flash',
+    ];
+
+    const promptText = '''
+Kamu adalah pakar kecerdasan buatan khusus pertanian (Plant Pathology & Crop Expert).
+Tugasmu adalah menganalisis foto yang diunggah pengguna.
+
+Lakukan dua langkah validasi:
+1. PERIKSA APAKAH GAMBAR INI MERUPAKAN TANAMAN, DAUN, ATAU HASIL PERTANIAN/PERKEBUNAN.
+   - Jika gambar BUKAN tanaman/daun (misalnya foto selfie manusia, mobil/motor, gedung, hewan peliharaan, sepatu, pakaian, dokumen, peralatan rumah tangga, dll.), set `is_plant` menjadi `false` dan berikan alasan singkat.
+2. JIKA INI MERUPAKAN TANAMAN/DAUN:
+   - Set `is_plant` menjadi `true`.
+   - Identifikasi jenis tanaman (misalnya: Tomat, Padi, Teh, Cabai, Jagung, Bawang, dll.).
+   - Diagnosa apakah tanaman Sehat atau Terserang Penyakit/Hama. Berikan nama penyakit/hama secara spesifik (beserta nama lokal/Indonesia yang umum).
+   - Berikan nilai kepastian (confidence: 0.0 sampai 1.0).
+   - Berikan deskripsi singkat gejala, rekomendasi tindakan penanganan, dan langkah pencegahan.
+
+BERIKAN KELUARAN HANYA DALAM FORMAT JSON BERSIH (Strict JSON format tanpa markdown backticks atau teks lain):
+{
+  "is_plant": true,
+  "reason": "Alasan jika bukan tanaman",
+  "plant_type": "Nama Tanaman",
+  "disease_name": "Nama Penyakit atau Sehat",
+  "confidence": 0.95,
+  "description": "Penjelasan singkat gejala",
+  "recommendation": "Tindakan penanganan dan obat/pupuk yang disarankan",
+  "prevention": "Langkah pencegahan"
+}
+''';
+
+    final bodyPayload = jsonEncode({
+      'contents': [
+        {
+          'role': 'user',
+          'parts': [
+            {'text': promptText},
+            {
+              'inline_data': {
+                'mime_type': mimeType,
+                'data': base64Image,
+              }
+            }
+          ]
+        }
+      ]
+    });
+
+    Object? lastError;
+
+    for (final model in candidateModels) {
+      final Uri url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent',
+      );
+
+      try {
+        if (kDebugMode) debugPrint('PestScannerService[GeminiVision]: POST to $url');
+
+        final response = await http
+            .post(
+              url,
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey,
+              },
+              body: bodyPayload,
+            )
+            .timeout(_timeout);
+
+        if (response.statusCode == 200) {
+          final resData = jsonDecode(response.body) as Map<String, dynamic>;
+          final candidates = resData['candidates'] as List?;
+          if (candidates != null && candidates.isNotEmpty) {
+            final parts = candidates[0]['content']?['parts'] as List?;
+            if (parts != null && parts.isNotEmpty) {
+              String rawText = (parts[0]['text'] ?? '').toString().trim();
+              if (rawText.startsWith('```json')) {
+                rawText = rawText.substring(7);
+              } else if (rawText.startsWith('```')) {
+                rawText = rawText.substring(3);
+              }
+              if (rawText.endsWith('```')) {
+                rawText = rawText.substring(0, rawText.length - 3);
+              }
+              rawText = rawText.trim();
+
+              final parsedJson = jsonDecode(rawText) as Map<String, dynamic>;
+              return parsedJson;
+            }
+          }
+        } else {
+          lastError = 'Gemini status ${response.statusCode}: ${response.body}';
+          debugPrint('PestScannerService[GeminiVision]: Model $model status ${response.statusCode}, trying next model...');
+          await Future.delayed(const Duration(milliseconds: 800));
+        }
+      } catch (e) {
+        lastError = e;
+        debugPrint('PestScannerService[GeminiVision]: Exception on model $model: $e');
+        await Future.delayed(const Duration(milliseconds: 800));
+      }
+    }
+
+    throw Exception('Gagal melakukan analisis Gemini Vision: ${lastError ?? "Server sibuk"}');
+  }
+
   double _asDouble(dynamic value) {
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '') ?? 0.0;
+  }
+
+  String _getMimeType(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    if (lower.endsWith('.heic')) return 'image/heic';
+    if (lower.endsWith('.heif')) return 'image/heif';
+    return 'image/jpeg';
   }
 
   Exception _handleError(http.Response response) {

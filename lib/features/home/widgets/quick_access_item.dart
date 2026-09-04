@@ -38,6 +38,7 @@ class QuickAccessItem extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(10),
@@ -54,6 +55,8 @@ class QuickAccessItem extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: iconColor,
                 fontSize: 16,
@@ -63,6 +66,8 @@ class QuickAccessItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: 12,

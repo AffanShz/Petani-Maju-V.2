@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:petani_maju/data/models/notification_settings.dart';
 
 import 'package:petani_maju/data/models/chat_session.dart';
@@ -19,6 +20,12 @@ class CacheService {
       StreamController<Map<String, String?>>.broadcast();
   Stream<Map<String, String?>> get profileUpdateStream =>
       _profileUpdateController.stream;
+
+  // Subscription update stream
+  final _subscriptionUpdateController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get subscriptionUpdateStream =>
+      _subscriptionUpdateController.stream;
 
   // Box names
   static const String _weatherBoxName = 'weatherCache';
@@ -227,7 +234,7 @@ class CacheService {
 
   // ==================== UTILITY ====================
 
-  /// Clear all cached data
+  /// Clear all cached data EXCEPT subscription/premium data (preserved per-user)
   Future<void> clearAllCache() async {
     await _weatherBox.clear();
     await _tipsBox.clear();
@@ -235,7 +242,81 @@ class CacheService {
     await Hive.box(_plantingScheduleBoxName).clear();
     await _notificationHistoryBox.clear();
     await _chatSessionsBox.clear();
+    // Hapus semua settings KECUALI subscription keys (sub_*) yang terikat per user
+    await _clearSettingsExceptSubscription();
+  }
+
+  /// Hapus settings box tapi pertahankan semua kunci sub_{userId}_* dan global_premium*
+  Future<void> _clearSettingsExceptSubscription() async {
+    final keysToKeep = _settingsBox.keys
+        .where((k) =>
+            k.toString().startsWith('sub_') ||
+            k.toString().startsWith('global_premium') ||
+            k.toString() == 'global_isPremiumActive')
+        .toList();
+    final preserved = <dynamic, dynamic>{};
+    for (final k in keysToKeep) {
+      preserved[k] = _settingsBox.get(k);
+    }
     await _settingsBox.clear();
+    for (final entry in preserved.entries) {
+      await _settingsBox.put(entry.key, entry.value);
+    }
+  }
+
+  /// Restore subscription dari Supabase user metadata ke Hive saat login.
+  /// Dipanggil setelah user berhasil login agar status PRO yang tersimpan
+  /// di server (Supabase) disinkronkan kembali ke Hive lokal.
+  Future<void> restoreSubscriptionOnLogin() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user == null) return;
+
+      // Cek apakah Hive sudah punya data untuk user ini
+      final activeKey = _getUserSubKey('isPremiumActive');
+      final expiryKey = _getUserSubKey('premiumExpiryDate');
+      final planKey = _getUserSubKey('premiumPlanName');
+
+      final hiveHasData = _settingsBox.containsKey(activeKey);
+
+      // Ambil data dari Supabase user metadata
+      final meta = user.userMetadata ?? {};
+      final serverIsPremium = meta['is_premium'] as bool? ?? false;
+      final serverPlan = meta['premium_plan'] as String?;
+      final serverExpiry = meta['premium_expiry'] as String?;
+
+      final serverExpiryDate =
+          serverExpiry != null ? DateTime.tryParse(serverExpiry) : null;
+
+      if (serverIsPremium &&
+          serverExpiryDate != null &&
+          serverExpiryDate.isAfter(DateTime.now())) {
+        // Server adalah sumber kebenaran saat subscription masih aktif.
+        // Ini juga memperbaiki state Hive false/stale setelah login ulang.
+        await _settingsBox.put(activeKey, true);
+        await _settingsBox.put(expiryKey, serverExpiryDate.toIso8601String());
+        if (serverPlan != null) await _settingsBox.put(planKey, serverPlan);
+        _scheduleExpiryTimer(serverExpiryDate);
+      } else if (!hiveHasData && serverIsPremium && serverExpiry != null) {
+        // Hive kosong dan langganan server sudah kedaluwarsa.
+        await _settingsBox.put(activeKey, false);
+      } else if (hiveHasData) {
+        // Hive sudah ada data — jadwalkan timer ulang kalau masih aktif
+        final expiryStr = _settingsBox.get(expiryKey) as String?;
+        if (expiryStr != null) {
+          final expiryDate = DateTime.tryParse(expiryStr);
+          if (expiryDate != null && expiryDate.isAfter(DateTime.now())) {
+            _scheduleExpiryTimer(expiryDate);
+          } else {
+            await _settingsBox.put(activeKey, false);
+          }
+        }
+      }
+
+      _subscriptionUpdateController.add(getSubscriptionDetails());
+    } catch (e) {
+      debugPrint('[CacheService] restoreSubscriptionOnLogin error: $e');
+    }
   }
 
   Box get _settingsBox => Hive.box(_settingsBoxName);
@@ -292,7 +373,7 @@ class CacheService {
       if (kDebugMode) print("CacheService: Getting user profile...");
       final name = _settingsBox.get('userName', defaultValue: 'Pak Tani');
       final image = _settingsBox.get('userImage');
-      
+
       final result = {
         'name': name?.toString() ?? 'Pak Tani',
         'imagePath': image?.toString()
@@ -303,6 +384,221 @@ class CacheService {
       if (kDebugMode) print('CacheService: Error getting user profile: $e');
       return {'name': 'Pak Tani', 'imagePath': null};
     }
+  }
+
+  // ==================== SUBSCRIPTION & PREMIUM ====================
+
+  Timer? _subscriptionExpiryTimer;
+
+  String _getUserSubKey(String key) {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null && user.id.isNotEmpty) {
+        return 'sub_${user.id}_$key';
+      }
+    } catch (_) {}
+    return 'sub_guest_$key';
+  }
+
+  void _scheduleExpiryTimer(DateTime expiryDate) {
+    _subscriptionExpiryTimer?.cancel();
+    final remaining = expiryDate.difference(DateTime.now());
+    if (remaining.isNegative) {
+      _handleSubscriptionExpired();
+      return;
+    }
+
+    _subscriptionExpiryTimer = Timer(remaining, () {
+      _handleSubscriptionExpired();
+    });
+  }
+
+  void _handleSubscriptionExpired() {
+    final activeKey = _getUserSubKey('isPremiumActive');
+    _settingsBox.put(activeKey, false);
+    _subscriptionExpiryTimer?.cancel();
+    _subscriptionExpiryTimer = null;
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+  }
+
+  /// Cek apakah status premium sedang aktif
+  bool isPremiumActive() {
+    try {
+      final activeKey = _getUserSubKey('isPremiumActive');
+      final expiryKey = _getUserSubKey('premiumExpiryDate');
+
+      final isActive = _settingsBox.get(activeKey, defaultValue: false) as bool;
+      if (!isActive) return false;
+
+      final expiryStr = _settingsBox.get(expiryKey) as String?;
+      if (expiryStr != null) {
+        final expiryDate = DateTime.parse(expiryStr);
+        if (DateTime.now().isAfter(expiryDate)) {
+          _settingsBox.put(activeKey, false);
+          _subscriptionExpiryTimer?.cancel();
+          _subscriptionExpiryTimer = null;
+          return false;
+        } else {
+          // Jadwalkan timer otomatis jika belum aktif
+          if (_subscriptionExpiryTimer == null ||
+              !_subscriptionExpiryTimer!.isActive) {
+            _scheduleExpiryTimer(expiryDate);
+          }
+        }
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Batas jawaban chatbot untuk akun gratis dalam satu hari.
+  static const int freeChatLimit = 3;
+
+  /// Penanda periode kuota chat gratis, dalam format 'YYYY-MM-DD'.
+  ///
+  /// Kuota gratis berlaku per hari kalender, mengikuti waktu lokal perangkat.
+  /// Alih-alih memakai timer yang bisa terlewat saat app tidak berjalan,
+  /// periode disimpan bersama counter lalu dibandingkan setiap kali dibaca.
+  String _currentQuotaPeriod() {
+    final now = DateTime.now();
+    final month = now.month.toString().padLeft(2, '0');
+    final day = now.day.toString().padLeft(2, '0');
+    return '${now.year}-$month-$day';
+  }
+
+  /// Jumlah jawaban chatbot yang sudah terpakai pada periode berjalan.
+  ///
+  /// Sengaja tidak menulis apa pun supaya tetap sinkron dipanggil dari UI.
+  /// Penulisan periode baru dilakukan [incrementFreeChatCount] saat chat
+  /// pertama di hari berikutnya.
+  int _effectiveFreeChatCount() {
+    final countKey = _getUserSubKey('freeChatCount');
+    final periodKey = _getUserSubKey('freeChatPeriod');
+    final storedPeriod = _settingsBox.get(periodKey) as String?;
+
+    if (storedPeriod != _currentQuotaPeriod()) return 0;
+    return _settingsBox.get(countKey, defaultValue: 0) as int;
+  }
+
+  /// Tengah malam berikutnya, saat kuota gratis terisi ulang.
+  ///
+  /// DateTime menormalkan tanggal yang melewati akhir bulan, jadi menambah
+  /// satu hari tetap benar pada 31 Desember maupun 28 Februari.
+  DateTime _nextQuotaReset() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day + 1);
+  }
+
+  /// Ambil detail status langganan spesifik untuk akun yang sedang login
+  Map<String, dynamic> getSubscriptionDetails() {
+    final active = isPremiumActive();
+    final planKey = _getUserSubKey('premiumPlanName');
+    final expiryKey = _getUserSubKey('premiumExpiryDate');
+
+    final planName =
+        _settingsBox.get(planKey, defaultValue: 'Gratis') as String;
+    final expiryStr = _settingsBox.get(expiryKey) as String?;
+    final chatCount = _effectiveFreeChatCount();
+
+    return {
+      'isActive': active,
+      'planName': active ? planName : 'Gratis',
+      'expiryDate': expiryStr != null ? DateTime.tryParse(expiryStr) : null,
+      'freeChatLimit': freeChatLimit,
+      'freeChatUsed': chatCount,
+      'remainingFreeChats': (freeChatLimit - chatCount).clamp(0, freeChatLimit),
+      'freeChatResetDate': _nextQuotaReset(),
+    };
+  }
+
+  /// Update status langganan untuk akun user yang aktif & broadcast ke seluruh listener UI
+  Future<void> setSubscription({
+    required bool isActive,
+    String? planName,
+    DateTime? expiryDate,
+  }) async {
+    final activeKey = _getUserSubKey('isPremiumActive');
+    final planKey = _getUserSubKey('premiumPlanName');
+    final expiryKey = _getUserSubKey('premiumExpiryDate');
+
+    await _settingsBox.put(activeKey, isActive);
+    await _settingsBox.put('global_isPremiumActive', isActive);
+
+    if (planName != null) {
+      await _settingsBox.put(planKey, planName);
+      await _settingsBox.put('global_premiumPlanName', planName);
+    }
+    if (expiryDate != null) {
+      await _settingsBox.put(expiryKey, expiryDate.toIso8601String());
+      await _settingsBox.put(
+          'global_premiumExpiryDate', expiryDate.toIso8601String());
+      _scheduleExpiryTimer(expiryDate);
+    } else if (!isActive) {
+      await _settingsBox.delete(expiryKey);
+      await _settingsBox.delete('global_premiumExpiryDate');
+      _subscriptionExpiryTimer?.cancel();
+      _subscriptionExpiryTimer = null;
+    }
+
+    // Update metadata di Supabase jika sedang login
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        await Supabase.instance.client.auth.updateUser(
+          UserAttributes(
+            data: {
+              'is_premium': isActive,
+              'premium_plan': planName ?? 'Gratis',
+              'premium_expiry': expiryDate?.toIso8601String(),
+            },
+          ),
+        );
+      }
+    } catch (_) {}
+
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+  }
+
+  /// Tambah counter pemakaian chat gratis.
+  ///
+  /// Chat pertama di hari baru otomatis memulai periode baru dari nol.
+  Future<int> incrementFreeChatCount() async {
+    final countKey = _getUserSubKey('freeChatCount');
+    final periodKey = _getUserSubKey('freeChatPeriod');
+
+    final next = _effectiveFreeChatCount() + 1;
+    await _settingsBox.put(countKey, next);
+    await _settingsBox.put(periodKey, _currentQuotaPeriod());
+
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+    return next;
+  }
+
+  /// Kembalikan satu kuota yang terlanjur terpotong.
+  ///
+  /// Dipakai saat permintaan ke AI gagal tanpa menghasilkan jawaban sama
+  /// sekali, supaya user tidak kehilangan kuota untuk sesuatu yang tidak
+  /// pernah ia terima. Tidak berlaku lintas hari: kalau periodenya sudah
+  /// berganti, counter-nya memang sudah nol.
+  Future<void> refundFreeChatCount() async {
+    final countKey = _getUserSubKey('freeChatCount');
+    final current = _effectiveFreeChatCount();
+    if (current <= 0) return;
+
+    await _settingsBox.put(countKey, current - 1);
+    _subscriptionUpdateController.add(getSubscriptionDetails());
+  }
+
+  /// Reset counter chat gratis sebelum periodenya habis
+  Future<void> resetFreeChatCount() async {
+    final countKey = _getUserSubKey('freeChatCount');
+    final periodKey = _getUserSubKey('freeChatPeriod');
+
+    await _settingsBox.put(countKey, 0);
+    await _settingsBox.put(periodKey, _currentQuotaPeriod());
+
+    _subscriptionUpdateController.add(getSubscriptionDetails());
   }
 
   // ==================== NOTIFICATION SETTINGS ====================
@@ -346,20 +642,47 @@ class CacheService {
   }
 
   /// Get all history, sorted by newest first
+  /// Riwayat notifikasi yang sudah tayang, terbaru lebih dulu.
+  ///
+  /// Box ini menyimpan dua macam entri. Notifikasi yang sudah berbunyi, dan
+  /// pengingat yang baru dijadwalkan. Yang kedua menyimpan waktu jatuh
+  /// temponya di masa depan, sehingga ikut mengacak urutan dan menampilkan
+  /// "13 jam lagi" di tengah daftar riwayat.
+  ///
+  /// Layar ini adalah riwayat, jadi entri yang waktunya belum tiba disaring.
+  /// Ia tidak dihapus, hanya belum ditampilkan, dan akan muncul dengan
+  /// sendirinya begitu waktunya lewat.
+  ///
+  /// Sisanya diurutkan menurun berdasarkan 'timestamp', yaitu waktu yang juga
+  /// tampil di layar, supaya urutan yang terlihat cocok dengan angka yang
+  /// terbaca. 'createdAt' dipakai hanya sebagai pemecah seri.
   List<Map<String, dynamic>> getNotificationHistory() {
-    final data = _notificationHistoryBox.values.toList();
-    final List<Map<String, dynamic>> history = data
-        .map((e) => Map<String, dynamic>.from(e))
-        .toList(); // Cast dynamic map to typed map
+    final now = DateTime.now();
 
-    // Sort descending by timestamp
-    history.sort((a, b) {
-      final tA = DateTime.tryParse(a['timestamp'] ?? '') ?? DateTime(2000);
-      final tB = DateTime.tryParse(b['timestamp'] ?? '') ?? DateTime(2000);
-      return tB.compareTo(tA);
+    final entries = _notificationHistoryBox.values
+        .toList()
+        .asMap()
+        .entries
+        .map((e) => (seq: e.key, data: Map<String, dynamic>.from(e.value)))
+        .where((e) {
+      final t = DateTime.tryParse(e.data['timestamp'] ?? '');
+      return t != null && !t.isAfter(now);
+    }).toList();
+
+    entries.sort((a, b) {
+      final tA = DateTime.parse(a.data['timestamp']);
+      final tB = DateTime.parse(b.data['timestamp']);
+      final byTime = tB.compareTo(tA);
+      if (byTime != 0) return byTime;
+
+      final cA = DateTime.tryParse(a.data['createdAt'] ?? '');
+      final cB = DateTime.tryParse(b.data['createdAt'] ?? '');
+      if (cA != null && cB != null) return cB.compareTo(cA);
+
+      return b.seq.compareTo(a.seq);
     });
 
-    return history;
+    return entries.map((e) => e.data).toList();
   }
 
   /// Remove semua history dengan ID tertentu
