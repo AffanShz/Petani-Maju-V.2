@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/features/premium/screens/purchase_premium_screen.dart';
 
 /// Dialog batas kuota chat gratis untuk akun gratis.
 ///

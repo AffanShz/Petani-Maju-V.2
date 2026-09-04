@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/core/constants/colors.dart';
+import 'package:agrinova/core/constants/colors.dart';
 
-import 'package:petani_maju/features/calendar/bloc/calendar_bloc.dart';
-import 'package:petani_maju/core/services/notification_service.dart';
-import 'package:petani_maju/core/services/notification_scheduler.dart';
-import 'package:petani_maju/widgets/custom_time_picker.dart';
-import 'package:petani_maju/core/constants/monthly_activities.dart';
+import 'package:agrinova/features/calendar/bloc/calendar_bloc.dart';
+import 'package:agrinova/core/services/notification_service.dart';
+import 'package:agrinova/core/services/notification_scheduler.dart';
+import 'package:agrinova/widgets/custom_time_picker.dart';
+import 'package:agrinova/core/constants/monthly_activities.dart';
 
 // ==========================================
 // 1. WIDGET PICKER JAM DENGAN TOMBOL

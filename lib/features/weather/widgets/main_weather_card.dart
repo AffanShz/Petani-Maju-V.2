@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
-import 'package:petani_maju/utils/weather_utils.dart';
+import 'package:agrinova/utils/weather_utils.dart';
 
 /// Widget untuk menampilkan kartu cuaca utama dengan gradient dinamis
 class MainWeatherCard extends StatelessWidget {

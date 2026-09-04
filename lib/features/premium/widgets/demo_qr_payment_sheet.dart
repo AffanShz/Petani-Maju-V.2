@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:petani_maju/core/constants/colors.dart';
+import 'package:agrinova/core/constants/colors.dart';
 
 class DemoQrPaymentSheet extends StatefulWidget {
   final String planName;

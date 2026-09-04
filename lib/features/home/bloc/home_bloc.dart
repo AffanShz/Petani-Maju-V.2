@@ -3,9 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 
-import 'package:petani_maju/data/repositories/weather_repository.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/utils/weather_utils.dart';
+import 'package:agrinova/data/repositories/weather_repository.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/utils/weather_utils.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:petani_maju/data/datasources/tips_services.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/data/datasources/tips_services.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 /// Repository untuk mengelola data Tips Pertanian
 /// Abstraksi antara BLoC dan datasource (API/Cache)

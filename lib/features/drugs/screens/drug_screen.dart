@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:petani_maju/features/drugs/bloc/drug_bloc.dart';
-import 'package:petani_maju/features/drugs/screens/drug_detail_screen.dart';
-import 'package:petani_maju/data/repositories/drug_repository.dart';
+import 'package:agrinova/features/drugs/bloc/drug_bloc.dart';
+import 'package:agrinova/features/drugs/screens/drug_detail_screen.dart';
+import 'package:agrinova/data/repositories/drug_repository.dart';
 
 class DrugScreen extends StatefulWidget {
   const DrugScreen({super.key});

@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/core/services/notification_scheduler.dart';
-import 'package:petani_maju/data/models/notification_settings.dart';
-import 'package:petani_maju/widgets/custom_time_picker.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/core/services/notification_scheduler.dart';
+import 'package:agrinova/data/models/notification_settings.dart';
+import 'package:agrinova/widgets/custom_time_picker.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});

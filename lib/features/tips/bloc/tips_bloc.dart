@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:petani_maju/data/repositories/tips_repository.dart';
+import 'package:agrinova/data/repositories/tips_repository.dart';
 
 part 'tips_event.dart';
 part 'tips_state.dart';

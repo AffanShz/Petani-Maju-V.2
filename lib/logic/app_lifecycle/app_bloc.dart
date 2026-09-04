@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/core/services/connectivity_service.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/core/services/connectivity_service.dart';
 
 part 'app_event.dart';
 part 'app_state.dart';

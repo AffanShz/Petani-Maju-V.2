@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:petani_maju/core/constants/env_config.dart';
+import 'package:agrinova/core/constants/env_config.dart';
 
 enum PaymentStatus {
   success,

@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/features/premium/widgets/upgrade_to_pro_dialog.dart';
-import 'package:petani_maju/widgets/app_toast.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/features/premium/widgets/upgrade_to_pro_dialog.dart';
+import 'package:agrinova/widgets/app_toast.dart';
 
 class ChatInputBar extends StatefulWidget {
   final bool isStreaming;

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/core/services/midtrans_service.dart';
-import 'package:petani_maju/features/premium/widgets/demo_qr_payment_sheet.dart'; // TAMBAH INI
-import 'package:petani_maju/widgets/app_toast.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/core/services/midtrans_service.dart';
+import 'package:agrinova/features/premium/widgets/demo_qr_payment_sheet.dart'; // TAMBAH INI
+import 'package:agrinova/widgets/app_toast.dart';
 
 class PurchasePremiumScreen extends StatefulWidget {
   const PurchasePremiumScreen({super.key});

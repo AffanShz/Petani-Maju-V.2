@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petani_maju/core/constants/colors.dart';
+import 'package:agrinova/core/constants/colors.dart';
 
 class WeatherAlert extends StatelessWidget {
   final String message;

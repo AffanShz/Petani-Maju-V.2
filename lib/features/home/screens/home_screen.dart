@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/features/home/bloc/home_bloc.dart';
-import 'package:petani_maju/features/home/widgets/forecast_list.dart';
-import 'package:petani_maju/features/home/widgets/quick_access.dart';
-import 'package:petani_maju/features/home/widgets/tips_list.dart';
-import 'package:petani_maju/features/home/widgets/weather_alert.dart';
-import 'package:petani_maju/widgets/custom_app_bar.dart';
-import 'package:petani_maju/widgets/main_weather_card.dart';
-import 'package:petani_maju/widgets/section_header.dart';
-import 'package:petani_maju/features/weather/screens/weather_detail_screen.dart';
-import 'package:petani_maju/core/services/notification_service.dart';
-import 'package:petani_maju/features/home/widgets/home_skeleton.dart';
-import 'package:petani_maju/features/chatbot/screens/chatbot_screen.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/features/home/bloc/home_bloc.dart';
+import 'package:agrinova/features/home/widgets/forecast_list.dart';
+import 'package:agrinova/features/home/widgets/quick_access.dart';
+import 'package:agrinova/features/home/widgets/tips_list.dart';
+import 'package:agrinova/features/home/widgets/weather_alert.dart';
+import 'package:agrinova/widgets/custom_app_bar.dart';
+import 'package:agrinova/widgets/main_weather_card.dart';
+import 'package:agrinova/widgets/section_header.dart';
+import 'package:agrinova/features/weather/screens/weather_detail_screen.dart';
+import 'package:agrinova/core/services/notification_service.dart';
+import 'package:agrinova/features/home/widgets/home_skeleton.dart';
+import 'package:agrinova/features/chatbot/screens/chatbot_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/widgets/app_toast.dart';
+import 'package:agrinova/widgets/app_toast.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int)? onTabChange;

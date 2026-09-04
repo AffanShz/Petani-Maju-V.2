@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:petani_maju/core/constants/env_config.dart';
+import 'package:agrinova/core/constants/env_config.dart';
 
 /// Service yang membungkus seluruh model AI HuggingFace Space:
 /// - MODEL_PLANT  : deteksi jenis tanaman (Padi/Teh/Tomat) - multipart file

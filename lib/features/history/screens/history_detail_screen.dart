@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:petani_maju/core/constants/colors.dart';
+import 'package:agrinova/core/constants/colors.dart';
 import '../../../data/models/prediction_history.dart';
 import '../../../data/datasources/pest_services.dart';
 import '../../drugs/screens/drug_detail_screen.dart';

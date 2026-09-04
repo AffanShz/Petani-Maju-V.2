@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/data/repositories/auth_repository.dart';
-import 'package:petani_maju/features/auth/bloc/auth_bloc.dart';
-import 'package:petani_maju/features/auth/screens/register_screen.dart';
-import 'package:petani_maju/features/auth/screens/reset_password_screen.dart';
-import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/data/repositories/auth_repository.dart';
+import 'package:agrinova/features/auth/bloc/auth_bloc.dart';
+import 'package:agrinova/features/auth/screens/register_screen.dart';
+import 'package:agrinova/features/auth/screens/reset_password_screen.dart';
+import 'package:agrinova/logic/app_lifecycle/app_bloc.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

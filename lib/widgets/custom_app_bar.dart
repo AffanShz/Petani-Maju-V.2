@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/features/notifications/screens/notification_history_screen.dart';
-import 'package:petani_maju/features/premium/screens/purchase_premium_screen.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/features/notifications/screens/notification_history_screen.dart';
+import 'package:agrinova/features/premium/screens/purchase_premium_screen.dart';
 
 class CustomAppBar extends StatefulWidget {
   final DateTime? lastSyncTime;

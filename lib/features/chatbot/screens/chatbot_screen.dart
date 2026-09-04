@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/data/models/chat_message.dart';
-import 'package:petani_maju/data/repositories/calendar_repository.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/data/models/chat_message.dart';
+import 'package:agrinova/data/repositories/calendar_repository.dart';
 
-import 'package:petani_maju/data/repositories/chatbot_repository.dart';
-import 'package:petani_maju/data/repositories/history_repository.dart';
-import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
-import 'package:petani_maju/features/chatbot/screens/chat_history_screen.dart';
-import 'package:petani_maju/features/premium/widgets/upgrade_to_pro_dialog.dart';
+import 'package:agrinova/data/repositories/chatbot_repository.dart';
+import 'package:agrinova/data/repositories/history_repository.dart';
+import 'package:agrinova/features/chatbot/bloc/chatbot_bloc.dart';
+import 'package:agrinova/features/chatbot/screens/chat_history_screen.dart';
+import 'package:agrinova/features/premium/widgets/upgrade_to_pro_dialog.dart';
 
-import 'package:petani_maju/features/chatbot/widgets/chat_bubble.dart';
-import 'package:petani_maju/features/chatbot/widgets/chat_input_bar.dart';
-import 'package:petani_maju/widgets/app_toast.dart';
+import 'package:agrinova/features/chatbot/widgets/chat_bubble.dart';
+import 'package:agrinova/features/chatbot/widgets/chat_input_bar.dart';
+import 'package:agrinova/widgets/app_toast.dart';
 
 class ChatbotScreen extends StatelessWidget {
   final Map<String, dynamic>? currentWeather;

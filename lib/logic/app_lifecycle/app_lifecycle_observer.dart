@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
+import 'package:agrinova/logic/app_lifecycle/app_bloc.dart';
 
 /// Memantau lifecycle aplikasi dan memicu revalidasi sesi saat resume
 /// agar deteksi logout jarak jauh / sesi kedaluwarsa tetap bekerja.

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:petani_maju/data/models/chat_message.dart';
+import 'package:agrinova/data/models/chat_message.dart';
 
 class ChatbotService {
   final String apiKey;

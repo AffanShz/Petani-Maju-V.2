@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();

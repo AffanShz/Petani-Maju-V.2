@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:petani_maju/data/models/chat_message.dart';
-import 'package:petani_maju/data/models/chat_session.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/data/repositories/chatbot_repository.dart';
+import 'package:agrinova/data/models/chat_message.dart';
+import 'package:agrinova/data/models/chat_session.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/data/repositories/chatbot_repository.dart';
 
 part 'chatbot_event.dart';
 part 'chatbot_state.dart';

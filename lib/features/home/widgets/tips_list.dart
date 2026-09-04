@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:petani_maju/features/home/widgets/tip_item.dart';
-import 'package:petani_maju/data/datasources/tips_services.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/features/home/widgets/tip_item.dart';
+import 'package:agrinova/data/datasources/tips_services.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 class TipsList extends StatefulWidget {
   const TipsList({super.key});

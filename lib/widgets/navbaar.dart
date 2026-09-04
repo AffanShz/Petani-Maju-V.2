@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/core/constants/colors.dart';
+import 'package:agrinova/core/constants/colors.dart';
 
 // Screens
-import 'package:petani_maju/features/home/screens/home_screen.dart';
-import 'package:petani_maju/features/calendar/screens/calendar_screen.dart';
-import 'package:petani_maju/features/tips/screens/tips_screen.dart';
-import 'package:petani_maju/features/settings/screens/settings_screen.dart';
-import 'package:petani_maju/features/scanner/screens/scanner_screen.dart';
+import 'package:agrinova/features/home/screens/home_screen.dart';
+import 'package:agrinova/features/calendar/screens/calendar_screen.dart';
+import 'package:agrinova/features/tips/screens/tips_screen.dart';
+import 'package:agrinova/features/settings/screens/settings_screen.dart';
+import 'package:agrinova/features/scanner/screens/scanner_screen.dart';
 
 // BLoCs
-import 'package:petani_maju/features/home/bloc/home_bloc.dart';
-import 'package:petani_maju/features/calendar/bloc/calendar_bloc.dart';
-import 'package:petani_maju/features/tips/bloc/tips_bloc.dart';
+import 'package:agrinova/features/home/bloc/home_bloc.dart';
+import 'package:agrinova/features/calendar/bloc/calendar_bloc.dart';
+import 'package:agrinova/features/tips/bloc/tips_bloc.dart';
 
 // Repositories
-import 'package:petani_maju/data/repositories/weather_repository.dart';
-import 'package:petani_maju/data/repositories/calendar_repository.dart';
-import 'package:petani_maju/data/repositories/tips_repository.dart';
+import 'package:agrinova/data/repositories/weather_repository.dart';
+import 'package:agrinova/data/repositories/calendar_repository.dart';
+import 'package:agrinova/data/repositories/tips_repository.dart';
 
 // Services
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

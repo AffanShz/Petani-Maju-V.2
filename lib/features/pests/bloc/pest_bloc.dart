@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:petani_maju/data/repositories/pest_repository.dart';
+import 'package:agrinova/data/repositories/pest_repository.dart';
 
 part 'pest_event.dart';
 part 'pest_state.dart';

@@ -1,8 +1,8 @@
 import 'package:workmanager/workmanager.dart';
-import 'package:petani_maju/core/services/notification_scheduler.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/core/services/notification_service.dart';
-import 'package:petani_maju/data/datasources/weather_service.dart';
+import 'package:agrinova/core/services/notification_scheduler.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/core/services/notification_service.dart';
+import 'package:agrinova/data/datasources/weather_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';

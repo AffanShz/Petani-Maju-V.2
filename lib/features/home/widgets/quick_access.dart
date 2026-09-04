@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/features/home/widgets/quick_access_item.dart';
-import 'package:petani_maju/features/home/widgets/quick_access_metrics.dart';
-import 'package:petani_maju/features/weather/screens/weather_detail_screen.dart';
-import 'package:petani_maju/features/pests/screens/pest_screen.dart';
-import 'package:petani_maju/features/drugs/screens/drug_screen.dart';
+import 'package:agrinova/features/home/widgets/quick_access_item.dart';
+import 'package:agrinova/features/home/widgets/quick_access_metrics.dart';
+import 'package:agrinova/features/weather/screens/weather_detail_screen.dart';
+import 'package:agrinova/features/pests/screens/pest_screen.dart';
+import 'package:agrinova/features/drugs/screens/drug_screen.dart';
 
 /// Satu entri di grid akses cepat.
 class _QuickAccessEntry {

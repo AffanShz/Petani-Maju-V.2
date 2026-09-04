@@ -8,41 +8,41 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 // Core Services
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/core/services/notification_service.dart';
-import 'package:petani_maju/core/services/secure_local_storage.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/core/services/notification_service.dart';
+import 'package:agrinova/core/services/secure_local_storage.dart';
 
-import 'package:petani_maju/core/services/background_service.dart';
-import 'package:petani_maju/core/services/connectivity_service.dart';
+import 'package:agrinova/core/services/background_service.dart';
+import 'package:agrinova/core/services/connectivity_service.dart';
 
 // Datasources
-import 'package:petani_maju/data/datasources/weather_service.dart';
-import 'package:petani_maju/data/datasources/location_service.dart';
-import 'package:petani_maju/data/datasources/pest_services.dart';
-import 'package:petani_maju/data/datasources/tips_services.dart';
-import 'package:petani_maju/data/datasources/planting_schedule_service.dart';
-import 'package:petani_maju/data/datasources/chatbot_service.dart';
-import 'package:petani_maju/data/repositories/chatbot_repository.dart';
-import 'package:petani_maju/core/constants/env_config.dart';
+import 'package:agrinova/data/datasources/weather_service.dart';
+import 'package:agrinova/data/datasources/location_service.dart';
+import 'package:agrinova/data/datasources/pest_services.dart';
+import 'package:agrinova/data/datasources/tips_services.dart';
+import 'package:agrinova/data/datasources/planting_schedule_service.dart';
+import 'package:agrinova/data/datasources/chatbot_service.dart';
+import 'package:agrinova/data/repositories/chatbot_repository.dart';
+import 'package:agrinova/core/constants/env_config.dart';
 
 // Repositories
-import 'package:petani_maju/data/repositories/auth_repository.dart';
-import 'package:petani_maju/data/repositories/weather_repository.dart';
-import 'package:petani_maju/data/repositories/pest_repository.dart';
-import 'package:petani_maju/data/repositories/tips_repository.dart';
-import 'package:petani_maju/data/repositories/calendar_repository.dart';
-import 'package:petani_maju/data/repositories/history_repository.dart';
-import 'package:petani_maju/data/repositories/drug_repository.dart';
+import 'package:agrinova/data/repositories/auth_repository.dart';
+import 'package:agrinova/data/repositories/weather_repository.dart';
+import 'package:agrinova/data/repositories/pest_repository.dart';
+import 'package:agrinova/data/repositories/tips_repository.dart';
+import 'package:agrinova/data/repositories/calendar_repository.dart';
+import 'package:agrinova/data/repositories/history_repository.dart';
+import 'package:agrinova/data/repositories/drug_repository.dart';
 
 // Global BLoC
-import 'package:petani_maju/logic/app_lifecycle/app_bloc.dart';
-import 'package:petani_maju/logic/app_lifecycle/app_lifecycle_observer.dart';
+import 'package:agrinova/logic/app_lifecycle/app_bloc.dart';
+import 'package:agrinova/logic/app_lifecycle/app_lifecycle_observer.dart';
 
 // UI
-import 'package:petani_maju/features/onboarding/screens/onboarding_screen.dart';
-import 'package:petani_maju/features/auth/screens/login_screen.dart';
-import 'package:petani_maju/widgets/navbaar.dart';
-import 'package:petani_maju/widgets/app_toast.dart';
+import 'package:agrinova/features/onboarding/screens/onboarding_screen.dart';
+import 'package:agrinova/features/auth/screens/login_screen.dart';
+import 'package:agrinova/widgets/navbaar.dart';
+import 'package:agrinova/widgets/app_toast.dart';
 
 bool appStartedOffline = false;
 

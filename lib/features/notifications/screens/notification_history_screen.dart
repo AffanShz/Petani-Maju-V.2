@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/core/constants/colors.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/core/constants/colors.dart';
 import 'package:intl/intl.dart';
 
 class NotificationHistoryScreen extends StatefulWidget {

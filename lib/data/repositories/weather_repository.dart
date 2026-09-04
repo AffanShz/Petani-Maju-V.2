@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'package:petani_maju/data/datasources/weather_service.dart';
-import 'package:petani_maju/data/datasources/location_service.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/data/datasources/weather_service.dart';
+import 'package:agrinova/data/datasources/location_service.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 /// Repository untuk mengelola data Cuaca
 /// Abstraksi antara BLoC dan datasource (API/Cache)

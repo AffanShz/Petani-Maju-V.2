@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petani_maju/widgets/skeleton_container.dart';
+import 'package:agrinova/widgets/skeleton_container.dart';
 
 class HomeSkeleton extends StatelessWidget {
   const HomeSkeleton({super.key});

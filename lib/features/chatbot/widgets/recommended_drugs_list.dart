@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/features/drugs/screens/drug_screen.dart';
-import 'package:petani_maju/features/drugs/screens/drug_detail_screen.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/features/drugs/screens/drug_screen.dart';
+import 'package:agrinova/features/drugs/screens/drug_detail_screen.dart';
 
 /// Daftar obat yang direkomendasikan AI, tampil mendatar di bawah jawaban.
 ///

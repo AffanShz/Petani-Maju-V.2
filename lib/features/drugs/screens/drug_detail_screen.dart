@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/widgets/skeleton_container.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/widgets/skeleton_container.dart';
 
 class DrugDetailScreen extends StatefulWidget {
   final Map<String, dynamic> drug;

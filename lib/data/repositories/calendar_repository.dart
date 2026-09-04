@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:petani_maju/data/datasources/planting_schedule_service.dart';
+import 'package:agrinova/data/datasources/planting_schedule_service.dart';
 
 /// Repository untuk mengelola Jadwal Tanam
 /// Data disimpan secara lokal menggunakan Hive

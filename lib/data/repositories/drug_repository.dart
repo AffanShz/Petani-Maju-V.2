@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 /// Repository untuk mengelola data Obat Tanaman
 /// Abstraksi antara BLoC dan datasource (asset JSON lokal & local Hive cache)

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:petani_maju/data/repositories/auth_repository.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/data/repositories/auth_repository.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';

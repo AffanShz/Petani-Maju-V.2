@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 
 class ConnectivityService {
   static final ConnectivityService _instance = ConnectivityService._internal();

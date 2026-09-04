@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:intl/intl.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/data/datasources/chatbot_service.dart';
-import 'package:petani_maju/data/models/chat_message.dart';
-import 'package:petani_maju/data/models/chat_session.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/data/datasources/chatbot_service.dart';
+import 'package:agrinova/data/models/chat_message.dart';
+import 'package:agrinova/data/models/chat_session.dart';
 
 class ChatbotRepository {
   final ChatbotService _chatbotService;

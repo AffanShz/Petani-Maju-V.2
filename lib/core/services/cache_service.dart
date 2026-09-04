@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:petani_maju/data/models/notification_settings.dart';
+import 'package:agrinova/data/models/notification_settings.dart';
 
-import 'package:petani_maju/data/models/chat_session.dart';
+import 'package:agrinova/data/models/chat_session.dart';
 
 /// Service for caching API data locally using Hive
 /// Supports offline-first approach: load cache first, then fetch API

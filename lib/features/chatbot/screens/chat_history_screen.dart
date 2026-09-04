@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/data/models/chat_session.dart';
-import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/data/models/chat_session.dart';
+import 'package:agrinova/features/chatbot/bloc/chatbot_bloc.dart';
 
 class ChatHistoryScreen extends StatelessWidget {
   const ChatHistoryScreen({super.key});

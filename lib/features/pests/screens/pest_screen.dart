@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/core/constants/colors.dart';
+import 'package:agrinova/core/constants/colors.dart';
 
-import 'package:petani_maju/features/pests/bloc/pest_bloc.dart';
-import 'package:petani_maju/features/pests/screens/pest_detail_screen.dart';
-import 'package:petani_maju/data/repositories/pest_repository.dart';
+import 'package:agrinova/features/pests/bloc/pest_bloc.dart';
+import 'package:agrinova/features/pests/screens/pest_detail_screen.dart';
+import 'package:agrinova/data/repositories/pest_repository.dart';
 
 class PestScreen extends StatefulWidget {
   const PestScreen({super.key});

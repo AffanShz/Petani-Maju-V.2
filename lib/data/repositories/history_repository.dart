@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:petani_maju/data/models/prediction_history.dart';
-import 'package:petani_maju/data/datasources/pest_services.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
+import 'package:agrinova/data/models/prediction_history.dart';
+import 'package:agrinova/data/datasources/pest_services.dart';
+import 'package:agrinova/core/services/cache_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HistoryRepository {

@@ -1,10 +1,10 @@
 // lib/core/services/notification_scheduler.dart
 
 import 'package:flutter/foundation.dart';
-import 'package:petani_maju/core/services/notification_service.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/data/models/notification_settings.dart';
-import 'package:petani_maju/utils/weather_utils.dart';
+import 'package:agrinova/core/services/notification_service.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/data/models/notification_settings.dart';
+import 'package:agrinova/utils/weather_utils.dart';
 
 /// Service untuk mengatur semua jadwal dan logic notifikasi cerdas
 class NotificationScheduler {

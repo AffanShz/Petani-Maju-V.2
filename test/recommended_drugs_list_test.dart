@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:petani_maju/features/chatbot/widgets/recommended_drugs_list.dart';
+import 'package:agrinova/features/chatbot/widgets/recommended_drugs_list.dart';
 
 /// Isi khas jawaban chatbot: nama obat panjang, kategori, bahan aktif.
 const _drugs = <Map<String, dynamic>>[

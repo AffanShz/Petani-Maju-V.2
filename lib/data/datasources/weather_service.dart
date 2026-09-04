@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:petani_maju/core/constants/env_config.dart';
+import 'package:agrinova/core/constants/env_config.dart';
 
 class WeatherService {
   String get apiKey => EnvConfig.openWeatherApiKey;

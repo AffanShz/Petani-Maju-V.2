@@ -6,16 +6,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:petani_maju/core/constants/colors.dart';
-import 'package:petani_maju/features/chatbot/widgets/recommended_drugs_list.dart';
-import 'package:petani_maju/data/models/chat_message.dart';
-import 'package:petani_maju/data/repositories/calendar_repository.dart';
-import 'package:petani_maju/features/calendar/bloc/calendar_bloc.dart';
-import 'package:petani_maju/features/calendar/screens/calendar_screen.dart';
-import 'package:petani_maju/features/chatbot/bloc/chatbot_bloc.dart';
-import 'package:petani_maju/features/drugs/screens/drug_screen.dart';
-import 'package:petani_maju/features/scanner/screens/scanner_screen.dart';
-import 'package:petani_maju/features/weather/screens/weather_detail_screen.dart';
+import 'package:agrinova/core/constants/colors.dart';
+import 'package:agrinova/features/chatbot/widgets/recommended_drugs_list.dart';
+import 'package:agrinova/data/models/chat_message.dart';
+import 'package:agrinova/data/repositories/calendar_repository.dart';
+import 'package:agrinova/features/calendar/bloc/calendar_bloc.dart';
+import 'package:agrinova/features/calendar/screens/calendar_screen.dart';
+import 'package:agrinova/features/chatbot/bloc/chatbot_bloc.dart';
+import 'package:agrinova/features/drugs/screens/drug_screen.dart';
+import 'package:agrinova/features/scanner/screens/scanner_screen.dart';
+import 'package:agrinova/features/weather/screens/weather_detail_screen.dart';
 
 class DrugCatalogLoader {
   static List<Map<String, dynamic>>? _cachedCatalog;

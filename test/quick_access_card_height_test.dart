@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:petani_maju/features/home/widgets/quick_access_item.dart';
-import 'package:petani_maju/features/home/widgets/quick_access_metrics.dart';
+import 'package:agrinova/features/home/widgets/quick_access_item.dart';
+import 'package:agrinova/features/home/widgets/quick_access_metrics.dart';
 
 /// Isi ketiga kartu yang sebenarnya. 'Obat Tanaman' yang paling panjang, dan
 /// itulah yang meluber sebelum pengukurannya ikut memperhitungkan tema.

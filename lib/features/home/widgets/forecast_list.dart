@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:petani_maju/utils/weather_utils.dart';
+import 'package:agrinova/utils/weather_utils.dart';
 
 class ForecastList extends StatelessWidget {
   final List<dynamic> forecastData;

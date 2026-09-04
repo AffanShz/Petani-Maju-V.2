@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import 'package:petani_maju/data/repositories/weather_repository.dart';
-import 'package:petani_maju/core/services/cache_service.dart';
-import 'package:petani_maju/features/weather/widgets/weather_widgets.dart';
+import 'package:agrinova/data/repositories/weather_repository.dart';
+import 'package:agrinova/core/services/cache_service.dart';
+import 'package:agrinova/features/weather/widgets/weather_widgets.dart';
 
 class WeatherDetailScreen extends StatefulWidget {
   const WeatherDetailScreen({super.key});
