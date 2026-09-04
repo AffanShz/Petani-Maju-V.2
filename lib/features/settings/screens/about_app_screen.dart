@@ -45,7 +45,7 @@ class AboutAppScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             const Text(
-              'Petani Maju',
+              'AgriNova',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,

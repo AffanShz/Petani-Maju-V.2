@@ -56,7 +56,7 @@ Future<void> showUpgradeToProDialog(BuildContext context) {
             Text(
               'Akun gratis dibatasi 3 jawaban Asisten Tani per hari.'
               'Kuotamu terisi ulang '
-              '$resetLabel. Upgrade ke Petani Maju PRO untuk konsultasi AI '
+              '$resetLabel. Upgrade ke AgriNova PRO untuk konsultasi AI '
               'sepuasnya tanpa batas kuota!',
               style:
                   TextStyle(fontSize: 13, color: Colors.grey[700], height: 1.4),

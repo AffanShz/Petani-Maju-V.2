@@ -167,7 +167,7 @@ class MainApp extends StatelessWidget {
         ],
         child: AppLifecycleObserver(
           child: MaterialApp(
-            title: 'Petani Maju',
+            title: 'AgriNova',
             debugShowCheckedModeBanner: false,
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,

@@ -263,7 +263,7 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
       final customerName =
           (userProfile['name'] != null && userProfile['name']!.isNotEmpty)
               ? userProfile['name']!
-              : (user?.userMetadata?['full_name'] as String? ?? 'Petani Maju');
+              : (user?.userMetadata?['full_name'] as String? ?? 'AgriNova');
       final customerEmail = user?.email ?? 'petani@petanimaju.id';
 
       final result = await _midtransService.createTransaction(
@@ -702,7 +702,7 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                           true); // Return to previous screen with success
                       AppToast.show(
                         context,
-                        message: 'Status Petani Maju PRO berhasil diaktifkan!',
+                        message: 'Status AgriNova PRO berhasil diaktifkan!',
                         type: ToastType.success,
                         icon: Icons.workspace_premium_rounded,
                       );
@@ -741,7 +741,7 @@ class _PurchasePremiumScreenState extends State<PurchasePremiumScreen> {
                 color: Color(0xFFFFD700), size: 22),
             SizedBox(width: 8),
             Text(
-              'Petani Maju PRO',
+              'AgriNova PRO',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

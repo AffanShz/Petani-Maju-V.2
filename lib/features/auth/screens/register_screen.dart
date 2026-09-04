@@ -184,7 +184,7 @@ class _RegisterViewState extends State<_RegisterView> {
                     const SizedBox(height: 8),
                     const Center(
                       child: Text(
-                        'Daftar untuk mulai menggunakan Petani Maju',
+                        'Daftar untuk mulai menggunakan AgriNova',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14,
