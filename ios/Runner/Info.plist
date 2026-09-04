@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Petani Maju</string>
+	<string>AgriNova</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -46,10 +46,10 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Petani Maju membutuhkan akses lokasi untuk menampilkan prakiraan cuaca setempat.</string>
+	<string>AgriNova membutuhkan akses lokasi untuk menampilkan prakiraan cuaca setempat.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Petani Maju membutuhkan akses kamera untuk memindai penyakit tanaman.</string>
+	<string>AgriNova membutuhkan akses kamera untuk memindai penyakit tanaman.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Petani Maju membutuhkan akses galeri untuk memilih foto tanaman.</string>
+	<string>AgriNova membutuhkan akses galeri untuk memilih foto tanaman.</string>
 </dict>
 </plist>

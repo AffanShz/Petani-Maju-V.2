@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:label="Petani Maju"
+        android:label="AgriNova"
         android:name="${applicationName}"
         android:allowBackup="false"
         android:fullBackupContent="false"
