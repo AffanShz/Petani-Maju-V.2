@@ -1,6 +1,6 @@
-# 🔌 Dokumentasi API - Petani Maju
+# 🔌 Dokumentasi API - AgriNova
 
-Dokumentasi lengkap tentang API dan service yang digunakan pada aplikasi Petani Maju.
+Dokumentasi lengkap tentang API dan service yang digunakan pada aplikasi AgriNova.
 
 ---
 
@@ -40,7 +40,7 @@ GEMINI_API_KEY=your-gemini-api-key            # Chatbot Asisten Tani
 
 **Struktur folder:**
 ```
-petani_maju/
+agrinova/
 ├── .env              ← Buat file ini (baru)
 ├── .env.example      ← Template reference
 ├── pubspec.yaml

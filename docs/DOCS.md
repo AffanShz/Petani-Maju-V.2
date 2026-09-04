@@ -1,6 +1,6 @@
-# 📖 Dokumentasi Teknis - Petani Maju
+# 📖 Dokumentasi Teknis - AgriNova
 
-Dokumentasi lengkap tentang arsitektur, komponen, dan cara kerja aplikasi Petani Maju.
+Dokumentasi lengkap tentang arsitektur, komponen, dan cara kerja aplikasi AgriNova.
 
 ## 📑 Daftar Isi
 
@@ -16,7 +16,7 @@ Dokumentasi lengkap tentang arsitektur, komponen, dan cara kerja aplikasi Petani
 
 ## 🏗️ Arsitektur Aplikasi
 
-Aplikasi Petani Maju menggunakan arsitektur **Feature-First** dengan pemisahan layer yang jelas:
+Aplikasi AgriNova menggunakan arsitektur **Feature-First** dengan pemisahan layer yang jelas:
 
 ```
 ┌──────────────────────────────────────────┐

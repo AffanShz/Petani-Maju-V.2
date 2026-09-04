@@ -1,6 +1,6 @@
-# 🗄️ Entity Relationship Diagram (ERD) - Petani Maju
+# 🗄️ Entity Relationship Diagram (ERD) - AgriNova
 
-Dokumentasi struktur database aplikasi **Petani Maju**.
+Dokumentasi struktur database aplikasi **AgriNova**.
 
 ---
 

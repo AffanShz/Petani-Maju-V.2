@@ -1,6 +1,6 @@
-# 🤝 Panduan Kontribusi - Petani Maju
+# 🤝 Panduan Kontribusi - AgriNova
 
-Terima kasih telah tertarik untuk berkontribusi ke proyek Petani Maju! Panduan ini akan membantu Anda memahami standar kode dan arsitektur baru kami.
+Terima kasih telah tertarik untuk berkontribusi ke proyek AgriNova! Panduan ini akan membantu Anda memahami standar kode dan arsitektur baru kami.
 
 ---
 

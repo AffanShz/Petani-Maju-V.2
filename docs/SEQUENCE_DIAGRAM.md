@@ -1,6 +1,6 @@
-# Sequence Diagram — Petani Maju
+# Sequence Diagram — AgriNova
 
-Dokumentasi **interaksi antar komponen** (urutan pesan/waktu) untuk semua alur utama aplikasi Petani Maju.
+Dokumentasi **interaksi antar komponen** (urutan pesan/waktu) untuk semua alur utama aplikasi AgriNova.
 
 ---
 

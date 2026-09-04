@@ -1,4 +1,4 @@
-# 🌾 Petani Maju
+# 🌾 AgriNova
 
 Aplikasi mobile pintar untuk membantu petani Indonesia dengan informasi cuaca real-time, tips pertanian, kalender tanam, sistem peringatan berbasis cuaca, **deteksi penyakit tanaman berbasis AI**, **katalog obat tanaman**, dan **chatbot Asisten Tani**.
 
@@ -198,7 +198,7 @@ lib/
 
    ```bash
    git clone https://github.com/AffanShz/CapstonePetaniMaju.git
-   cd petani_maju
+   cd agrinova
    ```
 
 2. **Setup Environment Variable**

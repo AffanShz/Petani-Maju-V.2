@@ -1,4 +1,4 @@
-# 📋 Changelog - Petani Maju
+# 📋 Changelog - AgriNova
 
 Semua perubahan penting pada proyek ini akan didokumentasikan di file ini.
 
@@ -164,7 +164,7 @@ Rilis yang berfokus pada stabilitas dan dukungan offline untuk pengalaman penggu
 
 ### 🎉 Initial Release
 
-Rilis pertama aplikasi Petani Maju dengan fitur dasar:
+Rilis pertama aplikasi AgriNova dengan fitur dasar:
 - Cuaca Real-time & Forecast
 - Tips Pertanian
 - Kalender Tanam

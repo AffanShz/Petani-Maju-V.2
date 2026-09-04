@@ -1,6 +1,6 @@
-# Activity Diagram - Petani Maju
+# Activity Diagram - AgriNova
 
-Dokumentasi **alur aktivitas / logika keputusan** (langkah-langkah & percabangan) untuk fitur utama Petani Maju.
+Dokumentasi **alur aktivitas / logika keputusan** (langkah-langkah & percabangan) untuk fitur utama AgriNova.
 
 ---
 
