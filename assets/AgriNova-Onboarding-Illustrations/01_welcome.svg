@@ -1,0 +1,41 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    
+  </defs>
+  <rect width="1024" height="1024" fill="#F4F2E9"/>
+  <!-- contour terrace lines -->
+  <path d="M0,860 C 220,820 340,900 560,850 C 760,810 900,860 1024,830" fill="none" stroke="#A85A2E" stroke-width="5" opacity="0.16"/>
+  <path d="M0,930 C 200,890 380,960 600,915 C 800,878 900,930 1024,905" fill="none" stroke="#0F6E56" stroke-width="5" opacity="0.14"/>
+  <path d="M0,990 C 240,955 420,1010 640,975 C 820,948 930,990 1024,970" fill="none" stroke="#A85A2E" stroke-width="5" opacity="0.12"/>
+  <!-- backdrop stage -->
+  <circle cx="512" cy="470" r="340" fill="#DEF2E7"/>
+  
+  <!-- ground mound -->
+  <ellipse cx="512" cy="770" rx="300" ry="34" fill="#5DCAA5" opacity="0.35"/>
+
+  <!-- small leaf sprouts left/right -->
+  <path d="M340,760 C 320,700 340,650 380,630 C 390,680 380,730 340,760 Z" fill="#5DCAA5"/>
+  <path d="M700,760 C 730,690 715,640 670,615 C 655,670 665,725 700,760 Z" fill="#8FE0BE"/>
+
+  <!-- figure body -->
+  <path d="M420,760 C420,660 450,590 512,590 C574,590 604,660 604,760 Z" fill="#0F6E56"/>
+  <!-- head -->
+  <circle cx="512" cy="520" r="62" fill="#F0C978"/>
+  <!-- hat -->
+  <path d="M438,505 C438,460 470,432 512,432 C554,432 586,460 586,505 C 550,492 474,492 438,505 Z" fill="#A85A2E"/>
+  <rect x="430" y="500" width="164" height="18" rx="9" fill="#A85A2E"/>
+
+  <!-- arm holding phone -->
+  <path d="M578,660 C 620,650 648,610 646,566" fill="none" stroke="#0F6E56" stroke-width="34" stroke-linecap="round"/>
+  <!-- phone -->
+  <rect x="606" y="500" width="96" height="150" rx="18" fill="#12231C"/>
+  <rect x="616" y="516" width="76" height="118" rx="8" fill="#F4F2E9"/>
+  <!-- app mark on phone: leaf + spark -->
+  <path d="M654,540 C 672,548 678,566 668,582 C 662,592 656,600 654,608 C 648,596 640,584 638,572 C 636,560 640,546 654,540 Z" fill="#5DCAA5"/>
+  <circle cx="672" cy="536" r="7" fill="#D9A441"/>
+
+  <!-- spark above phone -->
+  <circle cx="700" cy="470" r="10" fill="#D9A441"/>
+  <path d="M700,450 L700,462 M700,478 L700,490 M680,470 L692,470 M708,470 L720,470" stroke="#D9A441" stroke-width="5" stroke-linecap="round"/>
+
+</svg>

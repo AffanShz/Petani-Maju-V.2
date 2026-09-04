@@ -1,0 +1,50 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    
+  </defs>
+  <rect width="1024" height="1024" fill="#F4F2E9"/>
+  <!-- contour terrace lines -->
+  <path d="M0,860 C 220,820 340,900 560,850 C 760,810 900,860 1024,830" fill="none" stroke="#A85A2E" stroke-width="5" opacity="0.16"/>
+  <path d="M0,930 C 200,890 380,960 600,915 C 800,878 900,930 1024,905" fill="none" stroke="#0F6E56" stroke-width="5" opacity="0.14"/>
+  <path d="M0,990 C 240,955 420,1010 640,975 C 820,948 930,990 1024,970" fill="none" stroke="#A85A2E" stroke-width="5" opacity="0.12"/>
+  <!-- backdrop stage -->
+  <circle cx="512" cy="470" r="340" fill="#DEF2E7"/>
+  
+  <!-- sun -->
+  <circle cx="430" cy="380" r="90" fill="#D9A441"/>
+  <g stroke="#D9A441" stroke-width="10" stroke-linecap="round">
+    <line x1="430" y1="240" x2="430" y2="270"/>
+    <line x1="430" y1="490" x2="430" y2="520"/>
+    <line x1="320" y1="380" x2="290" y2="380"/>
+    <line x1="570" y1="380" x2="600" y2="380"/>
+    <line x1="352" y1="302" x2="332" y2="282"/>
+    <line x1="508" y1="302" x2="528" y2="282"/>
+  </g>
+
+  <!-- cloud -->
+  <g>
+    <ellipse cx="590" cy="470" rx="150" ry="80" fill="#3B87C4"/>
+    <circle cx="520" cy="430" r="70" fill="#3B87C4"/>
+    <circle cx="620" cy="410" r="86" fill="#3B87C4"/>
+    <circle cx="690" cy="450" r="60" fill="#3B87C4"/>
+  </g>
+
+  <!-- rain drops -->
+  <g fill="#9FCBEA">
+    <path d="M540,560 C 552,580 552,596 540,604 C 528,596 528,580 540,560 Z"/>
+    <path d="M610,575 C 622,595 622,611 610,619 C 598,611 598,595 610,575 Z"/>
+    <path d="M680,560 C 692,580 692,596 680,604 C 668,596 668,580 680,560 Z"/>
+  </g>
+
+  <!-- forecast card -->
+  <rect x="362" y="650" width="300" height="130" rx="20" fill="#F4F2E9" stroke="#0F6E56" stroke-width="4"/>
+  <g>
+    <rect x="392" y="700" width="26" height="50" rx="6" fill="#9FCBEA"/>
+    <rect x="438" y="676" width="26" height="74" rx="6" fill="#3B87C4"/>
+    <rect x="484" y="694" width="26" height="56" rx="6" fill="#9FCBEA"/>
+    <rect x="530" y="668" width="26" height="82" rx="6" fill="#3B87C4"/>
+    <rect x="576" y="686" width="26" height="64" rx="6" fill="#9FCBEA"/>
+  </g>
+  <text x="392" y="686" font-family="sans-serif" font-size="20" fill="#12231C" opacity="0.6">7 hari</text>
+
+</svg>

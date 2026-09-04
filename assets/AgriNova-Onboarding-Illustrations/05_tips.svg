@@ -1,0 +1,39 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    
+  </defs>
+  <rect width="1024" height="1024" fill="#F4F2E9"/>
+  <!-- contour terrace lines -->
+  <path d="M0,860 C 220,820 340,900 560,850 C 760,810 900,860 1024,830" fill="none" stroke="#A85A2E" stroke-width="5" opacity="0.16"/>
+  <path d="M0,930 C 200,890 380,960 600,915 C 800,878 900,930 1024,905" fill="none" stroke="#0F6E56" stroke-width="5" opacity="0.14"/>
+  <path d="M0,990 C 240,955 420,1010 640,975 C 820,948 930,990 1024,970" fill="none" stroke="#A85A2E" stroke-width="5" opacity="0.12"/>
+  <!-- backdrop stage -->
+  <circle cx="512" cy="470" r="340" fill="#DEF2E7"/>
+  
+  <!-- open book -->
+  <path d="M512,420 L512,700 C 430,660 380,660 330,680 L330,440 C 380,412 450,412 512,420 Z" fill="#0F6E56"/>
+  <path d="M512,420 L512,700 C 594,660 644,660 694,680 L694,440 C 644,412 574,412 512,420 Z" fill="#5DCAA5"/>
+  <g stroke="#F4F2E9" stroke-width="6" opacity="0.6" stroke-linecap="round">
+    <line x1="360" y1="470" x2="470" y2="452"/>
+    <line x1="360" y1="510" x2="470" y2="494"/>
+    <line x1="360" y1="550" x2="470" y2="536"/>
+    <line x1="554" y1="452" x2="664" y2="470"/>
+    <line x1="554" y1="494" x2="664" y2="510"/>
+    <line x1="554" y1="536" x2="664" y2="550"/>
+  </g>
+
+  <!-- leaf bookmark -->
+  <path d="M492,340 L492,440 L512,420 L532,440 L532,340 Z" fill="#D9A441"/>
+
+  <!-- idea spark above -->
+  <circle cx="512" cy="270" r="34" fill="#D9A441"/>
+  <path d="M512,270 C 500,250 504,234 520,226 C 524,242 520,258 512,270 Z" fill="#0F6E56"/>
+  <g stroke="#D9A441" stroke-width="6" stroke-linecap="round">
+    <line x1="512" y1="216" x2="512" y2="200"/>
+    <line x1="460" y1="270" x2="444" y2="270"/>
+    <line x1="580" y1="270" x2="596" y2="270"/>
+    <line x1="476" y1="234" x2="464" y2="222"/>
+    <line x1="548" y1="234" x2="560" y2="222"/>
+  </g>
+
+</svg>
