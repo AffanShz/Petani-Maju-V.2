@@ -1,4 +1,4 @@
-package com.example.petani_maju
+package com.agrinova.app
 
 import io.flutter.embedding.android.FlutterActivity
 
